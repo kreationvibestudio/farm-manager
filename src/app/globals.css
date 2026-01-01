@@ -1,0 +1,78 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-border: var(--border);
+  
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+:root {
+  /* Radiant Green & Earth Tones */
+  --background: #fdfdfd;
+  --foreground: #1a1c19;
+  
+  /* Deep Plantation Green */
+  --primary: #1e5e3f; 
+  --primary-foreground: #ffffff;
+  
+  /* Palm Oil Gold */
+  --secondary: #d97706;
+  --secondary-foreground: #ffffff;
+  
+  /* Soft Earth/Accent */
+  --accent: #f4f6f5;
+  --accent-foreground: #1e5e3f;
+  
+  /* UI Elements */
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  
+  --card: #ffffff;
+  --card-foreground: #1a1c19;
+  
+  --border: #e2e8f0;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0c0a;
+    --foreground: #ecdfcc;
+    
+    --primary: #2d8a5b; /* Slightly lighter green for dark mode */
+    --primary-foreground: #ffffff;
+    
+    --secondary: #fbbf24;
+    --secondary-foreground: #1a1c19;
+    
+    --accent: #1f2937;
+    --accent-foreground: #ecdfcc;
+    
+    --muted: #1e293b;
+    --muted-foreground: #94a3b8;
+    
+    --card: #111311;
+    --card-foreground: #ecdfcc;
+    
+    --border: #2d3748;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
