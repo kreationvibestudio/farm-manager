@@ -24,3 +24,25 @@ export const mockHarvestLogs: HarvestLog[] = [
     { id: "h2", date: "2024-03-02", blockId: "Block B-04", weightKg: 1850, supervisorId: "s2", vehicleId: "v3" },
     { id: "h3", date: "2024-03-01", blockId: "Block A-11", weightKg: 3200, supervisorId: "s2", vehicleId: "v3" },
 ];
+
+export const harvestStats = [
+    { name: 'Mon', ffb: 2400 },
+    { name: 'Tue', ffb: 1398 },
+    { name: 'Wed', ffb: 9800 },
+    { name: 'Thu', ffb: 3908 },
+    { name: 'Fri', ffb: 4800 },
+    { name: 'Sat', ffb: 3800 },
+    { name: 'Sun', ffb: 4300 },
+];
+
+export const oerStats = [
+    { name: 'OER', value: 19.2, fill: '#16a34a' },
+    { name: 'Remaining', value: 100 - 19.2, fill: '#e5e7eb' },
+];
+
+export const vehicleStats = [
+    { name: 'Active', value: 8, color: '#16a34a' },
+    { name: 'Maintenance', value: 2, color: '#ca8a04' },
+    { name: 'Idle', value: 0, color: '#dc2626' },
+];
+

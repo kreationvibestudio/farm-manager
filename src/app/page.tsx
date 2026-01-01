@@ -1,7 +1,14 @@
+import { HarvestChart } from "@/components/dashboard/HarvestChart";
+import { FleetStatus } from "@/components/dashboard/FleetStatus";
+import { OERGauge } from "@/components/dashboard/OERGauge";
+import { ResourceTank } from "@/components/dashboard/ResourceTank";
+import { WeatherWidget } from "@/components/dashboard/WeatherWidget";
+import { TrendingUp, Package, Truck, AlertTriangle } from "lucide-react";
+
 export default function Home() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      {/* Header Placeholder */}
+      {/* Header */}
       <header className="sticky top-0 z-10 border-b border-border bg-background/80 px-6 py-4 backdrop-blur-md">
         <h1 className="text-xl font-bold tracking-tight text-primary">Palm Plantation Manager</h1>
       </header>
@@ -10,15 +17,55 @@ export default function Home() {
         {/* Welcome Section */}
         <div className="flex flex-col gap-2">
           <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
-          <p className="text-muted-foreground">Overview of plantation operations, deliverables, and inventory.</p>
+          <p className="text-muted-foreground">Real-time overview of plantation operations, deliverables, and inventory.</p>
         </div>
 
-        {/* Key Metrics Grid */}
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          <DashboardCard title="Total FFB Harvested" value="12,450 kg" trend="+2.5%" />
-          <DashboardCard title="Oil Extraction Rate" value="19.2%" trend="-0.1%" />
-          <DashboardCard title="Active Tractors" value="8/10" status="Operating" />
-          <DashboardCard title="Diesel Reserve" value="1,200 L" status="Low Stock" alert />
+        {/* Quick Stats Row */}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <StatCard
+            title="Total FFB Harvested"
+            value="12,450 kg"
+            trend="+2.5%"
+            trendUp={true}
+            icon={<TrendingUp className="h-4 w-4" />}
+          />
+          <StatCard
+            title="Oil Extraction Rate"
+            value="19.2%"
+            trend="-0.1%"
+            trendUp={false}
+            icon={<Package className="h-4 w-4" />}
+          />
+          <StatCard
+            title="Active Tractors"
+            value="8/10"
+            status="Operating"
+            icon={<Truck className="h-4 w-4" />}
+          />
+          <StatCard
+            title="Diesel Reserve"
+            value="1,200 L"
+            status="Low Stock"
+            alert
+            icon={<AlertTriangle className="h-4 w-4" />}
+          />
+        </div>
+
+        {/* Charts Grid - Row 1 */}
+        <div className="grid gap-6 lg:grid-cols-3">
+          <div className="lg:col-span-2">
+            <HarvestChart />
+          </div>
+          <div>
+            <WeatherWidget />
+          </div>
+        </div>
+
+        {/* Charts Grid - Row 2 */}
+        <div className="grid gap-6 md:grid-cols-3">
+          <OERGauge />
+          <FleetStatus />
+          <ResourceTank />
         </div>
 
         {/* Recent Activity Section */}
@@ -47,17 +94,28 @@ export default function Home() {
   );
 }
 
-function DashboardCard({ title, value, trend, status, alert }: { title: string, value: string, trend?: string, status?: string, alert?: boolean }) {
+function StatCard({ title, value, trend, trendUp, status, alert, icon }: {
+  title: string;
+  value: string;
+  trend?: string;
+  trendUp?: boolean;
+  status?: string;
+  alert?: boolean;
+  icon?: React.ReactNode;
+}) {
   return (
-    <div className="rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:shadow-md">
+    <div className="rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:shadow-md hover:border-primary/30">
       <div className="flex flex-row items-center justify-between pb-2">
         <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
+        <div className={`p-2 rounded-lg ${alert ? 'bg-red-100 text-red-600 dark:bg-red-900/30' : 'bg-primary/10 text-primary'}`}>
+          {icon}
+        </div>
       </div>
       <div className="flex items-baseline gap-2">
         <div className="text-2xl font-bold">{value}</div>
         {trend && (
-          <span className={`text-xs ${trend.startsWith('+') ? 'text-green-600' : 'text-red-500'}`}>
-            {trend} from yesterday
+          <span className={`text-xs font-medium ${trendUp ? 'text-green-600' : 'text-red-500'}`}>
+            {trend}
           </span>
         )}
       </div>
@@ -67,6 +125,7 @@ function DashboardCard({ title, value, trend, status, alert }: { title: string, 
             ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
             : 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
           }`}>
+          <span className={`mr-1.5 h-1.5 w-1.5 rounded-full ${alert ? 'bg-red-500 animate-pulse' : 'bg-green-500'}`} />
           {status}
         </div>
       )}
@@ -74,7 +133,7 @@ function DashboardCard({ title, value, trend, status, alert }: { title: string, 
   )
 }
 
-function TableRow({ date, block, weight, user }: { date: string, block: string, weight: string, user: string }) {
+function TableRow({ date, block, weight, user }: { date: string; block: string; weight: string; user: string }) {
   return (
     <tr className="hover:bg-muted/50 transition-colors">
       <td className="p-4 text-muted-foreground">{date}</td>
