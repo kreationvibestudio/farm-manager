@@ -1,10 +1,54 @@
+"use client";
+
+import { useState } from "react";
 import { HarvestLogTable } from "@/components/harvest/HarvestLogTable";
+import { LogHarvestModal } from "@/components/harvest/LogHarvestModal";
 import { Button } from "@/components/ui/button";
 import { FileDown, Plus } from "lucide-react";
-import { mockHarvestLogs } from "@/lib/data";
+import { useAppStore } from "@/lib/store";
 
 export default function HarvestPage() {
-    const totalYield = mockHarvestLogs.reduce((acc, log) => acc + log.weightKg, 0);
+    const harvestLogs = useAppStore((state) => state.harvestLogs);
+    const deleteHarvestLog = useAppStore((state) => state.deleteHarvestLog);
+
+    const [showLogModal, setShowLogModal] = useState(false);
+
+    const totalYield = harvestLogs.reduce((acc, log) => acc + log.weightKg, 0);
+    const averageDaily = harvestLogs.length > 0 ? Math.round(totalYield / harvestLogs.length) : 0;
+
+    // Find best performing block
+    const blockTotals = harvestLogs.reduce((acc, log) => {
+        acc[log.blockId] = (acc[log.blockId] || 0) + log.weightKg;
+        return acc;
+    }, {} as Record<string, number>);
+    const bestBlock = Object.entries(blockTotals).sort((a, b) => b[1] - a[1])[0]?.[0] || "N/A";
+
+    const handleDelete = (id: string) => {
+        if (confirm("Are you sure you want to delete this harvest log?")) {
+            deleteHarvestLog(id);
+        }
+    };
+
+    const handleExport = () => {
+        // Generate CSV content
+        const headers = ["Date", "Block", "Weight (kg)", "Supervisor", "Vehicle"];
+        const rows = harvestLogs.map(log => [
+            log.date,
+            log.blockId,
+            log.weightKg.toString(),
+            log.supervisorId,
+            log.vehicleId || ""
+        ]);
+
+        const csvContent = [headers, ...rows].map(row => row.join(",")).join("\n");
+        const blob = new Blob([csvContent], { type: "text/csv" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `harvest-report-${new Date().toISOString().split('T')[0]}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+    };
 
     return (
         <main className="p-6 space-y-8">
@@ -16,10 +60,10 @@ export default function HarvestPage() {
                     </p>
                 </div>
                 <div className="flex items-center gap-2">
-                    <Button variant="outline" className="gap-2">
+                    <Button variant="outline" className="gap-2" onClick={handleExport}>
                         <FileDown className="h-4 w-4" /> Export Report
                     </Button>
-                    <Button className="gap-2 shadow-lg shadow-secondary/20 bg-secondary hover:bg-secondary/90 text-secondary-foreground">
+                    <Button className="gap-2 shadow-lg shadow-secondary/20 bg-secondary hover:bg-secondary/90 text-secondary-foreground" onClick={() => setShowLogModal(true)}>
                         <Plus className="h-4 w-4" /> Log Harvest
                     </Button>
                 </div>
@@ -34,16 +78,18 @@ export default function HarvestPage() {
                     </div>
                 </div>
                 <div className="rounded-xl border bg-card p-6 shadow-sm">
-                    <div className="text-sm font-medium text-muted-foreground">Average Daily Yield</div>
-                    <div className="mt-2 text-2xl font-bold">4,200 kg</div>
+                    <div className="text-sm font-medium text-muted-foreground">Average Per Harvest</div>
+                    <div className="mt-2 text-2xl font-bold">{averageDaily.toLocaleString()} kg</div>
                 </div>
                 <div className="rounded-xl border bg-card p-6 shadow-sm">
                     <div className="text-sm font-medium text-muted-foreground">Best Performing Block</div>
-                    <div className="mt-2 text-2xl font-bold">Block A-11</div>
+                    <div className="mt-2 text-2xl font-bold">{bestBlock}</div>
                 </div>
             </div>
 
-            <HarvestLogTable logs={mockHarvestLogs} />
+            <HarvestLogTable logs={harvestLogs} onDelete={handleDelete} />
+
+            <LogHarvestModal isOpen={showLogModal} onClose={() => setShowLogModal(false)} />
         </main>
     );
 }
