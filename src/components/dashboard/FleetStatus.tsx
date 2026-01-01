@@ -27,7 +27,7 @@ export function FleetStatus() {
                         </Pie>
                         <Tooltip
                             contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }}
-                            formatter={(value: number, name: string) => [`${value} vehicles`, name]}
+                            formatter={(value, name) => [`${value} vehicles`, name]}
                         />
                         <Legend
                             verticalAlign="bottom"
