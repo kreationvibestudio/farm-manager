@@ -23,7 +23,7 @@ export function HarvestChart() {
                             contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }}
                             labelStyle={{ color: 'hsl(var(--foreground))' }}
                             itemStyle={{ color: '#16a34a' }}
-                            formatter={(value: number) => [`${value.toLocaleString()} kg`, 'FFB Harvested']}
+                            formatter={(value) => [`${Number(value).toLocaleString()} kg`, 'FFB Harvested']}
                         />
                         <Area
                             type="monotone"
