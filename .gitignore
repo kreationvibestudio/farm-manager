@@ -36,6 +36,14 @@ yarn-error.log*
 # vercel
 .vercel
 
+# supabase
+.supabase
+
+# IDE and editor files
+.antigravity/
+.cursor/
+.gemini/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

@@ -43,6 +43,6 @@ export const oerStats = [
 export const vehicleStats = [
     { name: 'Active', value: 8, color: '#16a34a' },
     { name: 'Maintenance', value: 2, color: '#ca8a04' },
-    { name: 'Idle', value: 0, color: '#dc2626' },
+    { name: 'OutOfService', value: 0, color: '#dc2626' },
 ];
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { InventoryTable } from "@/components/inventory/InventoryTable";
 import { AddItemModal } from "@/components/inventory/AddItemModal";
 import { StockAdjustModal } from "@/components/inventory/StockAdjustModal";
@@ -10,8 +10,13 @@ import { useAppStore } from "@/lib/store";
 import { InventoryItem } from "@/types";
 
 export default function InventoryPage() {
-    const inventory = useAppStore((state) => state.inventory);
-    const deleteInventoryItem = useAppStore((state) => state.deleteInventoryItem);
+    const { 
+        inventory, 
+        isLoading, 
+        error,
+        fetchInventory,
+        deleteInventoryItem 
+    } = useAppStore();
 
     const [showAddModal, setShowAddModal] = useState(false);
     const [stockModal, setStockModal] = useState<{ isOpen: boolean; item: InventoryItem | null; mode: "add" | "subtract" }>({
@@ -20,6 +25,10 @@ export default function InventoryPage() {
         mode: "add"
     });
     const [editItem, setEditItem] = useState<InventoryItem | null>(null);
+
+    useEffect(() => {
+        fetchInventory();
+    }, [fetchInventory]);
 
     const totalItems = inventory.reduce((acc, item) => acc + item.quantity, 0);
     const lowStockCount = inventory.filter(item => item.quantity <= item.minLevel).length;
@@ -43,6 +52,14 @@ export default function InventoryPage() {
         }
     };
 
+    if (isLoading && inventory.length === 0) {
+        return (
+            <main className="p-6 space-y-8">
+                <div>Loading...</div>
+            </main>
+        );
+    }
+
     return (
         <main className="p-6 space-y-8">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -56,6 +73,12 @@ export default function InventoryPage() {
                     <Plus className="h-4 w-4" /> Add New Item
                 </Button>
             </div>
+
+            {error && (
+                <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-red-800">
+                    Error: {error}
+                </div>
+            )}
 
             <div className="grid gap-6 md:grid-cols-3">
                 <div className="rounded-xl border bg-white p-6 shadow-sm dark:bg-zinc-900">

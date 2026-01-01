@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { HarvestLogTable } from "@/components/harvest/HarvestLogTable";
 import { LogHarvestModal } from "@/components/harvest/LogHarvestModal";
 import { Button } from "@/components/ui/button";
@@ -8,10 +8,19 @@ import { FileDown, Plus } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 
 export default function HarvestPage() {
-    const harvestLogs = useAppStore((state) => state.harvestLogs);
-    const deleteHarvestLog = useAppStore((state) => state.deleteHarvestLog);
+    const { 
+        harvestLogs, 
+        isLoading,
+        error,
+        fetchHarvestLogs,
+        deleteHarvestLog 
+    } = useAppStore();
 
     const [showLogModal, setShowLogModal] = useState(false);
+
+    useEffect(() => {
+        fetchHarvestLogs();
+    }, [fetchHarvestLogs]);
 
     const totalYield = harvestLogs.reduce((acc, log) => acc + log.weightKg, 0);
     const averageDaily = harvestLogs.length > 0 ? Math.round(totalYield / harvestLogs.length) : 0;
@@ -50,6 +59,14 @@ export default function HarvestPage() {
         URL.revokeObjectURL(url);
     };
 
+    if (isLoading && harvestLogs.length === 0) {
+        return (
+            <main className="p-6 space-y-8">
+                <div>Loading...</div>
+            </main>
+        );
+    }
+
     return (
         <main className="p-6 space-y-8">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -68,6 +85,12 @@ export default function HarvestPage() {
                     </Button>
                 </div>
             </div>
+
+            {error && (
+                <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-red-800">
+                    Error: {error}
+                </div>
+            )}
 
             <div className="grid gap-6 md:grid-cols-3">
                 <div className="rounded-xl border bg-card p-6 shadow-sm">

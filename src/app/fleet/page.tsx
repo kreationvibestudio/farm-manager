@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { VehicleList } from "@/components/fleet/VehicleList";
 import { AddVehicleModal } from "@/components/fleet/AddVehicleModal";
 import { Button } from "@/components/ui/button";
@@ -9,15 +9,24 @@ import { useAppStore } from "@/lib/store";
 import { Vehicle } from "@/types";
 
 export default function FleetPage() {
-    const vehicles = useAppStore((state) => state.vehicles);
-    const updateVehicle = useAppStore((state) => state.updateVehicle);
-    const deleteVehicle = useAppStore((state) => state.deleteVehicle);
+    const { 
+        vehicles, 
+        isLoading,
+        error,
+        fetchVehicles,
+        updateVehicle,
+        deleteVehicle 
+    } = useAppStore();
 
     const [showAddModal, setShowAddModal] = useState(false);
 
+    useEffect(() => {
+        fetchVehicles();
+    }, [fetchVehicles]);
+
     const activeVehicles = vehicles.filter(v => v.status === 'Active').length;
     const maintenanceVehicles = vehicles.filter(v => v.status === 'Maintenance').length;
-    const idleVehicles = vehicles.filter(v => v.status === 'Idle').length;
+    const idleVehicles = vehicles.filter(v => v.status === 'OutOfService').length;
 
     const handleEdit = (vehicle: Vehicle) => {
         alert(`Edit functionality for "${vehicle.name}" - Coming soon!`);
@@ -29,9 +38,17 @@ export default function FleetPage() {
         }
     };
 
-    const handleStatusChange = (id: string, status: "Active" | "Maintenance" | "Idle") => {
+    const handleStatusChange = (id: string, status: "Active" | "Maintenance" | "OutOfService") => {
         updateVehicle(id, { status });
     };
+
+    if (isLoading && vehicles.length === 0) {
+        return (
+            <main className="p-6 space-y-8">
+                <div>Loading...</div>
+            </main>
+        );
+    }
 
     return (
         <main className="p-6 space-y-8">
@@ -47,6 +64,12 @@ export default function FleetPage() {
                 </Button>
             </div>
 
+            {error && (
+                <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-red-800">
+                    Error: {error}
+                </div>
+            )}
+
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                 <div className="rounded-xl border bg-card p-6 shadow-sm">
                     <div className="text-sm font-medium text-muted-foreground">Total Vehicles</div>
@@ -61,7 +84,7 @@ export default function FleetPage() {
                     <div className="mt-2 text-2xl font-bold text-amber-500">{maintenanceVehicles}</div>
                 </div>
                 <div className="rounded-xl border bg-card p-6 shadow-sm">
-                    <div className="text-sm font-medium text-muted-foreground">Idle</div>
+                    <div className="text-sm font-medium text-muted-foreground">Out of Service</div>
                     <div className="mt-2 text-2xl font-bold text-zinc-500">{idleVehicles}</div>
                 </div>
             </div>

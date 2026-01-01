@@ -1,30 +1,52 @@
+"use client";
+
+import { useEffect } from "react";
 import { HarvestChart } from "@/components/dashboard/HarvestChart";
 import { FleetStatus } from "@/components/dashboard/FleetStatus";
 import { OERGauge } from "@/components/dashboard/OERGauge";
 import { ResourceTank } from "@/components/dashboard/ResourceTank";
 import { WeatherWidget } from "@/components/dashboard/WeatherWidget";
 import { TrendingUp, Package, Truck, AlertTriangle } from "lucide-react";
+import { useAppStore } from "@/lib/store";
 
 export default function Home() {
+  const { 
+    inventory, 
+    vehicles, 
+    harvestLogs,
+    fetchInventory,
+    fetchVehicles,
+    fetchHarvestLogs 
+  } = useAppStore();
+
+  useEffect(() => {
+    fetchInventory();
+    fetchVehicles();
+    fetchHarvestLogs();
+  }, [fetchInventory, fetchVehicles, fetchHarvestLogs]);
+
+  const totalHarvest = harvestLogs.reduce((acc, log) => acc + log.weightKg, 0);
+  const activeVehiclesCount = vehicles.filter(v => v.status === 'Active').length;
+  const lowStockCount = inventory.filter(item => item.quantity <= item.minLevel).length;
+  const dieselItem = inventory.find(item => item.name.toLowerCase().includes('diesel'));
+  const dieselReserve = dieselItem?.quantity || 0;
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      {/* Header */}
       <header className="sticky top-0 z-10 border-b border-border bg-background/80 px-6 py-4 backdrop-blur-md">
         <h1 className="text-xl font-bold tracking-tight text-primary">Palm Plantation Manager</h1>
       </header>
 
       <main className="flex-1 p-6 space-y-8">
-        {/* Welcome Section */}
         <div className="flex flex-col gap-2">
           <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
           <p className="text-muted-foreground">Real-time overview of plantation operations, deliverables, and inventory.</p>
         </div>
 
-        {/* Quick Stats Row */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard
             title="Total FFB Harvested"
-            value="12,450 kg"
+            value={`${totalHarvest.toLocaleString()} kg`}
             trend="+2.5%"
             trendUp={true}
             icon={<TrendingUp className="h-4 w-4" />}
@@ -38,20 +60,19 @@ export default function Home() {
           />
           <StatCard
             title="Active Tractors"
-            value="8/10"
+            value={`${activeVehiclesCount}/${vehicles.length}`}
             status="Operating"
             icon={<Truck className="h-4 w-4" />}
           />
           <StatCard
             title="Diesel Reserve"
-            value="1,200 L"
-            status="Low Stock"
-            alert
+            value={`${dieselReserve} L`}
+            status={dieselReserve < 500 ? "Low Stock" : "Adequate"}
+            alert={dieselReserve < 500}
             icon={<AlertTriangle className="h-4 w-4" />}
           />
         </div>
 
-        {/* Charts Grid - Row 1 */}
         <div className="grid gap-6 lg:grid-cols-3">
           <div className="lg:col-span-2">
             <HarvestChart />
@@ -61,14 +82,12 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Charts Grid - Row 2 */}
         <div className="grid gap-6 md:grid-cols-3">
           <OERGauge />
           <FleetStatus />
           <ResourceTank />
         </div>
 
-        {/* Recent Activity Section */}
         <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
           <h3 className="mb-4 text-lg font-semibold">Recent Harvest Logs</h3>
           <div className="rounded-lg border border-border overflow-hidden">
@@ -82,9 +101,22 @@ export default function Home() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                <TableRow date="Today, 10:30 AM" block="Block A-12" weight="2,400" user="John Doe" />
-                <TableRow date="Today, 09:15 AM" block="Block B-04" weight="1,850" user="Jane Smith" />
-                <TableRow date="Yesterday" block="Block A-11" weight="3,200" user="John Doe" />
+                {harvestLogs.slice(0, 5).map((log) => (
+                  <TableRow 
+                    key={log.id}
+                    date={new Date(log.date).toLocaleDateString()} 
+                    block={log.blockId} 
+                    weight={log.weightKg.toLocaleString()} 
+                    user={log.supervisorId} 
+                  />
+                ))}
+                {harvestLogs.length === 0 && (
+                  <tr>
+                    <td colSpan={4} className="p-4 text-center text-muted-foreground">
+                      No harvest logs yet
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>

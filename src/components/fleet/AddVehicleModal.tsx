@@ -15,7 +15,7 @@ export function AddVehicleModal({ isOpen, onClose }: AddVehicleModalProps) {
     const [formData, setFormData] = useState({
         name: "",
         type: "Tractor" as "Tractor" | "Truck",
-        status: "Active" as "Active" | "Maintenance" | "Idle",
+        status: "Active" as "Active" | "Maintenance" | "OutOfService",
         licensePlate: "",
         lastMaintenance: new Date().toISOString().split('T')[0],
     });
@@ -75,12 +75,12 @@ export function AddVehicleModal({ isOpen, onClose }: AddVehicleModalProps) {
                             <label className="block text-sm font-medium mb-1">Status</label>
                             <select
                                 value={formData.status}
-                                onChange={(e) => setFormData({ ...formData, status: e.target.value as "Active" | "Maintenance" | "Idle" })}
+                                onChange={(e) => setFormData({ ...formData, status: e.target.value as "Active" | "Maintenance" | "OutOfService" })}
                                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                             >
                                 <option value="Active">Active</option>
                                 <option value="Maintenance">Maintenance</option>
-                                <option value="Idle">Idle</option>
+                                <option value="OutOfService">Out of Service</option>
                             </select>
                         </div>
                     </div>

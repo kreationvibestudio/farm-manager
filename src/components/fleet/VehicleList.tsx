@@ -10,7 +10,7 @@ interface VehicleListProps {
     vehicles: Vehicle[];
     onEdit: (vehicle: Vehicle) => void;
     onDelete: (id: string) => void;
-    onStatusChange: (id: string, status: "Active" | "Maintenance" | "Idle") => void;
+    onStatusChange: (id: string, status: "Active" | "Maintenance" | "OutOfService") => void;
 }
 
 export function VehicleList({ vehicles, onEdit, onDelete, onStatusChange }: VehicleListProps) {
@@ -26,7 +26,7 @@ export function VehicleList({ vehicles, onEdit, onDelete, onStatusChange }: Vehi
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {vehicles.map((vehicle) => {
                 const isMaintenance = vehicle.status === 'Maintenance';
-                const isIdle = vehicle.status === 'Idle';
+                const isIdle = vehicle.status === 'OutOfService';
                 return (
                     <Card key={vehicle.id} className="overflow-hidden hover:shadow-md transition-shadow">
                         <div className={`h-2 w-full ${isMaintenance ? 'bg-amber-500' : isIdle ? 'bg-zinc-400' : 'bg-primary'}`} />
@@ -61,12 +61,12 @@ export function VehicleList({ vehicles, onEdit, onDelete, onStatusChange }: Vehi
                         <CardFooter className="pt-2 flex gap-2">
                             <select
                                 value={vehicle.status}
-                                onChange={(e) => onStatusChange(vehicle.id, e.target.value as "Active" | "Maintenance" | "Idle")}
+                                onChange={(e) => onStatusChange(vehicle.id, e.target.value as "Active" | "Maintenance" | "OutOfService")}
                                 className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none"
                             >
                                 <option value="Active">Active</option>
                                 <option value="Maintenance">Maintenance</option>
-                                <option value="Idle">Idle</option>
+                                <option value="OutOfService">Out of Service</option>
                             </select>
                             <Button variant="ghost" size="icon" onClick={() => onEdit(vehicle)} title="Edit">
                                 <Edit className="h-4 w-4" />
