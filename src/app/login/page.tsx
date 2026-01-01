@@ -25,7 +25,7 @@ export default function LoginPage() {
         });
 
         if (result?.error) {
-            setError("Invalid credentials. Try admin / plantation123");
+            setError("Invalid credentials. Please try again.");
             setLoading(false);
         } else {
             router.push("/");
@@ -106,9 +106,7 @@ export default function LoginPage() {
                         ) : "Sign in"}
                     </Button>
 
-                    <p className="text-center text-xs text-muted-foreground">
-                        Hint: <strong>admin</strong> / <strong>plantation123</strong>
-                    </p>
+
                 </form>
             </div>
         </div>

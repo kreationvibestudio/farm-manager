@@ -10,11 +10,12 @@ export const authOptions: NextAuthOptions = {
                 password: { label: "Password", type: "password" }
             },
             async authorize(credentials, req) {
-                // Simple hardcoded check for demo purposes
-                // In a real app, you would check against a database
+                const username = process.env.ADMIN_USERNAME || "admin";
+                const password = process.env.ADMIN_PASSWORD || "plantation123";
+
                 if (
-                    credentials?.username === "admin" &&
-                    credentials?.password === "plantation123"
+                    credentials?.username === username &&
+                    credentials?.password === password
                 ) {
                     return { id: "1", name: "Admin User", email: "admin@plantation.com" };
                 }
