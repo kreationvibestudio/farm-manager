@@ -1,4 +1,3 @@
-```javascript
 "use client";
 
 import Link from "next/link";
@@ -27,7 +26,7 @@ export function Sidebar({ className }: { className?: string }) {
           <span>FarmManager</span>
         </div>
       </div>
-      
+
       <div className="flex-1 overflow-y-auto py-4">
         <nav className="space-y-1 px-3">
           {navigation.map((item) => {
@@ -38,8 +37,8 @@ export function Sidebar({ className }: { className?: string }) {
                 href={item.href}
                 className={cn(
                   "group flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                  isActive 
-                    ? "bg-primary/10 text-primary" 
+                  isActive
+                    ? "bg-primary/10 text-primary"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 )}
               >
@@ -61,7 +60,7 @@ export function Sidebar({ className }: { className?: string }) {
             <p className="text-xs text-muted-foreground truncate">{session?.user?.email || "admin@plantation.com"}</p>
           </div>
         </div>
-        <button 
+        <button
           onClick={() => signOut({ callbackUrl: "/login" })}
           className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground hover:bg-red-50 hover:text-red-600 transition-colors"
         >
@@ -72,4 +71,3 @@ export function Sidebar({ className }: { className?: string }) {
     </div>
   );
 }
-```
