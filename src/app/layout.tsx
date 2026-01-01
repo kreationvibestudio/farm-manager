@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { Sidebar } from "@/components/layout/Sidebar";
+import { Sidebar, MobileNav } from "@/components/layout/Sidebar";
 import { AuthProvider } from "@/components/layout/AuthProvider";
 
 const geistSans = Geist({
@@ -30,6 +30,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AuthProvider>
+          <MobileNav />
           <div className="flex h-screen bg-background text-foreground">
             <aside className="hidden w-64 border-r border-border md:block">
               <Sidebar />
