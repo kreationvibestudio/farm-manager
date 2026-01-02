@@ -82,7 +82,7 @@ export function VehicleList({ vehicles, selectedVehicle, onSelect }: VehicleList
                 )}
                 <div className="flex items-center gap-1">
                   <Clock className="h-3 w-3" />
-                  {formatLastSeen(vehicle.location!.timestamp)}
+                  {formatLastSeen(vehicle.location!.recordedAt)}
                 </div>
               </div>
             ) : (

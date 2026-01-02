@@ -34,16 +34,16 @@ export async function POST(
 
     if (error) throw error
 
-    return NextResponse.json({
-      id: data.id,
-      vehicleId: data.vehicle_id,
-      latitude: Number(data.latitude),
-      longitude: Number(data.longitude),
-      speed: data.speed ? Number(data.speed) : undefined,
-      heading: data.heading ? Number(data.heading) : undefined,
-      accuracy: data.accuracy ? Number(data.accuracy) : undefined,
-      timestamp: data.recorded_at || data.timestamp,
-    }, { status: 201 })
+      return NextResponse.json({
+        id: data.id,
+        vehicleId: data.vehicle_id,
+        latitude: Number(data.latitude),
+        longitude: Number(data.longitude),
+        speed: data.speed ? Number(data.speed) : undefined,
+        heading: data.heading ? Number(data.heading) : undefined,
+        accuracy: data.accuracy ? Number(data.accuracy) : undefined,
+        recordedAt: data.recorded_at,
+      }, { status: 201 })
   } catch (error: any) {
     console.error('Error saving vehicle location:', error)
     return NextResponse.json(
@@ -76,16 +76,16 @@ export async function GET(
       )
     }
 
-    return NextResponse.json({
-      id: data.id,
-      vehicleId: data.vehicle_id,
-      latitude: Number(data.latitude),
-      longitude: Number(data.longitude),
-      speed: data.speed ? Number(data.speed) : undefined,
-      heading: data.heading ? Number(data.heading) : undefined,
-      accuracy: data.accuracy ? Number(data.accuracy) : undefined,
-      timestamp: data.recorded_at || data.timestamp,
-    })
+      return NextResponse.json({
+        id: data.id,
+        vehicleId: data.vehicle_id,
+        latitude: Number(data.latitude),
+        longitude: Number(data.longitude),
+        speed: data.speed ? Number(data.speed) : undefined,
+        heading: data.heading ? Number(data.heading) : undefined,
+        accuracy: data.accuracy ? Number(data.accuracy) : undefined,
+        recordedAt: data.recorded_at,
+      })
   } catch (error: any) {
     console.error('Error fetching vehicle location:', error)
     return NextResponse.json(

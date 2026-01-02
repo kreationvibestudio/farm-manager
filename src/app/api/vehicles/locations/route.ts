@@ -30,8 +30,8 @@ export async function GET() {
 
       const latestMap = new Map()
       locations?.forEach((loc: any) => {
-        const locTime = loc.recorded_at || loc.timestamp
-        const existingTime = latestMap.get(loc.vehicle_id)?.recorded_at || latestMap.get(loc.vehicle_id)?.timestamp
+        const locTime = loc.recorded_at
+        const existingTime = latestMap.get(loc.vehicle_id)?.recorded_at
         if (!latestMap.has(loc.vehicle_id) || 
             new Date(locTime) > new Date(existingTime)) {
           latestMap.set(loc.vehicle_id, loc)
@@ -46,22 +46,22 @@ export async function GET() {
         speed: loc.speed ? Number(loc.speed) : undefined,
         heading: loc.heading ? Number(loc.heading) : undefined,
         accuracy: loc.accuracy ? Number(loc.accuracy) : undefined,
-        timestamp: loc.recorded_at || loc.timestamp,
+        recordedAt: loc.recorded_at,
       }))
 
       return NextResponse.json(result)
     }
 
-    const result = (data || []).map((loc: any) => ({
-      id: loc.id || '',
-      vehicleId: loc.vehicle_id,
-      latitude: Number(loc.latitude),
-      longitude: Number(loc.longitude),
-      speed: loc.speed ? Number(loc.speed) : undefined,
-      heading: loc.heading ? Number(loc.heading) : undefined,
-      accuracy: loc.accuracy ? Number(loc.accuracy) : undefined,
-      timestamp: loc.recorded_at || loc.timestamp,
-    }))
+      const result = (data || []).map((loc: any) => ({
+        id: loc.id || '',
+        vehicleId: loc.vehicle_id,
+        latitude: Number(loc.latitude),
+        longitude: Number(loc.longitude),
+        speed: loc.speed ? Number(loc.speed) : undefined,
+        heading: loc.heading ? Number(loc.heading) : undefined,
+        accuracy: loc.accuracy ? Number(loc.accuracy) : undefined,
+        recordedAt: loc.recorded_at,
+      }))
 
     return NextResponse.json(result)
   } catch (error: any) {
