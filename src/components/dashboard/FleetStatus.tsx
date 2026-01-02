@@ -1,32 +1,45 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { vehicleStats } from '@/lib/data';
 
 export function FleetStatus() {
-    const [mounted, setMounted] = useState(false);
+    const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+    const containerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        setMounted(true);
-    }, []);
+        const updateDimensions = () => {
+            if (containerRef.current) {
+                const { width, height } = containerRef.current.getBoundingClientRect();
+                if (width > 0 && height > 0) {
+                    setDimensions({ width, height });
+                }
+            }
+        };
 
-    if (!mounted) {
-        return (
-            <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
-                <h3 className="mb-4 text-lg font-semibold">Fleet Status</h3>
-                <div className="h-48 min-h-[192px] flex items-center justify-center">
-                    <div className="text-muted-foreground">Loading chart...</div>
-                </div>
-            </div>
-        );
-    }
+        updateDimensions();
+        window.addEventListener('resize', updateDimensions);
+        
+        // Small delay to ensure container is rendered
+        const timer = setTimeout(updateDimensions, 100);
+
+        return () => {
+            window.removeEventListener('resize', updateDimensions);
+            clearTimeout(timer);
+        };
+    }, []);
 
     return (
         <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
             <h3 className="mb-4 text-lg font-semibold">Fleet Status</h3>
-            <div className="h-48 min-h-[192px] w-full">
-                <ResponsiveContainer width="100%" height="100%" minHeight={192}>
+            <div 
+                ref={containerRef}
+                className="h-48 min-h-[192px] w-full"
+                style={{ minHeight: '192px' }}
+            >
+                {dimensions.width > 0 && dimensions.height > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                         <Pie
                             data={vehicleStats}
@@ -53,7 +66,12 @@ export function FleetStatus() {
                             formatter={(value) => <span className="text-sm text-muted-foreground">{value}</span>}
                         />
                     </PieChart>
-                </ResponsiveContainer>
+                    </ResponsiveContainer>
+                ) : (
+                    <div className="flex items-center justify-center h-full">
+                        <div className="text-muted-foreground">Loading chart...</div>
+                    </div>
+                )}
             </div>
         </div>
     );

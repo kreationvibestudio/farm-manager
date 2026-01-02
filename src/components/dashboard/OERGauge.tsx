@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { RadialBarChart, RadialBar, ResponsiveContainer, PolarAngleAxis } from 'recharts';
 
 interface OERGaugeProps {
@@ -8,29 +8,42 @@ interface OERGaugeProps {
 }
 
 export function OERGauge({ value = 19.2 }: OERGaugeProps) {
-    const [mounted, setMounted] = useState(false);
+    const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+    const containerRef = useRef<HTMLDivElement>(null);
     const data = [{ name: 'OER', value, fill: '#16a34a' }];
 
     useEffect(() => {
-        setMounted(true);
-    }, []);
+        const updateDimensions = () => {
+            if (containerRef.current) {
+                const { width, height } = containerRef.current.getBoundingClientRect();
+                if (width > 0 && height > 0) {
+                    setDimensions({ width, height });
+                }
+            }
+        };
 
-    if (!mounted) {
-        return (
-            <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
-                <h3 className="mb-2 text-lg font-semibold">Oil Extraction Rate</h3>
-                <div className="h-48 min-h-[192px] relative flex items-center justify-center">
-                    <div className="text-muted-foreground">Loading chart...</div>
-                </div>
-            </div>
-        );
-    }
+        updateDimensions();
+        window.addEventListener('resize', updateDimensions);
+        
+        // Small delay to ensure container is rendered
+        const timer = setTimeout(updateDimensions, 100);
+
+        return () => {
+            window.removeEventListener('resize', updateDimensions);
+            clearTimeout(timer);
+        };
+    }, []);
 
     return (
         <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
             <h3 className="mb-2 text-lg font-semibold">Oil Extraction Rate</h3>
-            <div className="h-48 min-h-[192px] w-full relative">
-                <ResponsiveContainer width="100%" height="100%" minHeight={192}>
+            <div 
+                ref={containerRef}
+                className="h-48 min-h-[192px] w-full relative"
+                style={{ minHeight: '192px' }}
+            >
+                {dimensions.width > 0 && dimensions.height > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
                     <RadialBarChart
                         cx="50%"
                         cy="50%"
@@ -55,11 +68,18 @@ export function OERGauge({ value = 19.2 }: OERGaugeProps) {
                             animationEasing="ease-out"
                         />
                     </RadialBarChart>
-                </ResponsiveContainer>
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-4xl font-bold text-primary">{value}%</span>
-                    <span className="text-xs text-muted-foreground">Target: 22%</span>
-                </div>
+                    </ResponsiveContainer>
+                ) : (
+                    <div className="flex items-center justify-center h-full">
+                        <div className="text-muted-foreground">Loading chart...</div>
+                    </div>
+                )}
+                {dimensions.width > 0 && dimensions.height > 0 && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                        <span className="text-4xl font-bold text-primary">{value}%</span>
+                        <span className="text-xs text-muted-foreground">Target: 22%</span>
+                    </div>
+                )}
             </div>
         </div>
     );

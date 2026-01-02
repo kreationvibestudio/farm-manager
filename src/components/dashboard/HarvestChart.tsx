@@ -1,32 +1,45 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { harvestStats } from '@/lib/data';
 
 export function HarvestChart() {
-    const [mounted, setMounted] = useState(false);
+    const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+    const containerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        setMounted(true);
-    }, []);
+        const updateDimensions = () => {
+            if (containerRef.current) {
+                const { width, height } = containerRef.current.getBoundingClientRect();
+                if (width > 0 && height > 0) {
+                    setDimensions({ width, height });
+                }
+            }
+        };
 
-    if (!mounted) {
-        return (
-            <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
-                <h3 className="mb-4 text-lg font-semibold">Weekly Harvest Trend</h3>
-                <div className="h-64 min-h-[256px] flex items-center justify-center">
-                    <div className="text-muted-foreground">Loading chart...</div>
-                </div>
-            </div>
-        );
-    }
+        updateDimensions();
+        window.addEventListener('resize', updateDimensions);
+        
+        // Small delay to ensure container is rendered
+        const timer = setTimeout(updateDimensions, 100);
+
+        return () => {
+            window.removeEventListener('resize', updateDimensions);
+            clearTimeout(timer);
+        };
+    }, []);
 
     return (
         <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
             <h3 className="mb-4 text-lg font-semibold">Weekly Harvest Trend</h3>
-            <div className="h-64 min-h-[256px] w-full">
-                <ResponsiveContainer width="100%" height="100%" minHeight={256}>
+            <div 
+                ref={containerRef}
+                className="h-64 min-h-[256px] w-full"
+                style={{ minHeight: '256px' }}
+            >
+                {dimensions.width > 0 && dimensions.height > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={harvestStats} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                         <defs>
                             <linearGradient id="colorFfb" x1="0" y1="0" x2="0" y2="1">
@@ -54,7 +67,12 @@ export function HarvestChart() {
                             animationEasing="ease-out"
                         />
                     </AreaChart>
-                </ResponsiveContainer>
+                    </ResponsiveContainer>
+                ) : (
+                    <div className="flex items-center justify-center h-full">
+                        <div className="text-muted-foreground">Loading chart...</div>
+                    </div>
+                )}
             </div>
         </div>
     );
