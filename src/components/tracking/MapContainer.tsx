@@ -20,26 +20,7 @@ export function MapContainer({ vehicles, selectedVehicle, onVehicleSelect }: Map
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
 
-    // Wait for container to have dimensions
-    const checkDimensions = () => {
-      if (!mapContainer.current) return false;
-      const rect = mapContainer.current.getBoundingClientRect();
-      return rect.width > 0 && rect.height > 0;
-    };
-
-    // Check immediately
-    if (!checkDimensions()) {
-      // Wait a bit for layout to settle
-      const timer = setTimeout(() => {
-        if (!checkDimensions() || map.current) return;
-        initializeMap();
-      }, 100);
-      return () => clearTimeout(timer);
-    }
-
-    initializeMap();
-
-    function initializeMap() {
+    const initializeMap = () => {
       if (!mapContainer.current || map.current) return;
 
       const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || 'pk.eyJ1Ijoic2Rrb25jZXB0IiwiYSI6ImNtamtvaDNqejIzeHIzZ3F4bXo0bXN3MDgifQ.GAkm6kW5nBlWe8H8RbT0rg';
@@ -62,8 +43,10 @@ export function MapContainer({ vehicles, selectedVehicle, onVehicleSelect }: Map
 
         map.current.on('load', () => {
           setMapLoaded(true);
-          // Force resize to ensure tiles load
-          map.current?.resize();
+          // Force resize after a short delay to ensure container is ready
+          setTimeout(() => {
+            map.current?.resize();
+          }, 100);
         });
 
         map.current.on('error', (e) => {
@@ -72,7 +55,9 @@ export function MapContainer({ vehicles, selectedVehicle, onVehicleSelect }: Map
 
         // Handle resize
         const handleResize = () => {
-          map.current?.resize();
+          if (map.current) {
+            map.current.resize();
+          }
         };
         window.addEventListener('resize', handleResize);
 
@@ -83,7 +68,29 @@ export function MapContainer({ vehicles, selectedVehicle, onVehicleSelect }: Map
       } catch (error) {
         console.error('Failed to initialize map:', error);
       }
-    }
+    };
+
+    // Use requestAnimationFrame to ensure DOM is ready
+    const rafId = requestAnimationFrame(() => {
+      // Check if container has dimensions
+      if (mapContainer.current) {
+        const rect = mapContainer.current.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) {
+          initializeMap();
+        } else {
+          // Wait a bit more if dimensions aren't ready
+          setTimeout(initializeMap, 200);
+        }
+      }
+    });
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      if (map.current) {
+        map.current.remove();
+        map.current = null;
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -162,6 +169,6 @@ export function MapContainer({ vehicles, selectedVehicle, onVehicleSelect }: Map
   }, [vehicles, mapLoaded, selectedVehicle, onVehicleSelect]);
 
   return (
-    <div ref={mapContainer} className="w-full h-full min-h-[600px]" />
+    <div ref={mapContainer} className="w-full h-full" style={{ minHeight: '100%' }} />
   );
 }

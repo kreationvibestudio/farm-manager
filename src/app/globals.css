@@ -92,8 +92,12 @@ body {
   height: 100% !important;
 }
 
-/* Fix for map loading issues */
 .mapboxgl-canvas-container {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.mapboxgl-canvas {
   width: 100% !important;
   height: 100% !important;
 }

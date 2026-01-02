@@ -57,6 +57,17 @@ export default function TrackingPage() {
 
   const vehiclesOnMap = vehiclesWithLocations.filter(v => v.location);
 
+  if (isLoading && vehicles.length === 0) {
+    return (
+      <div className="flex min-h-screen flex-col bg-background items-center justify-center">
+        <div className="text-center">
+          <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+          <p className="text-muted-foreground">Loading vehicles and map...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <main className="flex-1 flex flex-col">
@@ -111,8 +122,14 @@ export default function TrackingPage() {
           </div>
         </div>
 
-        <div className="flex-1 flex min-h-0">
-          <div className="flex-1 relative min-h-[600px]">
+        {storeError && (
+          <div className="mx-6 mt-4 rounded-lg border border-red-200 bg-red-50 p-4 text-red-800">
+            Error loading vehicles: {storeError}
+          </div>
+        )}
+
+        <div className="flex-1 flex min-h-0" style={{ height: 'calc(100vh - 300px)' }}>
+          <div className="flex-1 relative" style={{ minHeight: '100%' }}>
             <MapContainer
               vehicles={vehiclesWithLocations}
               selectedVehicle={selectedVehicle}
