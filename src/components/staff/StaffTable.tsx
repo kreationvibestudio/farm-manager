@@ -3,7 +3,7 @@
 import { Staff } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, User } from "lucide-react";
+import { Edit, UserMinus, User } from "lucide-react";
 
 interface StaffTableProps {
     staff: Staff[];
@@ -63,17 +63,21 @@ export function StaffTable({ staff, onEdit, onDelete }: StaffTableProps) {
                                                 variant="ghost"
                                                 size="sm"
                                                 onClick={() => onEdit(member)}
-                                                className="h-8 w-8 p-0"
+                                                className="h-8 px-3"
+                                                title="Edit staff member"
                                             >
-                                                <Edit className="h-4 w-4" />
+                                                <Edit className="h-4 w-4 mr-1" />
+                                                Edit
                                             </Button>
                                             <Button
-                                                variant="ghost"
+                                                variant="outline"
                                                 size="sm"
                                                 onClick={() => onDelete(member.id)}
-                                                className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                                                className="h-8 px-3 text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground"
+                                                title="Fire staff member"
                                             >
-                                                <Trash2 className="h-4 w-4" />
+                                                <UserMinus className="h-4 w-4 mr-1" />
+                                                Fire
                                             </Button>
                                         </div>
                                     </td>

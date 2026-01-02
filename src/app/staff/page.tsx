@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { StaffTable } from "@/components/staff/StaffTable";
 import { AddStaffModal } from "@/components/staff/AddStaffModal";
 import { Button } from "@/components/ui/button";
-import { Plus, Users } from "lucide-react";
+import { UserPlus, Users, UserMinus } from "lucide-react";
 import { Staff } from "@/types";
 import { useAppStore } from "@/lib/store";
 
@@ -45,7 +45,9 @@ export default function StaffPage() {
     };
 
     const handleDelete = async (id: string) => {
-        if (confirm("Are you sure you want to delete this staff member?")) {
+        const staffMember = staff.find(s => s.id === id);
+        const staffName = staffMember?.name || 'this staff member';
+        if (confirm(`Are you sure you want to fire ${staffName}? This action cannot be undone.`)) {
             await deleteStaff(id);
         }
     };
@@ -75,9 +77,12 @@ export default function StaffPage() {
                             Manage your plantation staff members and their roles.
                         </p>
                     </div>
-                    <Button onClick={() => setShowAddModal(true)}>
-                        <Plus className="h-4 w-4 mr-2" />
-                        Add Staff Member
+                    <Button 
+                        onClick={() => setShowAddModal(true)}
+                        className="gap-2 shadow-lg shadow-secondary/20 bg-secondary hover:bg-secondary/90 text-secondary-foreground"
+                    >
+                        <UserPlus className="h-4 w-4" />
+                        Hire Staff
                     </Button>
                 </div>
 
