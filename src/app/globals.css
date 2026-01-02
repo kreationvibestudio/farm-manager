@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import 'mapbox-gl/dist/mapbox-gl.css';
 
 @theme {
   --color-background: var(--background);
@@ -75,4 +76,12 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans), sans-serif;
   -webkit-font-smoothing: antialiased;
+}
+
+.vehicle-marker {
+  transition: transform 0.2s;
+}
+
+.vehicle-marker:hover {
+  transform: scale(1.1);
 }

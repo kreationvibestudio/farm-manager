@@ -51,3 +51,19 @@ export interface DailySummary {
     activeVehicles: number;
     alerts: number;
 }
+
+export interface VehicleLocation {
+    id: string;
+    vehicleId: string;
+    latitude: number;
+    longitude: number;
+    speed?: number;
+    heading?: number;
+    accuracy?: number;
+    timestamp: string;
+}
+
+export interface VehicleWithLocation extends Vehicle {
+    location?: VehicleLocation;
+    lastSeen?: string;
+}

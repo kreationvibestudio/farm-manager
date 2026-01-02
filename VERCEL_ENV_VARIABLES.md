@@ -76,6 +76,13 @@ For each variable below:
 
 ---
 
+### 8. Mapbox Token
+**Name:** `NEXT_PUBLIC_MAPBOX_TOKEN`  
+**Value:** `pk.eyJ1Ijoic2Rrb25jZXB0IiwiYSI6ImNtamtvaDNqejIzeHIzZ3F4bXo0bXN3MDgifQ.GAkm6kW5nBlWe8H8RbT0rg`  
+**Environments:** ✅ Production ✅ Preview ✅ Development
+
+---
+
 ## ✅ Verification Checklist
 
 After adding all variables:
