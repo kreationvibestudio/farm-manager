@@ -9,7 +9,7 @@ import { useAppStore } from "@/lib/store";
 import { VehicleLocation, VehicleWithLocation } from "@/types";
 
 export default function TrackingPage() {
-  const { vehicles, fetchVehicles } = useAppStore();
+  const { vehicles, fetchVehicles, isLoading: storeLoading, error: storeError } = useAppStore();
   const [locations, setLocations] = useState<Map<string, VehicleLocation>>(new Map());
   const [selectedVehicle, setSelectedVehicle] = useState<string | null>(null);
   const [isAutoRefresh, setIsAutoRefresh] = useState(true);
@@ -57,7 +57,7 @@ export default function TrackingPage() {
 
   const vehiclesOnMap = vehiclesWithLocations.filter(v => v.location);
 
-  if (isLoading && vehicles.length === 0) {
+  if ((storeLoading || isLoading) && vehicles.length === 0) {
     return (
       <div className="flex min-h-screen flex-col bg-background items-center justify-center">
         <div className="text-center">
