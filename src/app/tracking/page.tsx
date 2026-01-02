@@ -52,7 +52,7 @@ export default function TrackingPage() {
   const vehiclesWithLocations: VehicleWithLocation[] = vehicles.map(vehicle => ({
     ...vehicle,
     location: locations.get(vehicle.id),
-    lastSeen: locations.get(vehicle.id)?.timestamp,
+    lastSeen: locations.get(vehicle.id)?.recordedAt,
   }));
 
   const vehiclesOnMap = vehiclesWithLocations.filter(v => v.location);
@@ -111,8 +111,8 @@ export default function TrackingPage() {
           </div>
         </div>
 
-        <div className="flex-1 flex">
-          <div className="flex-1 relative">
+        <div className="flex-1 flex min-h-0">
+          <div className="flex-1 relative min-h-[600px]">
             <MapContainer
               vehicles={vehiclesWithLocations}
               selectedVehicle={selectedVehicle}

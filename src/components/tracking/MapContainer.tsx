@@ -20,23 +20,70 @@ export function MapContainer({ vehicles, selectedVehicle, onVehicleSelect }: Map
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
 
-    const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || 'pk.eyJ1Ijoic2Rrb25jZXB0IiwiYSI6ImNtamtvaDNqejIzeHIzZ3F4bXo0bXN3MDgifQ.GAkm6kW5nBlWe8H8RbT0rg';
-    mapboxgl.accessToken = mapboxToken;
-    
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/satellite-streets-v12',
-      center: [5.59554, 6.5702], // Plantation location: 6.5702°N, 5.59554°E
-      zoom: 13,
-    });
-
-    map.current.on('load', () => {
-      setMapLoaded(true);
-    });
-
-    return () => {
-      map.current?.remove();
+    // Wait for container to have dimensions
+    const checkDimensions = () => {
+      if (!mapContainer.current) return false;
+      const rect = mapContainer.current.getBoundingClientRect();
+      return rect.width > 0 && rect.height > 0;
     };
+
+    // Check immediately
+    if (!checkDimensions()) {
+      // Wait a bit for layout to settle
+      const timer = setTimeout(() => {
+        if (!checkDimensions() || map.current) return;
+        initializeMap();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+
+    initializeMap();
+
+    function initializeMap() {
+      if (!mapContainer.current || map.current) return;
+
+      const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || 'pk.eyJ1Ijoic2Rrb25jZXB0IiwiYSI6ImNtamtvaDNqejIzeHIzZ3F4bXo0bXN3MDgifQ.GAkm6kW5nBlWe8H8RbT0rg';
+      
+      if (!mapboxToken) {
+        console.error('Mapbox token is missing');
+        return;
+      }
+
+      mapboxgl.accessToken = mapboxToken;
+      
+      try {
+        map.current = new mapboxgl.Map({
+          container: mapContainer.current,
+          style: 'mapbox://styles/mapbox/satellite-streets-v12',
+          center: [5.59554, 6.5702], // Plantation location: 6.5702°N, 5.59554°E
+          zoom: 13,
+          antialias: true,
+        });
+
+        map.current.on('load', () => {
+          setMapLoaded(true);
+          // Force resize to ensure tiles load
+          map.current?.resize();
+        });
+
+        map.current.on('error', (e) => {
+          console.error('Mapbox error:', e);
+        });
+
+        // Handle resize
+        const handleResize = () => {
+          map.current?.resize();
+        };
+        window.addEventListener('resize', handleResize);
+
+        return () => {
+          window.removeEventListener('resize', handleResize);
+          map.current?.remove();
+        };
+      } catch (error) {
+        console.error('Failed to initialize map:', error);
+      }
+    }
   }, []);
 
   useEffect(() => {
@@ -115,6 +162,6 @@ export function MapContainer({ vehicles, selectedVehicle, onVehicleSelect }: Map
   }, [vehicles, mapLoaded, selectedVehicle, onVehicleSelect]);
 
   return (
-    <div ref={mapContainer} className="w-full h-full" />
+    <div ref={mapContainer} className="w-full h-full min-h-[600px]" />
   );
 }

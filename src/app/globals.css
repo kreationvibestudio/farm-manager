@@ -85,3 +85,15 @@ body {
 .vehicle-marker:hover {
   transform: scale(1.1);
 }
+
+/* Ensure map container has proper dimensions */
+.mapboxgl-map {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Fix for map loading issues */
+.mapboxgl-canvas-container {
+  width: 100% !important;
+  height: 100% !important;
+}
