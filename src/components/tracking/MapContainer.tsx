@@ -146,18 +146,11 @@ export function MapContainer({ vehicles, selectedVehicle, onVehicleSelect }: Map
         });
       });
 
-      if (isSelected && map.current) {
-        map.current.flyTo({
-          center: [longitude, latitude],
-          zoom: 15,
-        });
-      }
-
       markers.current.set(vehicle.id, marker);
     });
 
-    // Fit bounds to show all vehicles
-    if (vehicles.filter(v => v.location).length > 0) {
+    // Fit bounds to show all vehicles (only if no vehicle is selected)
+    if (!selectedVehicle && vehicles.filter(v => v.location).length > 0) {
       const bounds = new mapboxgl.LngLatBounds();
       vehicles.forEach(vehicle => {
         if (vehicle.location) {
@@ -166,7 +159,23 @@ export function MapContainer({ vehicles, selectedVehicle, onVehicleSelect }: Map
       });
       map.current.fitBounds(bounds, { padding: 50 });
     }
-  }, [vehicles, mapLoaded, selectedVehicle, onVehicleSelect]);
+  }, [vehicles, mapLoaded, onVehicleSelect]);
+
+  // Separate effect to handle flying to selected vehicle
+  useEffect(() => {
+    if (!map.current || !mapLoaded || !selectedVehicle) return;
+
+    const selectedVehicleData = vehicles.find(v => v.id === selectedVehicle);
+    if (selectedVehicleData?.location) {
+      const { latitude, longitude } = selectedVehicleData.location;
+      map.current.flyTo({
+        center: [longitude, latitude],
+        zoom: 15,
+        duration: 1500, // Smooth 1.5 second animation
+        essential: true, // Animation is essential for accessibility
+      });
+    }
+  }, [selectedVehicle, mapLoaded, vehicles]);
 
   return (
     <div ref={mapContainer} className="w-full h-full" style={{ minHeight: '100%' }} />
