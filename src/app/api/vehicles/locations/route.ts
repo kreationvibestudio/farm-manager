@@ -24,14 +24,16 @@ export async function GET() {
         .from('vehicle_locations')
         .select('*')
         .in('vehicle_id', vehicleIds)
-        .order('timestamp', { ascending: false })
+        .order('recorded_at', { ascending: false })
 
       if (locError) throw locError
 
       const latestMap = new Map()
       locations?.forEach((loc: any) => {
+        const locTime = loc.recorded_at || loc.timestamp
+        const existingTime = latestMap.get(loc.vehicle_id)?.recorded_at || latestMap.get(loc.vehicle_id)?.timestamp
         if (!latestMap.has(loc.vehicle_id) || 
-            new Date(loc.timestamp) > new Date(latestMap.get(loc.vehicle_id).timestamp)) {
+            new Date(locTime) > new Date(existingTime)) {
           latestMap.set(loc.vehicle_id, loc)
         }
       })
@@ -44,7 +46,7 @@ export async function GET() {
         speed: loc.speed ? Number(loc.speed) : undefined,
         heading: loc.heading ? Number(loc.heading) : undefined,
         accuracy: loc.accuracy ? Number(loc.accuracy) : undefined,
-        timestamp: loc.timestamp,
+        timestamp: loc.recorded_at || loc.timestamp,
       }))
 
       return NextResponse.json(result)
@@ -58,7 +60,7 @@ export async function GET() {
       speed: loc.speed ? Number(loc.speed) : undefined,
       heading: loc.heading ? Number(loc.heading) : undefined,
       accuracy: loc.accuracy ? Number(loc.accuracy) : undefined,
-      timestamp: loc.timestamp,
+      timestamp: loc.recorded_at || loc.timestamp,
     }))
 
     return NextResponse.json(result)

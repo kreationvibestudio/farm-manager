@@ -11,14 +11,14 @@ CREATE TABLE IF NOT EXISTS vehicle_locations (
   speed NUMERIC(5, 2),
   heading NUMERIC(5, 2),
   accuracy NUMERIC(5, 2),
-  timestamp TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  recorded_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- Indexes for better query performance
 CREATE INDEX IF NOT EXISTS idx_vehicle_locations_vehicle_id ON vehicle_locations(vehicle_id);
-CREATE INDEX IF NOT EXISTS idx_vehicle_locations_timestamp ON vehicle_locations(timestamp DESC);
-CREATE INDEX IF NOT EXISTS idx_vehicle_locations_vehicle_timestamp ON vehicle_locations(vehicle_id, timestamp DESC);
+CREATE INDEX IF NOT EXISTS idx_vehicle_locations_recorded_at ON vehicle_locations(recorded_at DESC);
+CREATE INDEX IF NOT EXISTS idx_vehicle_locations_vehicle_recorded_at ON vehicle_locations(vehicle_id, recorded_at DESC);
 
 -- Function to get latest location for each vehicle
 CREATE OR REPLACE FUNCTION get_latest_vehicle_locations()
@@ -28,7 +28,7 @@ RETURNS TABLE (
   longitude NUMERIC,
   speed NUMERIC,
   heading NUMERIC,
-  timestamp TIMESTAMP WITH TIME ZONE
+  recorded_at TIMESTAMP WITH TIME ZONE
 ) AS $$
 BEGIN
   RETURN QUERY
@@ -38,9 +38,9 @@ BEGIN
     vl.longitude,
     vl.speed,
     vl.heading,
-    vl.timestamp
+    vl.recorded_at
   FROM vehicle_locations vl
-  ORDER BY vl.vehicle_id, vl.timestamp DESC;
+  ORDER BY vl.vehicle_id, vl.recorded_at DESC;
 END;
 $$ LANGUAGE plpgsql;
 

@@ -42,7 +42,7 @@ export async function POST(
       speed: data.speed ? Number(data.speed) : undefined,
       heading: data.heading ? Number(data.heading) : undefined,
       accuracy: data.accuracy ? Number(data.accuracy) : undefined,
-      timestamp: data.timestamp,
+      timestamp: data.recorded_at || data.timestamp,
     }, { status: 201 })
   } catch (error: any) {
     console.error('Error saving vehicle location:', error)
@@ -65,7 +65,7 @@ export async function GET(
       .from('vehicle_locations')
       .select('*')
       .eq('vehicle_id', id)
-      .order('timestamp', { ascending: false })
+      .order('recorded_at', { ascending: false })
       .limit(1)
       .single()
 
@@ -84,7 +84,7 @@ export async function GET(
       speed: data.speed ? Number(data.speed) : undefined,
       heading: data.heading ? Number(data.heading) : undefined,
       accuracy: data.accuracy ? Number(data.accuracy) : undefined,
-      timestamp: data.timestamp,
+      timestamp: data.recorded_at || data.timestamp,
     })
   } catch (error: any) {
     console.error('Error fetching vehicle location:', error)
