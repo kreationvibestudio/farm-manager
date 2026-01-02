@@ -29,8 +29,12 @@ export interface HarvestLog {
     blockId: string; // e.g., "Block A"
     weightKg: number;
     supervisorId: string;
+    supervisorName?: string | null; // Resolved name from staff table
     driverId?: string; // If transport is tracked
+    driverName?: string | null; // Resolved name from staff table
     vehicleId?: string;
+    vehicleName?: string | null; // Resolved vehicle name
+    vehicleLicensePlate?: string | null; // Resolved license plate
     notes?: string;
 }
 

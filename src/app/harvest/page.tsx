@@ -40,13 +40,14 @@ export default function HarvestPage() {
 
     const handleExport = () => {
         // Generate CSV content
-        const headers = ["Date", "Block", "Weight (kg)", "Supervisor", "Vehicle"];
+        const headers = ["Date", "Block", "Weight (kg)", "Supervisor", "Driver", "Vehicle"];
         const rows = harvestLogs.map(log => [
             log.date,
             log.blockId,
             log.weightKg.toString(),
-            log.supervisorId,
-            log.vehicleId || ""
+            log.supervisorName || log.supervisorId || "",
+            log.driverName || log.driverId || "",
+            log.vehicleLicensePlate || log.vehicleName || log.vehicleId || ""
         ]);
 
         const csvContent = [headers, ...rows].map(row => row.join(",")).join("\n");

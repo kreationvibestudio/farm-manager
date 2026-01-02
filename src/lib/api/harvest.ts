@@ -4,23 +4,78 @@ import { HarvestLog } from '@/types'
 export async function getHarvestLogs(): Promise<HarvestLog[]> {
   try {
     const supabase = await createClient()
+    
+    // Fetch harvest logs with joins
     const { data, error } = await supabase
       .from('harvest_logs')
-      .select('*')
+      .select(`
+        *,
+        supervisor:staff!supervisor_id(id, name),
+        driver:staff!driver_id(id, name),
+        vehicle:vehicles!vehicle_id(id, name, license_plate)
+      `)
       .order('date', { ascending: false })
 
     if (error) {
       console.error('Supabase error fetching harvest logs:', error)
-      return [] // Return empty array instead of throwing
+      // Fallback: try without joins
+      const { data: fallbackData, error: fallbackError } = await supabase
+        .from('harvest_logs')
+        .select('*')
+        .order('date', { ascending: false })
+      
+      if (fallbackError) {
+        return []
+      }
+      
+      // Fetch staff and vehicles separately and join manually
+      const staffIds = [...new Set([
+        ...fallbackData.map((log: any) => log.supervisor_id).filter(Boolean),
+        ...fallbackData.map((log: any) => log.driver_id).filter(Boolean),
+      ])]
+      const vehicleIds = [...new Set(fallbackData.map((log: any) => log.vehicle_id).filter(Boolean))]
+      
+      const { data: staffData } = await supabase
+        .from('staff')
+        .select('id, name')
+        .in('id', staffIds)
+      
+      const { data: vehicleData } = await supabase
+        .from('vehicles')
+        .select('id, name, license_plate')
+        .in('id', vehicleIds)
+      
+      const staffMap = new Map((staffData || []).map((s: any) => [s.id, s.name]))
+      const vehicleMap = new Map((vehicleData || []).map((v: any) => [v.id, { name: v.name, license_plate: v.license_plate }]))
+      
+      return (fallbackData || []).map((log: any) => ({
+        id: log.id,
+        date: log.date,
+        blockId: log.block_id,
+        weightKg: Number(log.weight_kg),
+        supervisorId: log.supervisor_id || '',
+        supervisorName: log.supervisor_id ? staffMap.get(log.supervisor_id) || null : null,
+        driverId: log.driver_id || undefined,
+        driverName: log.driver_id ? staffMap.get(log.driver_id) || null : null,
+        vehicleId: log.vehicle_id || undefined,
+        vehicleName: log.vehicle_id ? vehicleMap.get(log.vehicle_id)?.name || null : null,
+        vehicleLicensePlate: log.vehicle_id ? vehicleMap.get(log.vehicle_id)?.license_plate || null : null,
+        notes: log.notes,
+      }))
     }
-    return (data || []).map(log => ({
+    
+    return (data || []).map((log: any) => ({
       id: log.id,
       date: log.date,
       blockId: log.block_id,
       weightKg: Number(log.weight_kg),
       supervisorId: log.supervisor_id || '',
-      driverId: log.driver_id,
-      vehicleId: log.vehicle_id,
+      supervisorName: log.supervisor?.name || null,
+      driverId: log.driver_id || undefined,
+      driverName: log.driver?.name || null,
+      vehicleId: log.vehicle_id || undefined,
+      vehicleName: log.vehicle?.name || null,
+      vehicleLicensePlate: log.vehicle?.license_plate || null,
       notes: log.notes,
     }))
   } catch (error) {

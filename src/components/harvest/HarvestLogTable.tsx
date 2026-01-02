@@ -55,13 +55,23 @@ export function HarvestLogTable({ logs, onDelete }: HarvestLogTableProps) {
                                     </div>
                                 </td>
                                 <td className="p-4 text-muted-foreground text-xs space-y-1">
-                                    <div className="flex items-center gap-1">
-                                        <User className="h-3 w-3" /> Supervisor: <span className="text-foreground">{log.supervisorId}</span>
-                                    </div>
-                                    {log.vehicleId && (
+                                    {log.supervisorName && (
                                         <div className="flex items-center gap-1">
-                                            <Truck className="h-3 w-3" /> Vehicle: <span className="text-foreground">{log.vehicleId}</span>
+                                            <User className="h-3 w-3" /> Supervisor: <span className="text-foreground font-medium">{log.supervisorName}</span>
                                         </div>
+                                    )}
+                                    {log.driverName && (
+                                        <div className="flex items-center gap-1">
+                                            <User className="h-3 w-3" /> Driver: <span className="text-foreground font-medium">{log.driverName}</span>
+                                        </div>
+                                    )}
+                                    {log.vehicleLicensePlate && (
+                                        <div className="flex items-center gap-1">
+                                            <Truck className="h-3 w-3" /> Vehicle: <span className="text-foreground font-medium">{log.vehicleLicensePlate}</span>
+                                        </div>
+                                    )}
+                                    {!log.supervisorName && !log.driverName && !log.vehicleLicensePlate && (
+                                        <span className="text-muted-foreground">No details</span>
                                     )}
                                 </td>
                                 <td className="p-4 text-right">

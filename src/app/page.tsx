@@ -107,7 +107,7 @@ export default function Home() {
                     date={new Date(log.date).toLocaleDateString()} 
                     block={log.blockId} 
                     weight={log.weightKg.toLocaleString()} 
-                    user={log.supervisorId} 
+                    user={log.supervisorName || log.supervisorId || 'N/A'} 
                   />
                 ))}
                 {harvestLogs.length === 0 && (
