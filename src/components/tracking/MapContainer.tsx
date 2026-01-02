@@ -26,7 +26,7 @@ export function MapContainer({ vehicles, selectedVehicle, onVehicleSelect }: Map
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
       style: 'mapbox://styles/mapbox/satellite-streets-v12',
-      center: [3.3792, 6.5244], // Default to Lagos, Nigeria - adjust to your plantation location
+      center: [5.59554, 6.5702], // Plantation location: 6.5702°N, 5.59554°E
       zoom: 13,
     });
 

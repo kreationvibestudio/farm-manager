@@ -20,13 +20,13 @@ if (!supabaseUrl || !supabaseServiceKey) {
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-// Sample GPS coordinates (Lagos, Nigeria area - adjust to your plantation location)
+// Sample GPS coordinates (Plantation location: 6.5702°N, 5.59554°E)
 const sampleLocations = [
-  { lat: 6.5244, lng: 3.3792, name: 'Main Gate' },
-  { lat: 6.5300, lng: 3.3850, name: 'Block A' },
-  { lat: 6.5200, lng: 3.3750, name: 'Block B' },
-  { lat: 6.5350, lng: 3.3900, name: 'Block C' },
-  { lat: 6.5150, lng: 3.3700, name: 'Storage Area' },
+  { lat: 6.5702, lng: 5.59554, name: 'Main Gate' },
+  { lat: 6.5750, lng: 5.6000, name: 'Block A' },
+  { lat: 6.5650, lng: 5.5900, name: 'Block B' },
+  { lat: 6.5800, lng: 5.6050, name: 'Block C' },
+  { lat: 6.5600, lng: 5.5850, name: 'Storage Area' },
 ];
 
 async function sendTestGPSData() {
