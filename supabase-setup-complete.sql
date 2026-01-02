@@ -75,6 +75,12 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
+-- Drop existing triggers if they exist (to avoid errors on re-run)
+DROP TRIGGER IF EXISTS update_inventory_items_updated_at ON inventory_items;
+DROP TRIGGER IF EXISTS update_vehicles_updated_at ON vehicles;
+DROP TRIGGER IF EXISTS update_staff_updated_at ON staff;
+DROP TRIGGER IF EXISTS update_harvest_logs_updated_at ON harvest_logs;
+
 -- Add triggers for updated_at
 CREATE TRIGGER update_inventory_items_updated_at BEFORE UPDATE ON inventory_items
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -93,6 +99,12 @@ ALTER TABLE inventory_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE vehicles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE staff ENABLE ROW LEVEL SECURITY;
 ALTER TABLE harvest_logs ENABLE ROW LEVEL SECURITY;
+
+-- Drop existing policies if they exist (to avoid errors on re-run)
+DROP POLICY IF EXISTS "Allow all for authenticated users" ON inventory_items;
+DROP POLICY IF EXISTS "Allow all for authenticated users" ON vehicles;
+DROP POLICY IF EXISTS "Allow all for authenticated users" ON staff;
+DROP POLICY IF EXISTS "Allow all for authenticated users" ON harvest_logs;
 
 -- Create policies (allow all for authenticated users)
 CREATE POLICY "Allow all for authenticated users" ON inventory_items
