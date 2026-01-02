@@ -2,22 +2,30 @@ import { createClient } from '@/lib/supabase/server'
 import { InventoryItem } from '@/types'
 
 export async function getInventoryItems(): Promise<InventoryItem[]> {
-  const supabase = await createClient()
-  const { data, error } = await supabase
-    .from('inventory_items')
-    .select('*')
-    .order('name', { ascending: true })
+  try {
+    const supabase = await createClient()
+    const { data, error } = await supabase
+      .from('inventory_items')
+      .select('*')
+      .order('name', { ascending: true })
 
-  if (error) throw error
-  return (data || []).map(item => ({
-    id: item.id,
-    name: item.name,
-    category: item.category as InventoryItem['category'],
-    quantity: item.quantity,
-    unit: item.unit,
-    minLevel: item.min_level,
-    lastUpdated: item.last_updated,
-  }))
+    if (error) {
+      console.error('Supabase error fetching inventory:', error)
+      return [] // Return empty array instead of throwing
+    }
+    return (data || []).map(item => ({
+      id: item.id,
+      name: item.name,
+      category: item.category as InventoryItem['category'],
+      quantity: item.quantity,
+      unit: item.unit,
+      minLevel: item.min_level,
+      lastUpdated: item.last_updated,
+    }))
+  } catch (error) {
+    console.error('Error fetching inventory items:', error)
+    return [] // Return empty array on error
+  }
 }
 
 export async function addInventoryItem(item: Omit<InventoryItem, 'id' | 'lastUpdated'>) {

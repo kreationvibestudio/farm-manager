@@ -2,23 +2,31 @@ import { createClient } from '@/lib/supabase/server'
 import { HarvestLog } from '@/types'
 
 export async function getHarvestLogs(): Promise<HarvestLog[]> {
-  const supabase = await createClient()
-  const { data, error } = await supabase
-    .from('harvest_logs')
-    .select('*')
-    .order('date', { ascending: false })
+  try {
+    const supabase = await createClient()
+    const { data, error } = await supabase
+      .from('harvest_logs')
+      .select('*')
+      .order('date', { ascending: false })
 
-  if (error) throw error
-  return (data || []).map(log => ({
-    id: log.id,
-    date: log.date,
-    blockId: log.block_id,
-    weightKg: Number(log.weight_kg),
-    supervisorId: log.supervisor_id || '',
-    driverId: log.driver_id,
-    vehicleId: log.vehicle_id,
-    notes: log.notes,
-  }))
+    if (error) {
+      console.error('Supabase error fetching harvest logs:', error)
+      return [] // Return empty array instead of throwing
+    }
+    return (data || []).map(log => ({
+      id: log.id,
+      date: log.date,
+      blockId: log.block_id,
+      weightKg: Number(log.weight_kg),
+      supervisorId: log.supervisor_id || '',
+      driverId: log.driver_id,
+      vehicleId: log.vehicle_id,
+      notes: log.notes,
+    }))
+  } catch (error) {
+    console.error('Error fetching harvest logs:', error)
+    return [] // Return empty array on error
+  }
 }
 
 export async function addHarvestLog(log: Omit<HarvestLog, 'id'>) {

@@ -2,22 +2,30 @@ import { createClient } from '@/lib/supabase/server'
 import { Vehicle } from '@/types'
 
 export async function getVehicles(): Promise<Vehicle[]> {
-  const supabase = await createClient()
-  const { data, error } = await supabase
-    .from('vehicles')
-    .select('*')
-    .order('name', { ascending: true })
+  try {
+    const supabase = await createClient()
+    const { data, error } = await supabase
+      .from('vehicles')
+      .select('*')
+      .order('name', { ascending: true })
 
-  if (error) throw error
-  return (data || []).map(v => ({
-    id: v.id,
-    name: v.name,
-    type: v.type as Vehicle['type'],
-    status: v.status as Vehicle['status'],
-    licensePlate: v.license_plate,
-    lastMaintenance: v.last_maintenance,
-    currentDriverId: v.current_driver_id,
-  }))
+    if (error) {
+      console.error('Supabase error fetching vehicles:', error)
+      return [] // Return empty array instead of throwing
+    }
+    return (data || []).map(v => ({
+      id: v.id,
+      name: v.name,
+      type: v.type as Vehicle['type'],
+      status: v.status as Vehicle['status'],
+      licensePlate: v.license_plate,
+      lastMaintenance: v.last_maintenance,
+      currentDriverId: v.current_driver_id,
+    }))
+  } catch (error) {
+    console.error('Error fetching vehicles:', error)
+    return [] // Return empty array on error
+  }
 }
 
 export async function addVehicle(vehicle: Omit<Vehicle, 'id'>) {
