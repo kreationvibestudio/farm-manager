@@ -8,30 +8,30 @@
 -- Clear existing data (optional - comment out if you want to keep existing data)
 -- TRUNCATE TABLE harvest_logs, inventory_items, vehicles, staff CASCADE;
 
--- Insert Staff Members
+-- Insert Staff Members (Nigerian Names)
 INSERT INTO staff (name, role, contact) VALUES
-  ('John Doe', 'Manager', '+234 801 234 5678'),
-  ('Jane Smith', 'Supervisor', '+234 802 345 6789'),
-  ('Bob Wilson', 'Driver', '+234 803 456 7890'),
-  ('Mary Johnson', 'Supervisor', '+234 804 567 8901'),
-  ('David Brown', 'Driver', '+234 805 678 9012'),
-  ('Sarah Williams', 'Driver', '+234 806 789 0123'),
-  ('Michael Davis', 'Worker', '+234 807 890 1234'),
-  ('Emily Garcia', 'Worker', '+234 808 901 2345'),
-  ('James Martinez', 'Worker', '+234 809 012 3456'),
-  ('Lisa Anderson', 'Supervisor', '+234 810 123 4567')
+  ('Chukwuemeka Okafor', 'Manager', '+234 801 234 5678'),
+  ('Oluwaseun Adeyemi', 'Supervisor', '+234 802 345 6789'),
+  ('Chinedu Nwosu', 'Driver', '+234 803 456 7890'),
+  ('Ngozi Okonkwo', 'Supervisor', '+234 804 567 8901'),
+  ('Adebayo Ibrahim', 'Driver', '+234 805 678 9012'),
+  ('Ifeoma Eze', 'Driver', '+234 806 789 0123'),
+  ('Emeka Nwankwo', 'Worker', '+234 807 890 1234'),
+  ('Fatima Bello', 'Worker', '+234 808 901 2345'),
+  ('Segun Ojo', 'Worker', '+234 809 012 3456'),
+  ('Amina Mohammed', 'Supervisor', '+234 810 123 4567')
 ON CONFLICT DO NOTHING;
 
--- Insert Vehicles
+-- Insert Vehicles (Nigerian License Plates)
 INSERT INTO vehicles (name, type, status, license_plate, last_maintenance, current_driver_id) VALUES
-  ('Tractor-01', 'Tractor', 'Active', 'LAG-1234', '2024-12-15', NULL),
-  ('Tractor-02', 'Tractor', 'Active', 'LAG-1235', '2024-12-10', NULL),
-  ('Tractor-03', 'Tractor', 'Maintenance', 'LAG-1236', '2024-11-20', NULL),
-  ('Truck-01', 'Truck', 'Active', 'LAG-5678', '2024-12-01', NULL),
-  ('Truck-02', 'Truck', 'Active', 'LAG-5679', '2024-11-25', NULL),
-  ('Truck-03', 'Truck', 'OutOfService', 'LAG-5680', '2024-10-15', NULL),
-  ('Motorcycle-01', 'Motorcycle', 'Active', 'LAG-9012', '2024-12-20', NULL),
-  ('Motorcycle-02', 'Motorcycle', 'Active', 'LAG-9013', '2024-12-18', NULL)
+  ('Tractor-01', 'Tractor', 'Active', 'LAG 123 AB', '2024-12-15', NULL),
+  ('Tractor-02', 'Tractor', 'Active', 'ABJ 456 CD', '2024-12-10', NULL),
+  ('Tractor-03', 'Tractor', 'Maintenance', 'KWL 789 EF', '2024-11-20', NULL),
+  ('Truck-01', 'Truck', 'Active', 'RIV 234 GH', '2024-12-01', NULL),
+  ('Truck-02', 'Truck', 'Active', 'OYO 567 IJ', '2024-11-25', NULL),
+  ('Truck-03', 'Truck', 'OutOfService', 'KAN 890 KL', '2024-10-15', NULL),
+  ('Motorcycle-01', 'Motorcycle', 'Active', 'ENU 345 MN', '2024-12-20', NULL),
+  ('Motorcycle-02', 'Motorcycle', 'Active', 'DEL 678 OP', '2024-12-18', NULL)
 ON CONFLICT DO NOTHING;
 
 -- Insert Inventory Items
@@ -93,13 +93,13 @@ DECLARE
   vehicle3_id UUID;
   vehicle4_id UUID;
 BEGIN
-  -- Get staff IDs
-  SELECT id INTO supervisor1_id FROM staff WHERE name = 'Jane Smith' LIMIT 1;
-  SELECT id INTO supervisor2_id FROM staff WHERE name = 'Mary Johnson' LIMIT 1;
-  SELECT id INTO supervisor3_id FROM staff WHERE name = 'Lisa Anderson' LIMIT 1;
-  SELECT id INTO driver1_id FROM staff WHERE name = 'Bob Wilson' LIMIT 1;
-  SELECT id INTO driver2_id FROM staff WHERE name = 'David Brown' LIMIT 1;
-  SELECT id INTO driver3_id FROM staff WHERE name = 'Sarah Williams' LIMIT 1;
+  -- Get staff IDs (Nigerian names)
+  SELECT id INTO supervisor1_id FROM staff WHERE name = 'Oluwaseun Adeyemi' LIMIT 1;
+  SELECT id INTO supervisor2_id FROM staff WHERE name = 'Ngozi Okonkwo' LIMIT 1;
+  SELECT id INTO supervisor3_id FROM staff WHERE name = 'Amina Mohammed' LIMIT 1;
+  SELECT id INTO driver1_id FROM staff WHERE name = 'Chinedu Nwosu' LIMIT 1;
+  SELECT id INTO driver2_id FROM staff WHERE name = 'Adebayo Ibrahim' LIMIT 1;
+  SELECT id INTO driver3_id FROM staff WHERE name = 'Ifeoma Eze' LIMIT 1;
   
   -- Get vehicle IDs
   SELECT id INTO vehicle1_id FROM vehicles WHERE name = 'Tractor-01' LIMIT 1;

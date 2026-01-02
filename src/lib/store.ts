@@ -1,7 +1,7 @@
 "use client";
 
 import { create } from 'zustand';
-import { InventoryItem, Vehicle, HarvestLog } from '@/types';
+import { InventoryItem, Vehicle, HarvestLog, Staff } from '@/types';
 
 interface AppState {
     // Inventory
@@ -27,6 +27,13 @@ interface AppState {
     addHarvestLog: (log: Omit<HarvestLog, 'id'>) => Promise<void>;
     updateHarvestLog: (id: string, updates: Partial<HarvestLog>) => Promise<void>;
     deleteHarvestLog: (id: string) => Promise<void>;
+
+    // Staff
+    staff: Staff[];
+    fetchStaff: () => Promise<void>;
+    addStaff: (staff: Omit<Staff, 'id'>) => Promise<void>;
+    updateStaff: (id: string, updates: Partial<Staff>) => Promise<void>;
+    deleteStaff: (id: string) => Promise<void>;
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
@@ -34,6 +41,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     inventory: [],
     vehicles: [],
     harvestLogs: [],
+    staff: [],
     isLoading: false,
     error: null,
 
@@ -258,6 +266,75 @@ export const useAppStore = create<AppState>((set, get) => ({
             if (!response.ok) throw new Error('Failed to delete harvest log');
             set((state) => ({
                 harvestLogs: state.harvestLogs.filter(log => log.id !== id),
+                isLoading: false,
+            }));
+        } catch (error: any) {
+            set({ error: error.message, isLoading: false });
+        }
+    },
+
+    // Staff actions
+    fetchStaff: async () => {
+        set({ isLoading: true, error: null });
+        try {
+            const response = await fetch('/api/staff');
+            if (!response.ok) throw new Error('Failed to fetch staff');
+            const data = await response.json();
+            set({ staff: data, isLoading: false });
+        } catch (error: any) {
+            set({ error: error.message, isLoading: false });
+        }
+    },
+
+    addStaff: async (staff) => {
+        set({ isLoading: true, error: null });
+        try {
+            const response = await fetch('/api/staff', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(staff),
+            });
+            if (!response.ok) throw new Error('Failed to add staff');
+            const newStaff = await response.json();
+            set((state) => ({
+                staff: [...state.staff, newStaff],
+                isLoading: false,
+            }));
+        } catch (error: any) {
+            set({ error: error.message, isLoading: false });
+        }
+    },
+
+    updateStaff: async (id, updates) => {
+        set({ isLoading: true, error: null });
+        try {
+            const response = await fetch(`/api/staff/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updates),
+            });
+            if (!response.ok) throw new Error('Failed to update staff');
+            const updatedStaff = await response.json();
+            set((state) => ({
+                staff: state.staff.map(s =>
+                    s.id === id ? updatedStaff : s
+                ),
+                isLoading: false,
+            }));
+        } catch (error: any) {
+            set({ error: error.message, isLoading: false });
+        }
+    },
+
+    deleteStaff: async (id) => {
+        set({ isLoading: true, error: null });
+        try {
+            const response = await fetch(`/api/staff/${id}`, {
+                method: 'DELETE',
+            });
+            if (!response.ok) throw new Error('Failed to delete staff');
+            set((state) => ({
+                staff: state.staff.filter(s => s.id !== id),
                 isLoading: false,
             }));
         } catch (error: any) {
