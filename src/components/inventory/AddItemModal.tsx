@@ -4,6 +4,7 @@ import { useState } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAppStore } from "@/lib/store";
+import { InventoryCategory } from "@/types";
 
 interface AddItemModalProps {
     isOpen: boolean;
@@ -14,7 +15,7 @@ export function AddItemModal({ isOpen, onClose }: AddItemModalProps) {
     const addInventoryItem = useAppStore((state) => state.addInventoryItem);
     const [formData, setFormData] = useState({
         name: "",
-        category: "Fertilizer",
+        category: "Fertilizer" as InventoryCategory,
         quantity: 0,
         unit: "bags",
         minLevel: 10,
@@ -25,7 +26,7 @@ export function AddItemModal({ isOpen, onClose }: AddItemModalProps) {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         addInventoryItem(formData);
-        setFormData({ name: "", category: "Fertilizer", quantity: 0, unit: "bags", minLevel: 10 });
+        setFormData({ name: "", category: "Fertilizer" as InventoryCategory, quantity: 0, unit: "bags", minLevel: 10 });
         onClose();
     };
 
@@ -58,7 +59,7 @@ export function AddItemModal({ isOpen, onClose }: AddItemModalProps) {
                             <label className="block text-sm font-medium mb-1">Category</label>
                             <select
                                 value={formData.category}
-                                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                                onChange={(e) => setFormData({ ...formData, category: e.target.value as InventoryCategory })}
                                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                             >
                                 <option>Fertilizer</option>
