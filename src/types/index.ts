@@ -60,7 +60,7 @@ export interface VehicleLocation {
     speed?: number;
     heading?: number;
     accuracy?: number;
-    timestamp: string;
+    recordedAt: string; // Changed from timestamp to match database column
 }
 
 export interface VehicleWithLocation extends Vehicle {
