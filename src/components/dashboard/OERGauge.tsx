@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from 'react';
 import { RadialBarChart, RadialBar, ResponsiveContainer, PolarAngleAxis } from 'recharts';
 
 interface OERGaugeProps {
@@ -7,13 +8,29 @@ interface OERGaugeProps {
 }
 
 export function OERGauge({ value = 19.2 }: OERGaugeProps) {
+    const [mounted, setMounted] = useState(false);
     const data = [{ name: 'OER', value, fill: '#16a34a' }];
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    if (!mounted) {
+        return (
+            <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+                <h3 className="mb-2 text-lg font-semibold">Oil Extraction Rate</h3>
+                <div className="h-48 min-h-[192px] relative flex items-center justify-center">
+                    <div className="text-muted-foreground">Loading chart...</div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
             <h3 className="mb-2 text-lg font-semibold">Oil Extraction Rate</h3>
-            <div className="h-48 relative">
-                <ResponsiveContainer width="100%" height="100%">
+            <div className="h-48 min-h-[192px] w-full relative">
+                <ResponsiveContainer width="100%" height="100%" minHeight={192}>
                     <RadialBarChart
                         cx="50%"
                         cy="50%"
