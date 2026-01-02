@@ -2,7 +2,40 @@
 
 This guide explains how to populate your Supabase database with sample data for testing and development.
 
-## Option 1: Using SQL Script (Recommended)
+## Option 1: Using Node.js Script (Easiest - Recommended)
+
+### Prerequisites:
+- Node.js installed
+- `.env.local` file with Supabase credentials
+
+### Steps:
+
+1. **Install dependencies** (if not already done):
+   ```bash
+   npm install
+   ```
+
+2. **Run the population script**:
+   ```bash
+   npm run populate-data
+   ```
+
+   Or directly:
+   ```bash
+   node scripts/populate-data.js
+   ```
+
+3. **Verify data**:
+   - Check your Supabase Dashboard → Table Editor
+   - Or refresh your application to see the data
+
+The script will automatically:
+- Insert 10 staff members
+- Insert 8 vehicles
+- Insert 30 inventory items
+- Insert 30 harvest logs (past 30 days)
+
+## Option 2: Using SQL Script (Alternative)
 
 ### Steps:
 
