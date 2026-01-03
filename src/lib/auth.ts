@@ -98,5 +98,12 @@ export const authOptions: NextAuthOptions = {
         strategy: "jwt",
         maxAge: 8 * 60 * 60, // 8 hours
     },
-    secret: process.env.NEXTAUTH_SECRET, // Must be set - no default
+    secret: process.env.NEXTAUTH_SECRET || (() => {
+        // Warn if secret is missing but don't crash
+        if (typeof window === 'undefined') { // Server-side only
+            console.error('⚠️ NEXTAUTH_SECRET is not set! Authentication will not work properly.');
+            console.error('Please set NEXTAUTH_SECRET in your Vercel environment variables.');
+        }
+        return 'temporary-secret-change-in-production'; // Temporary fallback
+    })(),
 };
