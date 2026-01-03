@@ -24,14 +24,30 @@ export async function logAuditEvent(
     let userAgent: string | null = null
     
     if (data.request) {
-      ipAddress = data.request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 
-                  data.request.headers.get('x-real-ip') || null
+      // Try multiple ways to get IP address
+      const forwardedFor = data.request.headers.get('x-forwarded-for')
+      const realIp = data.request.headers.get('x-real-ip')
+      const cfConnectingIp = data.request.headers.get('cf-connecting-ip') // Cloudflare
+      
+      ipAddress = forwardedFor?.split(',')[0]?.trim() || 
+                  realIp || 
+                  cfConnectingIp || 
+                  null
+      
       userAgent = data.request.headers.get('user-agent') || null
     }
     
+    // Extract user information from session
+    const userId = (session?.user as any)?.id || 
+                   session?.user?.email || 
+                   'anonymous'
+    const userName = session?.user?.name || 
+                     session?.user?.email || 
+                     'Unknown'
+    
     const auditEntry = {
-      user_id: (session?.user as any)?.id || session?.user?.email || 'anonymous',
-      user_name: session?.user?.name || session?.user?.email || 'Unknown',
+      user_id: userId,
+      user_name: userName,
       action: data.action,
       resource_type: data.resourceType,
       resource_id: data.resourceId || null,
@@ -40,6 +56,13 @@ export async function logAuditEvent(
       ip_address: ipAddress,
       user_agent: userAgent,
     }
+
+    console.log('📝 Attempting to log audit event:', {
+      action: data.action,
+      resourceType: data.resourceType,
+      userId,
+      userName,
+    })
 
     const { error, data: insertedData } = await supabase
       .from('audit_logs')
@@ -63,10 +86,14 @@ export async function logAuditEvent(
       // Don't throw - audit logging should not break the app
     } else if (insertedData && insertedData.length > 0) {
       console.log('✅ Audit event logged successfully:', {
+        id: insertedData[0].id,
         action: insertedData[0].action,
         resourceType: insertedData[0].resource_type,
         resourceId: insertedData[0].resource_id,
+        userId: insertedData[0].user_id,
       })
+    } else {
+      console.warn('⚠️ Audit event insert returned no data')
     }
   } catch (error) {
     console.error('❌ Error in audit logging:', error)

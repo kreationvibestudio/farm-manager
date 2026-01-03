@@ -19,6 +19,7 @@ export function AddStaffModal({ isOpen, onClose, onSave, editStaff }: AddStaffMo
         contact: '',
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string>('');
 
     useEffect(() => {
         if (editStaff) {
@@ -34,6 +35,7 @@ export function AddStaffModal({ isOpen, onClose, onSave, editStaff }: AddStaffMo
                 contact: '',
             });
         }
+        setErrorMessage(''); // Clear error when modal opens/closes
     }, [editStaff, isOpen]);
 
     if (!isOpen) return null;
@@ -41,13 +43,16 @@ export function AddStaffModal({ isOpen, onClose, onSave, editStaff }: AddStaffMo
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
+        setErrorMessage('');
         try {
             await onSave(formData);
             onClose();
             setFormData({ name: '', role: 'Worker', contact: '' });
-        } catch (error) {
+            setErrorMessage('');
+        } catch (error: any) {
             console.error('Error saving staff:', error);
-            alert('Failed to save staff member. Please try again.');
+            const message = error?.message || 'Failed to save staff member. Please try again.';
+            setErrorMessage(message);
         } finally {
             setIsSubmitting(false);
         }
@@ -71,6 +76,11 @@ export function AddStaffModal({ isOpen, onClose, onSave, editStaff }: AddStaffMo
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                    {errorMessage && (
+                        <div className="rounded-lg border border-destructive bg-destructive/10 p-3 text-sm text-destructive">
+                            {errorMessage}
+                        </div>
+                    )}
                     <div>
                         <label className="block text-sm font-medium mb-2">
                             Full Name *

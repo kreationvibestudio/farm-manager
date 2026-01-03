@@ -28,6 +28,17 @@ export default function LoginPage() {
             setError("Invalid credentials. Please try again.");
             setLoading(false);
         } else {
+            // Log login success (backup to signIn callback)
+            try {
+                await fetch('/api/auth/login-success', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                });
+            } catch (error) {
+                console.error('Failed to log login event:', error);
+                // Continue even if logging fails
+            }
+            
             router.push("/");
             router.refresh();
         }

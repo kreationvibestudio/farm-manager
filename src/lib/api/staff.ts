@@ -28,12 +28,30 @@ export async function getStaff(): Promise<Staff[]> {
 
 export async function addStaff(staff: Omit<Staff, 'id'>) {
   const supabase = await createClient()
+  
+  // Check for duplicate name (case-insensitive, excluding soft-deleted)
+  const normalizedName = staff.name.trim().toLowerCase()
+  const { data: existingStaff, error: checkError } = await supabase
+    .from('staff')
+    .select('id, name')
+    .is('deleted_at', null)
+    .ilike('name', staff.name.trim())
+
+  if (checkError && checkError.code !== 'PGRST116') { // PGRST116 = no rows returned
+    console.error('Error checking for duplicates:', checkError)
+    // Continue anyway - don't block if check fails
+  }
+
+  if (existingStaff && existingStaff.length > 0) {
+    throw new Error(`A staff member with the name "${staff.name}" already exists. Please use a different name or edit the existing staff member.`)
+  }
+
   const { data, error } = await supabase
     .from('staff')
     .insert({
-      name: staff.name,
+      name: staff.name.trim(), // Trim whitespace
       role: staff.role,
-      contact: staff.contact || null,
+      contact: staff.contact?.trim() || null,
     })
     .select()
     .single()
@@ -46,9 +64,29 @@ export async function updateStaff(id: string, updates: Partial<Staff>) {
   const supabase = await createClient()
   const updateData: any = {}
   
-  if (updates.name !== undefined) updateData.name = updates.name
+  // Check for duplicate name if name is being updated
+  if (updates.name !== undefined) {
+    const normalizedName = updates.name.trim().toLowerCase()
+    const { data: existingStaff, error: checkError } = await supabase
+      .from('staff')
+      .select('id, name')
+      .is('deleted_at', null)
+      .neq('id', id) // Exclude current staff member
+      .ilike('name', updates.name.trim())
+
+    if (checkError && checkError.code !== 'PGRST116') {
+      console.error('Error checking for duplicates:', checkError)
+    }
+
+    if (existingStaff && existingStaff.length > 0) {
+      throw new Error(`A staff member with the name "${updates.name}" already exists. Please use a different name.`)
+    }
+
+    updateData.name = updates.name.trim() // Trim whitespace
+  }
+  
   if (updates.role !== undefined) updateData.role = updates.role
-  if (updates.contact !== undefined) updateData.contact = updates.contact || null
+  if (updates.contact !== undefined) updateData.contact = updates.contact?.trim() || null
 
   const { data, error } = await supabase
     .from('staff')

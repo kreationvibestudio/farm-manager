@@ -47,24 +47,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     credentials?.password === password
                 ) {
                     loginAttempts.delete(ip); // Reset on success
-                    
-                    // Log successful login
-                    try {
-                        const { logAuditEvent } = await import('@/lib/audit/audit-log');
-                        await logAuditEvent(
-                            { user: { id: "1", name: "Admin User", email: "admin@plantation.com" } } as any,
-                            {
-                                action: 'LOGIN',
-                                resourceType: 'auth',
-                                newData: { userId: "1", username: credentials.username },
-                                request: req as any,
-                            }
-                        );
-                    } catch (error) {
-                        console.error('Failed to log login event:', error);
-                        // Don't fail login if audit logging fails
-                    }
-                    
+                    // Login audit logging is now handled in the signIn callback
                     return { id: "1", name: "Admin User", email: "admin@plantation.com" };
                 }
                 
@@ -79,6 +62,32 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         error: "/auth/error",
     },
     callbacks: {
+        async signIn({ user, account, profile }) {
+            // Log successful login after authentication
+            if (user) {
+                try {
+                    const { logAuditEvent } = await import('@/lib/audit/audit-log');
+                    // Create a minimal session-like object for audit logging
+                    const sessionForAudit = {
+                        user: {
+                            id: user.id || "1",
+                            name: user.name || "Admin User",
+                            email: user.email || "admin@plantation.com"
+                        }
+                    } as any;
+                    
+                    await logAuditEvent(sessionForAudit, {
+                        action: 'LOGIN',
+                        resourceType: 'auth',
+                        newData: { userId: user.id || "1", username: user.name || user.email || "admin" },
+                    });
+                } catch (error) {
+                    console.error('Failed to log login event:', error);
+                    // Don't fail login if audit logging fails
+                }
+            }
+            return true;
+        },
         async session({ session, token }) {
             if (token && session.user) {
                 (session.user as any).id = token.sub || "1";

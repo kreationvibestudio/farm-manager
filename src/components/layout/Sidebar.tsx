@@ -23,6 +23,22 @@ export function Sidebar({ className }: { className?: string }) {
   const pathname = usePathname();
   const { data: session } = useSession();
 
+  const handleLogout = async () => {
+    try {
+      // Log logout event before signing out
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+    } catch (error) {
+      console.error('Failed to log logout event:', error);
+      // Continue with logout even if audit logging fails
+    } finally {
+      // Always proceed with sign out
+      signOut({ callbackUrl: "/login" });
+    }
+  };
+
   return (
     <div className={cn("flex h-screen w-64 flex-col border-r border-border bg-card", className)}>
       <div className="flex h-16 items-center px-6 border-b border-border">
@@ -66,7 +82,7 @@ export function Sidebar({ className }: { className?: string }) {
           </div>
         </div>
         <button
-          onClick={() => signOut({ callbackUrl: "/login" })}
+          onClick={handleLogout}
           className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground hover:bg-red-50 hover:text-red-600 transition-colors"
         >
           <LogOut className="h-4 w-4" />
@@ -81,6 +97,22 @@ export function MobileNav() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
   const { data: session } = useSession();
+
+  const handleLogout = async () => {
+    try {
+      // Log logout event before signing out
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+    } catch (error) {
+      console.error('Failed to log logout event:', error);
+      // Continue with logout even if audit logging fails
+    } finally {
+      // Always proceed with sign out
+      signOut({ callbackUrl: "/login" });
+    }
+  };
 
   // Don't show on login page
   if (pathname === "/login") return null;
@@ -146,7 +178,7 @@ export function MobileNav() {
                 </div>
               </div>
               <button
-                onClick={() => signOut({ callbackUrl: "/login" })}
+                onClick={handleLogout}
                 className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground hover:bg-red-50 hover:text-red-600 transition-colors"
               >
                 <LogOut className="h-4 w-4" />

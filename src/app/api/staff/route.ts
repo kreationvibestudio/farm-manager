@@ -47,6 +47,13 @@ export async function POST(request: NextRequest) {
     if (error.message === "Unauthorized") {
       return NextResponse.json({ error: "Unauthorized. Please log in." }, { status: 401 })
     }
+    // Check if it's a duplicate name error
+    if (error.message?.includes('already exists')) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 400 } // Bad Request for validation errors
+      )
+    }
     return NextResponse.json(
       { error: error.message || 'Failed to add staff' },
       { status: 500 }
