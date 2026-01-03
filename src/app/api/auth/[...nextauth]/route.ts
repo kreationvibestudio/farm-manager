@@ -1,6 +1,6 @@
 import NextAuth from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 // Validate required environment variables
 if (!process.env.NEXTAUTH_SECRET) {
@@ -9,8 +9,35 @@ if (!process.env.NEXTAUTH_SECRET) {
 
 const handler = NextAuth(authOptions);
 
+// Helper function to create a compatible request object for NextAuth
+// NextAuth v4 expects req.query.nextauth to be an array of route segments
+function createNextAuthRequest(req: NextRequest, params: { nextauth: string[] }) {
+  const url = req.nextUrl;
+  
+  // Get the nextauth route segments from params
+  const nextauthRoute = params.nextauth || [];
+  
+  // Create a request object compatible with NextAuth's expected format
+  // NextAuth expects req.query.nextauth to be an array
+  const nextAuthReq = {
+    url: url.toString(),
+    query: {
+      nextauth: nextauthRoute,
+    },
+    headers: req.headers,
+    method: req.method,
+    body: req.body,
+    cookies: req.cookies,
+  } as any;
+  
+  return nextAuthReq;
+}
+
 // Wrap handler with error handling
-export async function GET(req: Request) {
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ nextauth: string[] }> }
+) {
   try {
     // Check if NEXTAUTH_SECRET is set before processing
     if (!process.env.NEXTAUTH_SECRET) {
@@ -24,7 +51,13 @@ export async function GET(req: Request) {
         { status: 500 }
       );
     }
-    return await handler(req);
+    
+    // Get params
+    const routeParams = await params;
+    
+    // Create compatible request object for NextAuth
+    const nextAuthReq = createNextAuthRequest(req, routeParams);
+    return await handler(nextAuthReq);
   } catch (error: any) {
     console.error("NextAuth GET error:", error);
     console.error("Error stack:", error.stack);
@@ -41,7 +74,10 @@ export async function GET(req: Request) {
   }
 }
 
-export async function POST(req: Request) {
+export async function POST(
+  req: NextRequest,
+  { params }: { params: Promise<{ nextauth: string[] }> }
+) {
   try {
     // Check if NEXTAUTH_SECRET is set before processing
     if (!process.env.NEXTAUTH_SECRET) {
@@ -55,7 +91,13 @@ export async function POST(req: Request) {
         { status: 500 }
       );
     }
-    return await handler(req);
+    
+    // Get params
+    const routeParams = await params;
+    
+    // Create compatible request object for NextAuth
+    const nextAuthReq = createNextAuthRequest(req, routeParams);
+    return await handler(nextAuthReq);
   } catch (error: any) {
     console.error("NextAuth POST error:", error);
     console.error("Error stack:", error.stack);
