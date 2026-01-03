@@ -25,7 +25,7 @@ export default function Home() {
     fetchHarvestLogs();
   }, [fetchInventory, fetchVehicles, fetchHarvestLogs]);
 
-  const totalHarvest = harvestLogs.reduce((acc, log) => acc + log.weightKg, 0);
+  const totalHarvest = harvestLogs.reduce((acc, log) => acc + log.bunches, 0);
   const activeVehiclesCount = vehicles.filter(v => v.status === 'Active').length;
   const lowStockCount = inventory.filter(item => item.quantity <= item.minLevel).length;
   const dieselItem = inventory.find(item => item.name.toLowerCase().includes('diesel'));
@@ -106,7 +106,7 @@ export default function Home() {
                     key={log.id}
                     date={new Date(log.date).toLocaleDateString()} 
                     block={log.blockId} 
-                    weight={log.weightKg.toLocaleString()} 
+                    weight={log.bunches.toLocaleString()} 
                     user={log.supervisorName || log.supervisorId || 'N/A'} 
                   />
                 ))}

@@ -52,7 +52,7 @@ export async function getHarvestLogs(): Promise<HarvestLog[]> {
         id: log.id,
         date: log.date,
         blockId: log.block_id,
-        weightKg: Number(log.weight_kg),
+        bunches: Number(log.weight_kg), // Database column still weight_kg, but we map to bunches
         supervisorId: log.supervisor_id || '',
         supervisorName: log.supervisor_id ? staffMap.get(log.supervisor_id) || null : null,
         driverId: log.driver_id || undefined,
@@ -68,7 +68,7 @@ export async function getHarvestLogs(): Promise<HarvestLog[]> {
       id: log.id,
       date: log.date,
       blockId: log.block_id,
-      weightKg: Number(log.weight_kg),
+      bunches: Number(log.weight_kg), // Database column still weight_kg, but we map to bunches
       supervisorId: log.supervisor_id || '',
       supervisorName: log.supervisor?.name || null,
       driverId: log.driver_id || undefined,
@@ -91,7 +91,7 @@ export async function addHarvestLog(log: Omit<HarvestLog, 'id'>) {
     .insert({
       date: log.date,
       block_id: log.blockId,
-      weight_kg: log.weightKg,
+      weight_kg: log.bunches, // Database column still weight_kg, but we store bunches
       supervisor_id: log.supervisorId || null,
       driver_id: log.driverId || null,
       vehicle_id: log.vehicleId || null,
@@ -105,7 +105,7 @@ export async function addHarvestLog(log: Omit<HarvestLog, 'id'>) {
     id: data.id,
     date: data.date,
     blockId: data.block_id,
-    weightKg: Number(data.weight_kg),
+    bunches: Number(data.weight_kg), // Map back to bunches
     supervisorId: data.supervisor_id || '',
     driverId: data.driver_id,
     vehicleId: data.vehicle_id,
@@ -119,7 +119,7 @@ export async function updateHarvestLog(id: string, updates: Partial<HarvestLog>)
   
   if (updates.date) updateData.date = updates.date
   if (updates.blockId) updateData.block_id = updates.blockId
-  if (updates.weightKg !== undefined) updateData.weight_kg = updates.weightKg
+  if (updates.bunches !== undefined) updateData.weight_kg = updates.bunches // Database column still weight_kg
   if (updates.supervisorId !== undefined) updateData.supervisor_id = updates.supervisorId || null
   if (updates.driverId !== undefined) updateData.driver_id = updates.driverId || null
   if (updates.vehicleId !== undefined) updateData.vehicle_id = updates.vehicleId || null
@@ -137,7 +137,7 @@ export async function updateHarvestLog(id: string, updates: Partial<HarvestLog>)
     id: data.id,
     date: data.date,
     blockId: data.block_id,
-    weightKg: Number(data.weight_kg),
+    bunches: Number(data.weight_kg), // Map back to bunches
     supervisorId: data.supervisor_id || '',
     driverId: data.driver_id,
     vehicleId: data.vehicle_id,

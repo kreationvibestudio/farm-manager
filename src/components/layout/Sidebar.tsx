@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { LayoutDashboard, Package, Truck, Settings, Sprout, LogOut, Menu, X, Users, Navigation } from "lucide-react";
+import { LayoutDashboard, Package, Truck, Settings, Sprout, LogOut, Menu, X, Users, Navigation, Wrench } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
@@ -14,6 +14,7 @@ const navigation = [
   { name: "Fleet & Vehicles", href: "/fleet", icon: Truck },
   { name: "Vehicle Tracking", href: "/tracking", icon: Navigation },
   { name: "Staff Management", href: "/staff", icon: Users },
+  { name: "Farm Maintenance", href: "/maintenance", icon: Wrench },
   { name: "Settings", href: "/settings", icon: Settings },
 ];
 

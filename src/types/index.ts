@@ -27,7 +27,7 @@ export interface HarvestLog {
     id: string;
     date: string; // ISO Date
     blockId: string; // e.g., "Block A"
-    weightKg: number;
+    bunches: number; // Changed from weightKg - FFB is counted in bunches, not weighed
     supervisorId: string;
     supervisorName?: string | null; // Resolved name from staff table
     driverId?: string; // If transport is tracked
@@ -47,7 +47,7 @@ export interface Staff {
 
 export interface DailySummary {
     date: string;
-    totalHarvestKg: number;
+    totalHarvestBunches: number; // Changed from totalHarvestKg
     activeVehicles: number;
     alerts: number;
 }
@@ -66,4 +66,20 @@ export interface VehicleLocation {
 export interface VehicleWithLocation extends Vehicle {
     location?: VehicleLocation;
     lastSeen?: string;
+}
+
+// Farm Maintenance Types
+export type MaintenanceActivity = 'Slashing' | 'Pruning' | 'Ring Weeding' | 'Fertilizer Application';
+
+export interface MaintenanceLog {
+    id: string;
+    date: string; // ISO Date
+    blockId: string; // e.g., "Block A"
+    activity: MaintenanceActivity;
+    supervisorId: string;
+    supervisorName?: string | null; // Resolved name from staff table
+    staffCount?: number; // Number of staff involved
+    notes?: string;
+    created_at?: string;
+    updated_at?: string;
 }

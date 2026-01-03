@@ -15,7 +15,7 @@ export function LogHarvestModal({ isOpen, onClose }: LogHarvestModalProps) {
     const [formData, setFormData] = useState({
         date: new Date().toISOString().split('T')[0],
         blockId: "",
-        weightKg: 0,
+        bunches: 0,
         supervisorId: "s2",
         vehicleId: "v3",
     });
@@ -28,7 +28,7 @@ export function LogHarvestModal({ isOpen, onClose }: LogHarvestModalProps) {
         setFormData({
             date: new Date().toISOString().split('T')[0],
             blockId: "",
-            weightKg: 0,
+            bunches: 0,
             supervisorId: "s2",
             vehicleId: "v3",
         });
@@ -71,13 +71,13 @@ export function LogHarvestModal({ isOpen, onClose }: LogHarvestModalProps) {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium mb-1">Weight (kg)</label>
+                        <label className="block text-sm font-medium mb-1">Bunches (FFB)</label>
                         <input
                             type="number"
                             min="1"
                             required
-                            value={formData.weightKg}
-                            onChange={(e) => setFormData({ ...formData, weightKg: parseInt(e.target.value) || 0 })}
+                            value={formData.bunches}
+                            onChange={(e) => setFormData({ ...formData, bunches: parseInt(e.target.value) || 0 })}
                             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                             placeholder="e.g., 2500"
                         />

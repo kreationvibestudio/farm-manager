@@ -1,20 +1,27 @@
 "use client";
 
-import { HarvestLog } from "@/types";
+import { MaintenanceLog } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, MapPin, Scale, User, Truck, Trash2 } from "lucide-react";
+import { Calendar, MapPin, User, Trash2, Users } from "lucide-react";
 
-interface HarvestLogTableProps {
-    logs: HarvestLog[];
+interface MaintenanceTableProps {
+    logs: MaintenanceLog[];
     onDelete: (id: string) => void;
 }
 
-export function HarvestLogTable({ logs, onDelete }: HarvestLogTableProps) {
+const activityColors: Record<MaintenanceLog['activity'], string> = {
+    'Slashing': 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300',
+    'Pruning': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
+    'Ring Weeding': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
+    'Fertilizer Application': 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300',
+};
+
+export function MaintenanceTable({ logs, onDelete }: MaintenanceTableProps) {
     if (logs.length === 0) {
         return (
             <div className="rounded-xl border bg-card shadow-sm p-8 text-center text-muted-foreground">
-                No harvest logs yet. Add your first harvest!
+                No maintenance logs yet. Add your first maintenance activity!
             </div>
         );
     }
@@ -27,7 +34,7 @@ export function HarvestLogTable({ logs, onDelete }: HarvestLogTableProps) {
                         <tr>
                             <th className="p-4">Date</th>
                             <th className="p-4">Block Location</th>
-                            <th className="p-4">Yield (FFB)</th>
+                            <th className="p-4">Activity</th>
                             <th className="p-4">Details</th>
                             <th className="p-4 text-right">Actions</th>
                         </tr>
@@ -49,10 +56,9 @@ export function HarvestLogTable({ logs, onDelete }: HarvestLogTableProps) {
                                     </div>
                                 </td>
                                 <td className="p-4">
-                                    <div className="flex items-center gap-2 font-bold text-lg">
-                                        <Scale className="h-4 w-4 text-secondary" />
-                                        {log.bunches.toLocaleString()} <span className="text-sm font-normal text-muted-foreground">bunches</span>
-                                    </div>
+                                    <Badge className={activityColors[log.activity]}>
+                                        {log.activity}
+                                    </Badge>
                                 </td>
                                 <td className="p-4 text-muted-foreground text-xs space-y-1">
                                     {log.supervisorName && (
@@ -60,17 +66,15 @@ export function HarvestLogTable({ logs, onDelete }: HarvestLogTableProps) {
                                             <User className="h-3 w-3" /> Supervisor: <span className="text-foreground font-medium">{log.supervisorName}</span>
                                         </div>
                                     )}
-                                    {log.driverName && (
+                                    {log.staffCount && (
                                         <div className="flex items-center gap-1">
-                                            <User className="h-3 w-3" /> Driver: <span className="text-foreground font-medium">{log.driverName}</span>
+                                            <Users className="h-3 w-3" /> Staff: <span className="text-foreground font-medium">{log.staffCount}</span>
                                         </div>
                                     )}
-                                    {log.vehicleLicensePlate && (
-                                        <div className="flex items-center gap-1">
-                                            <Truck className="h-3 w-3" /> Vehicle: <span className="text-foreground font-medium">{log.vehicleLicensePlate}</span>
-                                        </div>
+                                    {log.notes && (
+                                        <div className="text-foreground mt-1">{log.notes}</div>
                                     )}
-                                    {!log.supervisorName && !log.driverName && !log.vehicleLicensePlate && (
+                                    {!log.supervisorName && !log.staffCount && !log.notes && (
                                         <span className="text-muted-foreground">No details</span>
                                     )}
                                 </td>

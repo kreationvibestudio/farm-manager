@@ -22,12 +22,12 @@ export default function HarvestPage() {
         fetchHarvestLogs();
     }, [fetchHarvestLogs]);
 
-    const totalYield = harvestLogs.reduce((acc, log) => acc + log.weightKg, 0);
+    const totalYield = harvestLogs.reduce((acc, log) => acc + log.bunches, 0);
     const averageDaily = harvestLogs.length > 0 ? Math.round(totalYield / harvestLogs.length) : 0;
 
     // Find best performing block
     const blockTotals = harvestLogs.reduce((acc, log) => {
-        acc[log.blockId] = (acc[log.blockId] || 0) + log.weightKg;
+        acc[log.blockId] = (acc[log.blockId] || 0) + log.bunches;
         return acc;
     }, {} as Record<string, number>);
     const bestBlock = Object.entries(blockTotals).sort((a, b) => b[1] - a[1])[0]?.[0] || "N/A";
@@ -40,11 +40,11 @@ export default function HarvestPage() {
 
     const handleExport = () => {
         // Generate CSV content
-        const headers = ["Date", "Block", "Weight (kg)", "Supervisor", "Driver", "Vehicle"];
+        const headers = ["Date", "Block", "Bunches", "Supervisor", "Driver", "Vehicle"];
         const rows = harvestLogs.map(log => [
             log.date,
             log.blockId,
-            log.weightKg.toString(),
+            log.bunches.toString(),
             log.supervisorName || log.supervisorId || "",
             log.driverName || log.driverId || "",
             log.vehicleLicensePlate || log.vehicleName || log.vehicleId || ""
@@ -96,14 +96,14 @@ export default function HarvestPage() {
             <div className="grid gap-6 md:grid-cols-3">
                 <div className="rounded-xl border bg-card p-6 shadow-sm">
                     <div className="text-sm font-medium text-muted-foreground">Total Harvest (This Month)</div>
-                    <div className="mt-2 text-2xl font-bold text-primary">{totalYield.toLocaleString()} kg</div>
+                    <div className="mt-2 text-2xl font-bold text-primary">{totalYield.toLocaleString()} bunches</div>
                     <div className="text-xs text-green-600 mt-1 flex items-center gap-1">
                         +5.4% <span className="text-muted-foreground">vs last month</span>
                     </div>
                 </div>
                 <div className="rounded-xl border bg-card p-6 shadow-sm">
                     <div className="text-sm font-medium text-muted-foreground">Average Per Harvest</div>
-                    <div className="mt-2 text-2xl font-bold">{averageDaily.toLocaleString()} kg</div>
+                    <div className="mt-2 text-2xl font-bold">{averageDaily.toLocaleString()} bunches</div>
                 </div>
                 <div className="rounded-xl border bg-card p-6 shadow-sm">
                     <div className="text-sm font-medium text-muted-foreground">Best Performing Block</div>

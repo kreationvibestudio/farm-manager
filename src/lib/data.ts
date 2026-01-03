@@ -20,9 +20,9 @@ export const mockStaff: Staff[] = [
 ];
 
 export const mockHarvestLogs: HarvestLog[] = [
-    { id: "h1", date: "2024-03-02", blockId: "Block A-12", weightKg: 2400, supervisorId: "s2", vehicleId: "v3" },
-    { id: "h2", date: "2024-03-02", blockId: "Block B-04", weightKg: 1850, supervisorId: "s2", vehicleId: "v3" },
-    { id: "h3", date: "2024-03-01", blockId: "Block A-11", weightKg: 3200, supervisorId: "s2", vehicleId: "v3" },
+    { id: "h1", date: "2024-03-02", blockId: "Block A-12", bunches: 2400, supervisorId: "s2", vehicleId: "v3" },
+    { id: "h2", date: "2024-03-02", blockId: "Block B-04", bunches: 1850, supervisorId: "s2", vehicleId: "v3" },
+    { id: "h3", date: "2024-03-01", blockId: "Block A-11", bunches: 3200, supervisorId: "s2", vehicleId: "v3" },
 ];
 
 export const harvestStats = [
