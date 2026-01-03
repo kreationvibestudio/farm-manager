@@ -1,8 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getMaintenanceLogs, addMaintenanceLog } from '@/lib/api/maintenance'
+import { requireAuth } from '@/lib/auth/api-auth'
+import { logAuditEvent } from '@/lib/audit/audit-log'
 
 export async function GET() {
   try {
+    const authResult = await requireAuth()
+    if (authResult instanceof NextResponse) {
+      return authResult // Unauthorized response
+    }
+    
     const logs = await getMaintenanceLogs()
     return NextResponse.json(logs)
   } catch (error: any) {
@@ -17,8 +24,24 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    const authResult = await requireAuth()
+    if (authResult instanceof NextResponse) {
+      return authResult // Unauthorized response
+    }
+    const { session } = authResult
+    
     const body = await request.json()
     const newLog = await addMaintenanceLog(body)
+    
+    // Log audit event
+    await logAuditEvent(session, {
+      action: 'CREATE',
+      resourceType: 'maintenance_logs',
+      resourceId: newLog.id,
+      newData: newLog,
+      request,
+    })
+    
     return NextResponse.json(newLog, { status: 201 })
   } catch (error: any) {
     console.error('API Error adding maintenance log:', error)

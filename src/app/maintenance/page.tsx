@@ -125,7 +125,7 @@ export default function MaintenancePage() {
             <ActivityTimelineChart logs={maintenanceLogs} />
 
             {/* Block Maintenance Status and Recent Activities */}
-            <div className="grid gap-6 lg:grid-cols-2">
+            <div className="space-y-6">
                 <BlockMaintenanceStatus logs={maintenanceLogs} />
                 <RecentActivitiesFeed logs={maintenanceLogs} />
             </div>

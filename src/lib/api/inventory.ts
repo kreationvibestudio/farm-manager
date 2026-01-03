@@ -7,6 +7,7 @@ export async function getInventoryItems(): Promise<InventoryItem[]> {
     const { data, error } = await supabase
       .from('inventory_items')
       .select('*')
+      .is('deleted_at', null) // Only get non-deleted records
       .order('name', { ascending: true })
 
     if (error) {
@@ -85,14 +86,29 @@ export async function updateInventoryItem(id: string, updates: Partial<Inventory
   }
 }
 
-export async function deleteInventoryItem(id: string) {
+export async function deleteInventoryItem(id: string, userId: string) {
   const supabase = await createClient()
+  
+  // First get the record to log in audit
+  const { data: oldData } = await supabase
+    .from('inventory_items')
+    .select('*')
+    .eq('id', id)
+    .is('deleted_at', null)
+    .single()
+  
+  // Soft delete instead of hard delete
   const { error } = await supabase
     .from('inventory_items')
-    .delete()
+    .update({
+      deleted_at: new Date().toISOString(),
+      deleted_by: userId,
+    })
     .eq('id', id)
+    .is('deleted_at', null) // Only update if not already deleted
 
   if (error) throw error
+  return oldData // Return old data for audit logging
 }
 
 export async function adjustStock(id: string, delta: number) {

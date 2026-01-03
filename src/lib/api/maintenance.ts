@@ -12,6 +12,7 @@ export async function getMaintenanceLogs(): Promise<MaintenanceLog[]> {
         *,
         supervisor:staff!supervisor_id(id, name)
       `)
+      .is('deleted_at', null) // Only get non-deleted records
       .order('date', { ascending: false })
       .limit(1000) // Limit results for performance
 
@@ -27,6 +28,7 @@ export async function getMaintenanceLogs(): Promise<MaintenanceLog[]> {
       const { data: fallbackData, error: fallbackError } = await supabase
         .from('maintenance_logs')
         .select('*')
+        .is('deleted_at', null) // Only get non-deleted records
         .order('date', { ascending: false })
         .limit(1000)
       
@@ -115,6 +117,16 @@ export async function addMaintenanceLog(log: Omit<MaintenanceLog, 'id' | 'create
   }
 }
 
+export async function getMaintenanceLogById(id: string): Promise<MaintenanceLog | null> {
+  try {
+    const logs = await getMaintenanceLogs()
+    return logs.find(log => log.id === id) || null
+  } catch (error) {
+    console.error('Error fetching maintenance log by ID:', error)
+    return null
+  }
+}
+
 export async function updateMaintenanceLog(id: string, updates: Partial<MaintenanceLog>) {
   const supabase = await createClient()
   const updateData: any = {}
@@ -130,6 +142,7 @@ export async function updateMaintenanceLog(id: string, updates: Partial<Maintena
     .from('maintenance_logs')
     .update(updateData)
     .eq('id', id)
+    .is('deleted_at', null) // Only update if not deleted
     .select()
     .single()
 
@@ -148,12 +161,27 @@ export async function updateMaintenanceLog(id: string, updates: Partial<Maintena
   }
 }
 
-export async function deleteMaintenanceLog(id: string) {
+export async function deleteMaintenanceLog(id: string, userId: string) {
   const supabase = await createClient()
+  
+  // First get the record to log in audit
+  const { data: oldData } = await supabase
+    .from('maintenance_logs')
+    .select('*')
+    .eq('id', id)
+    .is('deleted_at', null)
+    .single()
+  
+  // Soft delete instead of hard delete
   const { error } = await supabase
     .from('maintenance_logs')
-    .delete()
+    .update({
+      deleted_at: new Date().toISOString(),
+      deleted_by: userId,
+    })
     .eq('id', id)
+    .is('deleted_at', null) // Only update if not already deleted
 
   if (error) throw error
+  return oldData // Return old data for audit logging
 }

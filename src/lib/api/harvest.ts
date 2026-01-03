@@ -14,6 +14,7 @@ export async function getHarvestLogs(): Promise<HarvestLog[]> {
         driver:staff!driver_id(id, name),
         vehicle:vehicles!vehicle_id(id, name, license_plate)
       `)
+      .is('deleted_at', null) // Only get non-deleted records
       .order('date', { ascending: false })
 
     if (error) {
@@ -22,6 +23,7 @@ export async function getHarvestLogs(): Promise<HarvestLog[]> {
       const { data: fallbackData, error: fallbackError } = await supabase
         .from('harvest_logs')
         .select('*')
+        .is('deleted_at', null) // Only get non-deleted records
         .order('date', { ascending: false })
       
       if (fallbackError) {
@@ -145,12 +147,27 @@ export async function updateHarvestLog(id: string, updates: Partial<HarvestLog>)
   }
 }
 
-export async function deleteHarvestLog(id: string) {
+export async function deleteHarvestLog(id: string, userId: string) {
   const supabase = await createClient()
+  
+  // First get the record to log in audit
+  const { data: oldData } = await supabase
+    .from('harvest_logs')
+    .select('*')
+    .eq('id', id)
+    .is('deleted_at', null)
+    .single()
+  
+  // Soft delete instead of hard delete
   const { error } = await supabase
     .from('harvest_logs')
-    .delete()
+    .update({
+      deleted_at: new Date().toISOString(),
+      deleted_by: userId,
+    })
     .eq('id', id)
+    .is('deleted_at', null) // Only update if not already deleted
 
   if (error) throw error
+  return oldData // Return old data for audit logging
 }
