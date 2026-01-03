@@ -58,9 +58,10 @@ export function LogMaintenanceModal({ isOpen, onClose }: LogMaintenanceModalProp
                 notes: formData.notes || undefined,
             });
             onClose();
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error saving maintenance log:', error);
-            alert('Failed to save maintenance log. Please try again.');
+            const errorMessage = error?.message || error?.error || 'Failed to save maintenance log. Please try again.';
+            alert(errorMessage);
         } finally {
             setIsSubmitting(false);
         }

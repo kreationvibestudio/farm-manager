@@ -95,7 +95,12 @@ export async function addMaintenanceLog(log: Omit<MaintenanceLog, 'id' | 'create
     .select()
     .single()
 
-  if (error) throw error
+  if (error) {
+    // Preserve error code for better error handling
+    const enhancedError: any = new Error(error.message)
+    enhancedError.code = error.code
+    throw enhancedError
+  }
   return {
     id: data.id,
     date: data.date,

@@ -400,14 +400,20 @@ export const useAppStore = create<AppState>((set, get) => ({
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(log),
             });
-            if (!response.ok) throw new Error('Failed to add maintenance log');
+            
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.error || 'Failed to add maintenance log');
+            }
+            
             const newLog = await response.json();
             set((state) => ({
                 maintenanceLogs: [newLog, ...state.maintenanceLogs],
                 isLoading: false,
             }));
         } catch (error: any) {
-            set({ error: error.message, isLoading: false });
+            set({ error: error.message || 'Failed to add maintenance log', isLoading: false });
+            throw error; // Re-throw so modal can show error
         }
     },
 
