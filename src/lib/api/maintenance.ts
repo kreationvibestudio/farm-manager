@@ -4,6 +4,8 @@ import { MaintenanceLog } from '@/types'
 export async function getMaintenanceLogs(): Promise<MaintenanceLog[]> {
   try {
     const supabase = await createClient()
+    
+    // First check if table exists by trying a simple query
     const { data, error } = await supabase
       .from('maintenance_logs')
       .select(`
@@ -11,16 +13,28 @@ export async function getMaintenanceLogs(): Promise<MaintenanceLog[]> {
         supervisor:staff!supervisor_id(id, name)
       `)
       .order('date', { ascending: false })
+      .limit(1000) // Limit results for performance
 
     if (error) {
+      // If table doesn't exist (42P01), return empty array gracefully
+      if (error.code === '42P01' || error.message.includes('does not exist')) {
+        console.warn('Maintenance logs table does not exist yet. Please run the SQL schema.')
+        return []
+      }
+      
       console.error('Supabase error fetching maintenance logs:', error)
       // Fallback: try without joins
       const { data: fallbackData, error: fallbackError } = await supabase
         .from('maintenance_logs')
         .select('*')
         .order('date', { ascending: false })
+        .limit(1000)
       
       if (fallbackError) {
+        // If table doesn't exist, return empty array
+        if (fallbackError.code === '42P01' || fallbackError.message.includes('does not exist')) {
+          return []
+        }
         return []
       }
       

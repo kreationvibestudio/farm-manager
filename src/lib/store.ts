@@ -354,12 +354,41 @@ export const useAppStore = create<AppState>((set, get) => ({
     fetchMaintenanceLogs: async () => {
         set({ isLoading: true, error: null });
         try {
-            const response = await fetch('/api/maintenance');
-            if (!response.ok) throw new Error('Failed to fetch maintenance logs');
+            // Add timeout to prevent hanging
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+            
+            const response = await fetch('/api/maintenance', {
+                signal: controller.signal,
+            });
+            
+            clearTimeout(timeoutId);
+            
+            if (!response.ok) {
+                // If 500 error, might be missing table - handle gracefully
+                if (response.status === 500) {
+                    const errorData = await response.json().catch(() => ({}));
+                    if (errorData.error?.includes('does not exist')) {
+                        set({ maintenanceLogs: [], isLoading: false, error: null });
+                        return;
+                    }
+                }
+                throw new Error('Failed to fetch maintenance logs');
+            }
             const data = await response.json();
-            set({ maintenanceLogs: data, isLoading: false });
+            set({ maintenanceLogs: data || [], isLoading: false });
         } catch (error: any) {
-            set({ error: error.message, isLoading: false });
+            // Handle abort/timeout gracefully
+            if (error.name === 'AbortError') {
+                set({ error: 'Request timeout. Please try again.', isLoading: false });
+            } else {
+                // If table doesn't exist, just set empty array
+                if (error.message?.includes('does not exist')) {
+                    set({ maintenanceLogs: [], isLoading: false, error: null });
+                } else {
+                    set({ error: error.message || 'Failed to fetch maintenance logs', isLoading: false });
+                }
+            }
         }
     },
 

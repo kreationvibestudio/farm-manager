@@ -20,8 +20,11 @@ export default function MaintenancePage() {
     const [showLogModal, setShowLogModal] = useState(false);
 
     useEffect(() => {
-        fetchMaintenanceLogs();
-    }, [fetchMaintenanceLogs]);
+        // Only fetch if we don't have data yet
+        if (maintenanceLogs.length === 0 && !isLoading) {
+            fetchMaintenanceLogs();
+        }
+    }, []); // Empty dependency array to run only once
 
     const activityCounts = {
         'Slashing': maintenanceLogs.filter(l => l.activity === 'Slashing').length,
@@ -39,7 +42,12 @@ export default function MaintenancePage() {
     if (isLoading && maintenanceLogs.length === 0) {
         return (
             <main className="p-6 space-y-8">
-                <div>Loading...</div>
+                <div className="flex items-center justify-center min-h-[400px]">
+                    <div className="text-center">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                        <p className="text-muted-foreground">Loading maintenance logs...</p>
+                    </div>
+                </div>
             </main>
         );
     }

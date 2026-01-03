@@ -24,8 +24,11 @@ export function LogMaintenanceModal({ isOpen, onClose }: LogMaintenanceModalProp
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
-        fetchStaff();
-    }, [fetchStaff]);
+        // Only fetch staff when modal is opened and staff list is empty
+        if (isOpen && staff.length === 0) {
+            fetchStaff();
+        }
+    }, [isOpen]); // Only depend on isOpen
 
     useEffect(() => {
         if (!isOpen) {
