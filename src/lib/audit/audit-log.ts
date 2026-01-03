@@ -41,16 +41,35 @@ export async function logAuditEvent(
       user_agent: userAgent,
     }
 
-    const { error } = await supabase
+    const { error, data: insertedData } = await supabase
       .from('audit_logs')
       .insert(auditEntry)
+      .select()
 
     if (error) {
-      console.error('Failed to log audit event:', error)
+      console.error('❌ Failed to log audit event:', error)
+      console.error('Error details:', {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+      })
+      
+      // If table doesn't exist, provide helpful message
+      if (error.code === '42P01' || error.message?.includes('does not exist')) {
+        console.error('⚠️ audit_logs table does not exist!')
+        console.error('Please run supabase-audit-log-schema.sql in Supabase Dashboard')
+      }
       // Don't throw - audit logging should not break the app
+    } else if (insertedData && insertedData.length > 0) {
+      console.log('✅ Audit event logged successfully:', {
+        action: insertedData[0].action,
+        resourceType: insertedData[0].resource_type,
+        resourceId: insertedData[0].resource_id,
+      })
     }
   } catch (error) {
-    console.error('Error in audit logging:', error)
+    console.error('❌ Error in audit logging:', error)
     // Silently fail - audit logging should not break the app
   }
 }

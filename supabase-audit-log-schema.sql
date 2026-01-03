@@ -33,5 +33,7 @@ DROP POLICY IF EXISTS "Allow read for authenticated users" ON audit_logs;
 CREATE POLICY "Allow read for authenticated users" ON audit_logs
   FOR SELECT USING (true);
 
--- Only system can insert audit logs (via service role)
--- Regular users cannot insert directly
+-- Allow inserts for audit logging (from server-side code)
+-- This allows the Next.js API routes to insert audit logs
+CREATE POLICY "Allow insert for audit logging" ON audit_logs
+  FOR INSERT WITH CHECK (true);

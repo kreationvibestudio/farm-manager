@@ -56,10 +56,15 @@ export async function DELETE(
     const { id } = await params
     const userId = (session.user as any)?.id || session.user?.email || 'unknown'
     
+    console.log('🗑️ Deleting maintenance log:', { id, userId })
+    
     // Soft delete and get old data
     const oldData = await deleteMaintenanceLog(id, userId)
     
+    console.log('📋 Old data retrieved for audit:', oldData ? 'Yes' : 'No', oldData)
+    
     // Log audit event
+    console.log('📝 Logging audit event for DELETE...')
     await logAuditEvent(session, {
       action: 'DELETE',
       resourceType: 'maintenance_logs',
@@ -67,6 +72,7 @@ export async function DELETE(
       oldData,
       request,
     })
+    console.log('✅ Audit event logged (or failed silently)')
     
     return NextResponse.json({ message: 'Maintenance log deleted successfully' }, { status: 200 })
   } catch (error: any) {
