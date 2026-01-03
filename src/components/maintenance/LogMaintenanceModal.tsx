@@ -12,7 +12,7 @@ interface LogMaintenanceModalProps {
 }
 
 export function LogMaintenanceModal({ isOpen, onClose }: LogMaintenanceModalProps) {
-    const { addMaintenanceLog, staff, fetchStaff } = useAppStore();
+    const { addMaintenanceLog, staff, fetchStaff, harvestLogs, fetchHarvestLogs } = useAppStore();
     const [formData, setFormData] = useState({
         date: new Date().toISOString().split('T')[0],
         blockId: "",
@@ -24,11 +24,16 @@ export function LogMaintenanceModal({ isOpen, onClose }: LogMaintenanceModalProp
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
-        // Only fetch staff when modal is opened and staff list is empty
-        if (isOpen && staff.length === 0) {
-            fetchStaff();
+        // Fetch staff and harvest logs when modal is opened
+        if (isOpen) {
+            if (staff.length === 0) {
+                fetchStaff();
+            }
+            if (harvestLogs.length === 0) {
+                fetchHarvestLogs();
+            }
         }
-    }, [isOpen]); // Only depend on isOpen
+    }, [isOpen, staff.length, harvestLogs.length, fetchStaff, fetchHarvestLogs]);
 
     useEffect(() => {
         if (!isOpen) {
@@ -53,7 +58,7 @@ export function LogMaintenanceModal({ isOpen, onClose }: LogMaintenanceModalProp
                 date: formData.date,
                 blockId: formData.blockId,
                 activity: formData.activity,
-                supervisorId: formData.supervisorId || '',
+                supervisorId: formData.supervisorId || undefined,
                 staffCount: formData.staffCount,
                 notes: formData.notes || undefined,
             });
@@ -68,6 +73,9 @@ export function LogMaintenanceModal({ isOpen, onClose }: LogMaintenanceModalProp
     };
 
     const supervisors = staff.filter(s => s.role === 'Supervisor' || s.role === 'Manager');
+    
+    // Extract unique block IDs from harvest logs and sort them
+    const uniqueBlocks = [...new Set(harvestLogs.map(log => log.blockId))].sort();
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -93,15 +101,25 @@ export function LogMaintenanceModal({ isOpen, onClose }: LogMaintenanceModalProp
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium mb-1">Block ID</label>
-                        <input
-                            type="text"
+                        <label className="block text-sm font-medium mb-1">Block ID *</label>
+                        <select
                             required
                             value={formData.blockId}
                             onChange={(e) => setFormData({ ...formData, blockId: e.target.value })}
                             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                            placeholder="e.g., Block A-15"
-                        />
+                        >
+                            <option value="">Select block...</option>
+                            {uniqueBlocks.map((block) => (
+                                <option key={block} value={block}>
+                                    {block}
+                                </option>
+                            ))}
+                        </select>
+                        {uniqueBlocks.length === 0 && (
+                            <p className="text-xs text-muted-foreground mt-1">
+                                No blocks found. Add harvest logs first to populate block list.
+                            </p>
+                        )}
                     </div>
 
                     <div>

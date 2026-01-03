@@ -76,7 +76,7 @@ export interface MaintenanceLog {
     date: string; // ISO Date
     blockId: string; // e.g., "Block A"
     activity: MaintenanceActivity;
-    supervisorId: string;
+    supervisorId?: string; // Optional supervisor ID
     supervisorName?: string | null; // Resolved name from staff table
     staffCount?: number; // Number of staff involved
     notes?: string;

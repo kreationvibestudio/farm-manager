@@ -3,6 +3,9 @@
 import { useState, useEffect } from "react";
 import { MaintenanceTable } from "@/components/maintenance/MaintenanceTable";
 import { LogMaintenanceModal } from "@/components/maintenance/LogMaintenanceModal";
+import { ActivityTimelineChart } from "@/components/maintenance/ActivityTimelineChart";
+import { BlockMaintenanceStatus } from "@/components/maintenance/BlockMaintenanceStatus";
+import { RecentActivitiesFeed } from "@/components/maintenance/RecentActivitiesFeed";
 import { Button } from "@/components/ui/button";
 import { Plus, Wrench } from "lucide-react";
 import { useAppStore } from "@/lib/store";
@@ -26,6 +29,15 @@ export default function MaintenancePage() {
         }
     }, []); // Empty dependency array to run only once
 
+    // Count unique blocks per activity
+    const blockCounts = {
+        'Slashing': new Set(maintenanceLogs.filter(l => l.activity === 'Slashing').map(l => l.blockId)).size,
+        'Pruning': new Set(maintenanceLogs.filter(l => l.activity === 'Pruning').map(l => l.blockId)).size,
+        'Ring Weeding': new Set(maintenanceLogs.filter(l => l.activity === 'Ring Weeding').map(l => l.blockId)).size,
+        'Fertilizer Application': new Set(maintenanceLogs.filter(l => l.activity === 'Fertilizer Application').map(l => l.blockId)).size,
+    };
+
+    // Count total activities per type
     const activityCounts = {
         'Slashing': maintenanceLogs.filter(l => l.activity === 'Slashing').length,
         'Pruning': maintenanceLogs.filter(l => l.activity === 'Pruning').length,
@@ -80,23 +92,45 @@ export default function MaintenancePage() {
 
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <div className="rounded-xl border bg-card p-4 shadow-sm">
-                    <div className="text-sm font-medium text-muted-foreground">Slashing</div>
-                    <div className="mt-2 text-2xl font-bold">{activityCounts['Slashing']}</div>
+                    <div className="text-sm font-medium text-muted-foreground">Blocks Slashed</div>
+                    <div className="mt-2 text-2xl font-bold">{blockCounts['Slashing']}</div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                        {activityCounts['Slashing']} {activityCounts['Slashing'] === 1 ? 'activity' : 'activities'}
+                    </div>
                 </div>
                 <div className="rounded-xl border bg-card p-4 shadow-sm">
-                    <div className="text-sm font-medium text-muted-foreground">Pruning</div>
-                    <div className="mt-2 text-2xl font-bold">{activityCounts['Pruning']}</div>
+                    <div className="text-sm font-medium text-muted-foreground">Blocks Pruned</div>
+                    <div className="mt-2 text-2xl font-bold">{blockCounts['Pruning']}</div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                        {activityCounts['Pruning']} {activityCounts['Pruning'] === 1 ? 'activity' : 'activities'}
+                    </div>
                 </div>
                 <div className="rounded-xl border bg-card p-4 shadow-sm">
-                    <div className="text-sm font-medium text-muted-foreground">Ring Weeding</div>
-                    <div className="mt-2 text-2xl font-bold">{activityCounts['Ring Weeding']}</div>
+                    <div className="text-sm font-medium text-muted-foreground">Blocks Ring Weeded</div>
+                    <div className="mt-2 text-2xl font-bold">{blockCounts['Ring Weeding']}</div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                        {activityCounts['Ring Weeding']} {activityCounts['Ring Weeding'] === 1 ? 'activity' : 'activities'}
+                    </div>
                 </div>
                 <div className="rounded-xl border bg-card p-4 shadow-sm">
-                    <div className="text-sm font-medium text-muted-foreground">Fertilizer Application</div>
-                    <div className="mt-2 text-2xl font-bold">{activityCounts['Fertilizer Application']}</div>
+                    <div className="text-sm font-medium text-muted-foreground">Blocks Fertilized</div>
+                    <div className="mt-2 text-2xl font-bold">{blockCounts['Fertilizer Application']}</div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                        {activityCounts['Fertilizer Application']} {activityCounts['Fertilizer Application'] === 1 ? 'activity' : 'activities'}
+                    </div>
                 </div>
             </div>
 
+            {/* Activity Timeline Chart */}
+            <ActivityTimelineChart logs={maintenanceLogs} />
+
+            {/* Block Maintenance Status and Recent Activities */}
+            <div className="grid gap-6 lg:grid-cols-2">
+                <BlockMaintenanceStatus logs={maintenanceLogs} />
+                <RecentActivitiesFeed logs={maintenanceLogs} />
+            </div>
+
+            {/* Full Maintenance Table */}
             <MaintenanceTable logs={maintenanceLogs} onDelete={handleDelete} />
 
             <LogMaintenanceModal isOpen={showLogModal} onClose={() => setShowLogModal(false)} />
