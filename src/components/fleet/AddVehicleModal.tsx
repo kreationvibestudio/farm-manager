@@ -1,38 +1,71 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAppStore } from "@/lib/store";
+import { Vehicle } from "@/types";
 
 interface AddVehicleModalProps {
     isOpen: boolean;
     onClose: () => void;
+    editVehicle?: Vehicle | null;
 }
 
-export function AddVehicleModal({ isOpen, onClose }: AddVehicleModalProps) {
+export function AddVehicleModal({ isOpen, onClose, editVehicle }: AddVehicleModalProps) {
     const addVehicle = useAppStore((state) => state.addVehicle);
+    const updateVehicle = useAppStore((state) => state.updateVehicle);
     const [formData, setFormData] = useState({
         name: "",
-        type: "Tractor" as "Tractor" | "Truck",
+        type: "Tractor" as "Tractor" | "Truck" | "Motorcycle" | "Other",
         status: "Active" as "Active" | "Maintenance" | "OutOfService",
         licensePlate: "",
         lastMaintenance: new Date().toISOString().split('T')[0],
     });
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string>('');
+
+    useEffect(() => {
+        if (editVehicle) {
+            setFormData({
+                name: editVehicle.name,
+                type: editVehicle.type,
+                status: editVehicle.status,
+                licensePlate: editVehicle.licensePlate || "",
+                lastMaintenance: editVehicle.lastMaintenance ? new Date(editVehicle.lastMaintenance).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+            });
+        } else {
+            setFormData({
+                name: "",
+                type: "Tractor",
+                status: "Active",
+                licensePlate: "",
+                lastMaintenance: new Date().toISOString().split('T')[0],
+            });
+        }
+        setErrorMessage('');
+    }, [editVehicle, isOpen]);
 
     if (!isOpen) return null;
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        addVehicle(formData);
-        setFormData({
-            name: "",
-            type: "Tractor",
-            status: "Active",
-            licensePlate: "",
-            lastMaintenance: new Date().toISOString().split('T')[0],
-        });
-        onClose();
+        setIsSubmitting(true);
+        setErrorMessage('');
+        
+        try {
+            if (editVehicle) {
+                await updateVehicle(editVehicle.id, formData);
+            } else {
+                await addVehicle(formData);
+            }
+            onClose();
+        } catch (error: any) {
+            console.error('Error saving vehicle:', error);
+            setErrorMessage(error?.message || 'Failed to save vehicle. Please try again.');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -40,13 +73,18 @@ export function AddVehicleModal({ isOpen, onClose }: AddVehicleModalProps) {
             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
             <div className="relative w-full max-w-md rounded-xl bg-card border border-border p-6 shadow-2xl mx-4 animate-in zoom-in-95 duration-200">
                 <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-bold">Add New Vehicle</h2>
+                    <h2 className="text-xl font-bold">{editVehicle ? 'Edit Vehicle' : 'Add New Vehicle'}</h2>
                     <button onClick={onClose} className="p-1 rounded-md hover:bg-muted transition-colors">
                         <X className="h-5 w-5" />
                     </button>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
+                    {errorMessage && (
+                        <div className="rounded-lg border border-destructive bg-destructive/10 p-3 text-sm text-destructive">
+                            {errorMessage}
+                        </div>
+                    )}
                     <div>
                         <label className="block text-sm font-medium mb-1">Vehicle Name</label>
                         <input
@@ -64,11 +102,13 @@ export function AddVehicleModal({ isOpen, onClose }: AddVehicleModalProps) {
                             <label className="block text-sm font-medium mb-1">Type</label>
                             <select
                                 value={formData.type}
-                                onChange={(e) => setFormData({ ...formData, type: e.target.value as "Tractor" | "Truck" })}
+                                onChange={(e) => setFormData({ ...formData, type: e.target.value as "Tractor" | "Truck" | "Motorcycle" | "Other" })}
                                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                             >
                                 <option value="Tractor">Tractor</option>
                                 <option value="Truck">Truck</option>
+                                <option value="Motorcycle">Motorcycle</option>
+                                <option value="Other">Other</option>
                             </select>
                         </div>
                         <div>
@@ -107,11 +147,11 @@ export function AddVehicleModal({ isOpen, onClose }: AddVehicleModalProps) {
                     </div>
 
                     <div className="flex gap-3 pt-4">
-                        <Button type="button" variant="outline" onClick={onClose} className="flex-1">
+                        <Button type="button" variant="outline" onClick={onClose} className="flex-1" disabled={isSubmitting}>
                             Cancel
                         </Button>
-                        <Button type="submit" className="flex-1">
-                            Add Vehicle
+                        <Button type="submit" className="flex-1" disabled={isSubmitting}>
+                            {isSubmitting ? 'Saving...' : editVehicle ? 'Update Vehicle' : 'Add Vehicle'}
                         </Button>
                     </div>
                 </form>

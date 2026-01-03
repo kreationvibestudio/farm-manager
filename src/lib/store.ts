@@ -183,7 +183,10 @@ export const useAppStore = create<AppState>((set, get) => ({
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(updates),
             });
-            if (!response.ok) throw new Error('Failed to update vehicle');
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.error || 'Failed to update vehicle');
+            }
             const updatedVehicle = await response.json();
             set((state) => ({
                 vehicles: state.vehicles.map(v =>
@@ -193,6 +196,7 @@ export const useAppStore = create<AppState>((set, get) => ({
             }));
         } catch (error: any) {
             set({ error: error.message, isLoading: false });
+            throw error; // Re-throw so the component can handle it
         }
     },
 

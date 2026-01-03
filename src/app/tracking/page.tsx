@@ -2,9 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { MapContainer } from "@/components/tracking/MapContainer";
-import { VehicleList } from "@/components/tracking/VehicleList";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, MapPin, Navigation } from "lucide-react";
+import { RefreshCw, MapPin, Navigation, Truck } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import { VehicleLocation, VehicleWithLocation } from "@/types";
 
@@ -83,6 +82,21 @@ export default function TrackingPage() {
               </p>
             </div>
             <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2">
+                <Truck className="h-4 w-4 text-muted-foreground" />
+                <select
+                  value={selectedVehicle || ''}
+                  onChange={(e) => setSelectedVehicle(e.target.value || null)}
+                  className="rounded-md border border-input bg-background px-3 py-2 text-sm min-w-[250px] focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                >
+                  <option value="">All Vehicles ({vehicles.length})</option>
+                  {vehiclesWithLocations.map(vehicle => (
+                    <option key={vehicle.id} value={vehicle.id}>
+                      {vehicle.location ? '🟢' : '🔴'} {vehicle.name} {vehicle.licensePlate ? `(${vehicle.licensePlate})` : ''} - {vehicle.status}
+                    </option>
+                  ))}
+                </select>
+              </div>
               <Button
                 variant="outline"
                 onClick={() => setIsAutoRefresh(!isAutoRefresh)}
@@ -128,22 +142,12 @@ export default function TrackingPage() {
           </div>
         )}
 
-        <div className="flex-1 flex min-h-0" style={{ height: 'calc(100vh - 300px)' }}>
-          <div className="flex-1 relative" style={{ minHeight: '100%' }}>
-            <MapContainer
-              vehicles={vehiclesWithLocations}
-              selectedVehicle={selectedVehicle}
-              onVehicleSelect={setSelectedVehicle}
-            />
-          </div>
-
-          <div className="w-80 border-l border-border bg-card overflow-y-auto">
-            <VehicleList
-              vehicles={vehiclesWithLocations}
-              selectedVehicle={selectedVehicle}
-              onSelect={setSelectedVehicle}
-            />
-          </div>
+        <div className="flex-1 relative" style={{ height: 'calc(100vh - 300px)', minHeight: '500px' }}>
+          <MapContainer
+            vehicles={vehiclesWithLocations}
+            selectedVehicle={selectedVehicle}
+            onVehicleSelect={setSelectedVehicle}
+          />
         </div>
       </main>
     </div>

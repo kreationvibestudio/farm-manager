@@ -7,22 +7,20 @@ export async function POST(request: NextRequest) {
     // Get session before logout
     const session = await auth()
     
-    // Log logout event if session exists
+    // Log logout event if session exists (non-blocking)
     if (session?.user) {
-      try {
-        await logAuditEvent(session, {
-          action: 'LOGOUT',
-          resourceType: 'auth',
-          newData: { 
-            userId: (session.user as any)?.id || session.user?.email || 'unknown',
-            username: session.user.name || session.user.email || 'unknown'
-          },
-          request,
-        })
-      } catch (error) {
+      logAuditEvent(session, {
+        action: 'LOGOUT',
+        resourceType: 'auth',
+        newData: { 
+          userId: (session.user as any)?.id || session.user?.email || 'unknown',
+          username: session.user.name || session.user.email || 'unknown'
+        },
+        request,
+      }).catch(error => {
         console.error('Failed to log logout event:', error)
         // Don't fail logout if audit logging fails
-      }
+      })
     }
     
     return NextResponse.json({ success: true, message: 'Logged out successfully' })

@@ -51,22 +51,22 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // If Supabase is configured, also check Supabase session for additional security
-  if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-    try {
-      return await updateSession(request)
-    } catch (error) {
-      console.error('Supabase middleware error:', error)
-      // If NextAuth token exists, still allow access
-      return NextResponse.next()
-    }
-  }
-
+  // Skip Supabase check if NextAuth session exists - NextAuth is sufficient for authentication
+  // Only use Supabase for database operations, not for auth checks
+  // This significantly improves performance by avoiding redundant session checks
   return NextResponse.next()
 }
 
 export const config = {
   matcher: [
-    '/((?!api/auth|login|_next/static|_next/image|favicon.ico).*)',
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api/auth (NextAuth API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - public files (images, etc.)
+     */
+    '/((?!api/auth|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)).*)',
   ],
 }

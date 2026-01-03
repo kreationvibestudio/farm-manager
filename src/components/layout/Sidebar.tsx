@@ -43,7 +43,7 @@ export function Sidebar({ className }: { className?: string }) {
     <div className={cn("flex h-screen w-64 flex-col border-r border-border bg-card", className)}>
       <div className="flex h-16 items-center px-6 border-b border-border">
         <div className="flex items-center gap-2 font-bold text-xl text-primary">
-          <Sprout className="h-6 w-6" />
+          <span className="text-2xl">🌴</span>
           <span>FarmManager</span>
         </div>
       </div>
@@ -122,7 +122,7 @@ export function MobileNav() {
       {/* Mobile Header Bar */}
       <div className="fixed top-0 left-0 right-0 z-50 flex h-14 items-center justify-between border-b border-border bg-background/95 backdrop-blur-sm px-4 md:hidden">
         <div className="flex items-center gap-2 font-bold text-lg text-primary">
-          <Sprout className="h-5 w-5" />
+          <span className="text-xl">🌴</span>
           <span>FarmManager</span>
         </div>
         <button

@@ -63,11 +63,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
     callbacks: {
         async signIn({ user, account, profile }) {
-            // Log successful login after authentication
+            // Log successful login after authentication (non-blocking)
             if (user) {
-                try {
-                    const { logAuditEvent } = await import('@/lib/audit/audit-log');
-                    // Create a minimal session-like object for audit logging
+                // Fire and forget - don't block login for audit logging
+                import('@/lib/audit/audit-log').then(({ logAuditEvent }) => {
                     const sessionForAudit = {
                         user: {
                             id: user.id || "1",
@@ -76,15 +75,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                         }
                     } as any;
                     
-                    await logAuditEvent(sessionForAudit, {
+                    logAuditEvent(sessionForAudit, {
                         action: 'LOGIN',
                         resourceType: 'auth',
                         newData: { userId: user.id || "1", username: user.name || user.email || "admin" },
+                    }).catch(error => {
+                        console.error('Failed to log login event:', error);
+                        // Silently fail - don't break login
                     });
-                } catch (error) {
-                    console.error('Failed to log login event:', error);
-                    // Don't fail login if audit logging fails
-                }
+                }).catch(error => {
+                    console.error('Failed to import audit log module:', error);
+                    // Silently fail - don't break login
+                });
             }
             return true;
         },

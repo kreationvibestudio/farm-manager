@@ -22,14 +22,16 @@ export async function PUT(
     
     const updatedLog = await updateMaintenanceLog(id, body)
     
-    // Log audit event
-    await logAuditEvent(session, {
+    // Log audit event (non-blocking)
+    logAuditEvent(session, {
       action: 'UPDATE',
       resourceType: 'maintenance_logs',
       resourceId: id,
       oldData,
       newData: updatedLog,
       request,
+    }).catch(error => {
+      console.error('Failed to log audit event:', error)
     })
     
     return NextResponse.json(updatedLog)
@@ -63,16 +65,16 @@ export async function DELETE(
     
     console.log('📋 Old data retrieved for audit:', oldData ? 'Yes' : 'No', oldData)
     
-    // Log audit event
-    console.log('📝 Logging audit event for DELETE...')
-    await logAuditEvent(session, {
+    // Log audit event (non-blocking)
+    logAuditEvent(session, {
       action: 'DELETE',
       resourceType: 'maintenance_logs',
       resourceId: id,
       oldData,
       request,
+    }).catch(error => {
+      console.error('Failed to log audit event:', error)
     })
-    console.log('✅ Audit event logged (or failed silently)')
     
     return NextResponse.json({ message: 'Maintenance log deleted successfully' }, { status: 200 })
   } catch (error: any) {

@@ -23,14 +23,16 @@ export async function PUT(
     
     const vehicle = await vehiclesAPI.updateVehicle(id, body)
     
-    // Log audit event
-    await logAuditEvent(session, {
+    // Log audit event (non-blocking)
+    logAuditEvent(session, {
       action: 'UPDATE',
       resourceType: 'vehicles',
       resourceId: id,
       oldData,
       newData: vehicle,
       request,
+    }).catch(error => {
+      console.error('Failed to log audit event:', error)
     })
     
     return NextResponse.json(vehicle)
@@ -59,13 +61,15 @@ export async function DELETE(
     // Soft delete and get old data
     const oldData = await vehiclesAPI.deleteVehicle(id, userId)
     
-    // Log audit event
-    await logAuditEvent(session, {
+    // Log audit event (non-blocking)
+    logAuditEvent(session, {
       action: 'DELETE',
       resourceType: 'vehicles',
       resourceId: id,
       oldData,
       request,
+    }).catch(error => {
+      console.error('Failed to log audit event:', error)
     })
     
     return NextResponse.json({ success: true })

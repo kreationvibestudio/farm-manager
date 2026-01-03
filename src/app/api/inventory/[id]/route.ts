@@ -23,14 +23,16 @@ export async function PUT(
     
     const item = await inventoryAPI.updateInventoryItem(id, body)
     
-    // Log audit event
-    await logAuditEvent(session, {
+    // Log audit event (non-blocking)
+    logAuditEvent(session, {
       action: 'UPDATE',
       resourceType: 'inventory_items',
       resourceId: id,
       oldData,
       newData: item,
       request,
+    }).catch(error => {
+      console.error('Failed to log audit event:', error)
     })
     
     return NextResponse.json(item)
@@ -59,13 +61,15 @@ export async function DELETE(
     // Soft delete and get old data
     const oldData = await inventoryAPI.deleteInventoryItem(id, userId)
     
-    // Log audit event
-    await logAuditEvent(session, {
+    // Log audit event (non-blocking)
+    logAuditEvent(session, {
       action: 'DELETE',
       resourceType: 'inventory_items',
       resourceId: id,
       oldData,
       request,
+    }).catch(error => {
+      console.error('Failed to log audit event:', error)
     })
     
     return NextResponse.json({ success: true })

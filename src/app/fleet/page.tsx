@@ -19,6 +19,7 @@ export default function FleetPage() {
     } = useAppStore();
 
     const [showAddModal, setShowAddModal] = useState(false);
+    const [editVehicle, setEditVehicle] = useState<Vehicle | null>(null);
 
     useEffect(() => {
         fetchVehicles();
@@ -29,7 +30,13 @@ export default function FleetPage() {
     const idleVehicles = vehicles.filter(v => v.status === 'OutOfService').length;
 
     const handleEdit = (vehicle: Vehicle) => {
-        alert(`Edit functionality for "${vehicle.name}" - Coming soon!`);
+        setEditVehicle(vehicle);
+        setShowAddModal(true);
+    };
+
+    const handleCloseModal = () => {
+        setShowAddModal(false);
+        setEditVehicle(null);
     };
 
     const handleDelete = (id: string) => {
@@ -96,7 +103,11 @@ export default function FleetPage() {
                 onStatusChange={handleStatusChange}
             />
 
-            <AddVehicleModal isOpen={showAddModal} onClose={() => setShowAddModal(false)} />
+            <AddVehicleModal 
+                isOpen={showAddModal} 
+                onClose={handleCloseModal}
+                editVehicle={editVehicle}
+            />
         </main>
     );
 }

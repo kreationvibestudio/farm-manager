@@ -23,14 +23,16 @@ export async function POST(
     
     const item = await inventoryAPI.adjustStock(id, delta)
     
-    // Log audit event
-    await logAuditEvent(session, {
+    // Log audit event (non-blocking)
+    logAuditEvent(session, {
       action: 'UPDATE',
       resourceType: 'inventory_items',
       resourceId: id,
       oldData,
       newData: item,
       request,
+    }).catch(error => {
+      console.error('Failed to log audit event:', error)
     })
     
     return NextResponse.json(item)

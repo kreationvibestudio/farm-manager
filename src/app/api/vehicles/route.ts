@@ -11,7 +11,12 @@ export async function GET() {
     }
     
     const vehicles = await vehiclesAPI.getVehicles()
-    return NextResponse.json(vehicles)
+    // Add caching headers for better performance (30 seconds cache)
+    return NextResponse.json(vehicles, {
+      headers: {
+        'Cache-Control': 'private, max-age=30, stale-while-revalidate=60',
+      },
+    })
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
@@ -28,13 +33,16 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const vehicle = await vehiclesAPI.addVehicle(body)
     
-    // Log audit event
-    await logAuditEvent(session, {
+    // Log audit event (non-blocking)
+    logAuditEvent(session, {
       action: 'CREATE',
       resourceType: 'vehicles',
       resourceId: vehicle.id,
       newData: vehicle,
       request,
+    }).catch(error => {
+      console.error('Failed to log audit event:', error)
+      // Don't block response if audit logging fails
     })
     
     return NextResponse.json(vehicle)

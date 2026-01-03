@@ -28,17 +28,16 @@ export default function LoginPage() {
             setError("Invalid credentials. Please try again.");
             setLoading(false);
         } else {
-            // Log login success (backup to signIn callback)
-            try {
-                await fetch('/api/auth/login-success', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                });
-            } catch (error) {
+            // Log login success (non-blocking - fire and forget)
+            fetch('/api/auth/login-success', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+            }).catch(error => {
                 console.error('Failed to log login event:', error);
-                // Continue even if logging fails
-            }
+                // Silently fail - don't block login
+            });
             
+            // Navigate immediately without waiting for audit log
             router.push("/");
             router.refresh();
         }
@@ -49,7 +48,7 @@ export default function LoginPage() {
             <div className="w-full max-w-md space-y-8 rounded-2xl bg-white p-8 shadow-xl dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
                 <div className="flex flex-col items-center text-center">
                     <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-                        <Sprout className="h-6 w-6 text-primary" />
+                        <span className="text-3xl">🌴</span>
                     </div>
                     <h2 className="mt-4 text-2xl font-bold tracking-tight text-foreground">
                         Sign in to FarmManager

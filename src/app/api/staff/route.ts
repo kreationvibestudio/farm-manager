@@ -11,7 +11,12 @@ export async function GET() {
     }
     
     const staff = await getStaff()
-    return NextResponse.json(staff)
+    // Add caching headers for better performance (30 seconds cache)
+    return NextResponse.json(staff, {
+      headers: {
+        'Cache-Control': 'private, max-age=30, stale-while-revalidate=60',
+      },
+    })
   } catch (error) {
     console.error('Error fetching staff:', error)
     return NextResponse.json(
@@ -32,13 +37,16 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const staff = await addStaff(body)
     
-    // Log audit event
-    await logAuditEvent(session, {
+    // Log audit event (non-blocking)
+    logAuditEvent(session, {
       action: 'CREATE',
       resourceType: 'staff',
       resourceId: staff.id,
       newData: staff,
       request,
+    }).catch(error => {
+      console.error('Failed to log audit event:', error)
+      // Don't block response if audit logging fails
     })
     
     return NextResponse.json(staff, { status: 201 })

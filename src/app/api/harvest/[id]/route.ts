@@ -23,14 +23,16 @@ export async function PUT(
     
     const log = await harvestAPI.updateHarvestLog(id, body)
     
-    // Log audit event
-    await logAuditEvent(session, {
+    // Log audit event (non-blocking)
+    logAuditEvent(session, {
       action: 'UPDATE',
       resourceType: 'harvest_logs',
       resourceId: id,
       oldData,
       newData: log,
       request,
+    }).catch(error => {
+      console.error('Failed to log audit event:', error)
     })
     
     return NextResponse.json(log)
@@ -59,13 +61,15 @@ export async function DELETE(
     // Soft delete and get old data
     const oldData = await harvestAPI.deleteHarvestLog(id, userId)
     
-    // Log audit event
-    await logAuditEvent(session, {
+    // Log audit event (non-blocking)
+    logAuditEvent(session, {
       action: 'DELETE',
       resourceType: 'harvest_logs',
       resourceId: id,
       oldData,
       request,
+    }).catch(error => {
+      console.error('Failed to log audit event:', error)
     })
     
     return NextResponse.json({ success: true })

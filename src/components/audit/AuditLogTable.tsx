@@ -2,7 +2,7 @@
 
 import { AuditLog } from "@/lib/api/audit";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, User, FileText, MapPin, Globe, Monitor } from "lucide-react";
+import { Calendar, User, FileText } from "lucide-react";
 
 interface AuditLogTableProps {
     logs: AuditLog[];
@@ -15,6 +15,128 @@ const actionColors: Record<AuditLog['action'], string> = {
     'LOGIN': 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300',
     'LOGOUT': 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300',
     'VIEW': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
+};
+
+// Helper function to get resource name from data
+const getResourceName = (log: AuditLog): string => {
+    const data = log.new_data || log.old_data;
+    if (!data) return log.resource_type;
+    
+    // Extract meaningful name based on resource type
+    switch (log.resource_type) {
+        case 'vehicles':
+            return data.name || data.license_plate || 'Vehicle';
+        case 'staff':
+            return data.name || 'Staff Member';
+        case 'inventory_items':
+            return data.name || 'Inventory Item';
+        case 'harvest_logs':
+            return `Harvest - Block ${data.blockId || data.block_id || 'N/A'}`;
+        case 'maintenance_logs':
+            return `Maintenance - Block ${data.blockId || data.block_id || 'N/A'}`;
+        case 'auth':
+            return data.username || data.userId || 'User';
+        default:
+            return log.resource_type;
+    }
+};
+
+// Helper function to format resource type for display
+const formatResourceType = (resourceType: string): string => {
+    const typeMap: Record<string, string> = {
+        'vehicles': 'Vehicle',
+        'staff': 'Staff',
+        'inventory_items': 'Inventory',
+        'harvest_logs': 'Harvest Log',
+        'maintenance_logs': 'Maintenance Log',
+        'auth': 'Authentication',
+    };
+    return typeMap[resourceType] || resourceType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+};
+
+// Helper function to format details in a readable way
+const formatDetails = (log: AuditLog): string => {
+    if (log.action === 'LOGIN') {
+        return `User logged in`;
+    }
+    if (log.action === 'LOGOUT') {
+        return `User logged out`;
+    }
+    
+    if (log.action === 'CREATE' && log.new_data) {
+        const data = log.new_data;
+        const parts: string[] = [];
+        
+        if (data.name) parts.push(data.name);
+        if (data.type) parts.push(`Type: ${data.type}`);
+        if (data.role) parts.push(`Role: ${data.role}`);
+        if (data.status) parts.push(`Status: ${data.status}`);
+        if (data.licensePlate || data.license_plate) parts.push(`Plate: ${data.licensePlate || data.license_plate}`);
+        if (data.blockId || data.block_id) parts.push(`Block: ${data.blockId || data.block_id}`);
+        if (data.activity) parts.push(`Activity: ${data.activity}`);
+        if (data.bunches) parts.push(`Bunches: ${data.bunches}`);
+        if (data.category) parts.push(`Category: ${data.category}`);
+        if (data.quantity !== undefined) parts.push(`Quantity: ${data.quantity}`);
+        if (data.staffCount || data.staff_count) parts.push(`Staff: ${data.staffCount || data.staff_count}`);
+        if (data.date) parts.push(`Date: ${new Date(data.date).toLocaleDateString()}`);
+        
+        return parts.length > 0 ? parts.join(', ') : 'Created';
+    }
+    
+    if (log.action === 'UPDATE' && (log.old_data || log.new_data)) {
+        const oldData = log.old_data || {};
+        const newData = log.new_data || {};
+        const changes: string[] = [];
+        
+        // Check for common fields that might have changed
+        const fieldsToCheck = ['name', 'status', 'role', 'type', 'licensePlate', 'license_plate', 'quantity', 'blockId', 'block_id', 'activity', 'bunches', 'staffCount', 'staff_count', 'date'];
+        
+        fieldsToCheck.forEach(field => {
+            const oldValue = oldData[field];
+            const newValue = newData[field];
+            if (oldValue !== undefined && newValue !== undefined && oldValue !== newValue) {
+                const fieldName = field === 'blockId' || field === 'block_id' ? 'Block' : 
+                                 field === 'staffCount' || field === 'staff_count' ? 'Staff Count' : field;
+                changes.push(`${fieldName}: ${oldValue} → ${newValue}`);
+            }
+        });
+        
+        // If no specific changes found, show summary
+        if (changes.length === 0) {
+            return 'Updated';
+        }
+        
+        return changes.join(', ');
+    }
+    
+    if (log.action === 'DELETE' && log.old_data) {
+        const data = log.old_data;
+        const parts: string[] = [];
+        
+        // Handle different resource types
+        if (data.name) parts.push(data.name);
+        if (data.type) parts.push(`Type: ${data.type}`);
+        if (data.role) parts.push(`Role: ${data.role}`);
+        if (data.licensePlate || data.license_plate) parts.push(`Plate: ${data.licensePlate || data.license_plate}`);
+        
+        // Maintenance log specific fields
+        if (data.blockId || data.block_id) parts.push(`Block: ${data.blockId || data.block_id}`);
+        if (data.activity) parts.push(`Activity: ${data.activity}`);
+        if (data.date) parts.push(`Date: ${new Date(data.date).toLocaleDateString()}`);
+        if (data.staffCount || data.staff_count) parts.push(`Staff Count: ${data.staffCount || data.staff_count}`);
+        if (data.notes) parts.push(`Notes: ${data.notes.substring(0, 30)}${data.notes.length > 30 ? '...' : ''}`);
+        
+        // Harvest log specific fields
+        if (data.bunches) parts.push(`Bunches: ${data.bunches}`);
+        
+        // Inventory specific fields
+        if (data.category) parts.push(`Category: ${data.category}`);
+        if (data.quantity !== undefined) parts.push(`Quantity: ${data.quantity}`);
+        
+        return parts.length > 0 ? `Deleted: ${parts.join(', ')}` : 'Deleted';
+    }
+    
+    return 'No details';
 };
 
 export function AuditLogTable({ logs }: AuditLogTableProps) {
@@ -53,7 +175,6 @@ export function AuditLogTable({ logs }: AuditLogTableProps) {
                             <th className="p-4">Action</th>
                             <th className="p-4">Resource</th>
                             <th className="p-4">Details</th>
-                            <th className="p-4">IP Address</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-border">
@@ -80,73 +201,17 @@ export function AuditLogTable({ logs }: AuditLogTableProps) {
                                     <div className="flex items-center gap-2">
                                         <FileText className="h-4 w-4 text-muted-foreground" />
                                         <div>
-                                            <div className="font-medium">{log.resource_type}</div>
-                                            {log.resource_id && (
-                                                <div className="text-xs text-muted-foreground">
-                                                    ID: {truncateText(log.resource_id, 20)}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                </td>
-                                <td className="p-4 text-xs text-muted-foreground max-w-md">
-                                    {log.action === 'DELETE' && log.old_data && (
-                                        <div className="space-y-1">
-                                            <div className="text-red-600 font-medium">Deleted Data:</div>
-                                            <div className="bg-red-50 p-2 rounded text-xs font-mono overflow-x-auto">
-                                                {JSON.stringify(log.old_data, null, 2).substring(0, 200)}
-                                                {JSON.stringify(log.old_data).length > 200 && '...'}
+                                            <div className="font-medium">{formatResourceType(log.resource_type)}</div>
+                                            <div className="text-xs text-muted-foreground">
+                                                {getResourceName(log)}
                                             </div>
                                         </div>
-                                    )}
-                                    {log.action === 'UPDATE' && (
-                                        <div className="space-y-1">
-                                            {log.old_data && (
-                                                <div>
-                                                    <span className="text-red-600">Old:</span>{' '}
-                                                    {truncateText(JSON.stringify(log.old_data), 30)}
-                                                </div>
-                                            )}
-                                            {log.new_data && (
-                                                <div>
-                                                    <span className="text-green-600">New:</span>{' '}
-                                                    {truncateText(JSON.stringify(log.new_data), 30)}
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
-                                    {log.action === 'CREATE' && log.new_data && (
-                                        <div className="text-green-600">
-                                            Created: {truncateText(JSON.stringify(log.new_data), 50)}
-                                        </div>
-                                    )}
-                                    {log.action === 'LOGIN' && (
-                                        <div className="text-purple-600">Successful login</div>
-                                    )}
-                                    {log.action === 'LOGOUT' && (
-                                        <div className="text-gray-600">User logged out</div>
-                                    )}
-                                    {!log.old_data && !log.new_data && log.action !== 'LOGIN' && log.action !== 'LOGOUT' && (
-                                        <span className="text-muted-foreground">No details</span>
-                                    )}
-                                </td>
-                                <td className="p-4">
-                                    <div className="flex items-center gap-2 text-xs">
-                                        {log.ip_address ? (
-                                            <>
-                                                <Globe className="h-3 w-3 text-muted-foreground" />
-                                                <span>{log.ip_address}</span>
-                                            </>
-                                        ) : (
-                                            <span className="text-muted-foreground">N/A</span>
-                                        )}
                                     </div>
-                                    {log.user_agent && (
-                                        <div className="mt-1 text-xs text-muted-foreground flex items-center gap-1">
-                                            <Monitor className="h-3 w-3" />
-                                            {truncateText(log.user_agent, 40)}
-                                        </div>
-                                    )}
+                                </td>
+                                <td className="p-4 text-sm">
+                                    <div className="text-foreground">
+                                        {formatDetails(log)}
+                                    </div>
                                 </td>
                             </tr>
                         ))}
@@ -156,3 +221,7 @@ export function AuditLogTable({ logs }: AuditLogTableProps) {
         </div>
     );
 }
+
+
+
+

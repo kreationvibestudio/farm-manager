@@ -11,7 +11,12 @@ export async function GET() {
     }
     
     const logs = await getMaintenanceLogs()
-    return NextResponse.json(logs)
+    // Add caching headers for better performance (30 seconds cache)
+    return NextResponse.json(logs, {
+      headers: {
+        'Cache-Control': 'private, max-age=30, stale-while-revalidate=60',
+      },
+    })
   } catch (error: any) {
     console.error('API Error fetching maintenance logs:', error)
     // If table doesn't exist, return empty array instead of error
@@ -33,13 +38,16 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const newLog = await addMaintenanceLog(body)
     
-    // Log audit event
-    await logAuditEvent(session, {
+    // Log audit event (non-blocking)
+    logAuditEvent(session, {
       action: 'CREATE',
       resourceType: 'maintenance_logs',
       resourceId: newLog.id,
       newData: newLog,
       request,
+    }).catch(error => {
+      console.error('Failed to log audit event:', error)
+      // Don't block response if audit logging fails
     })
     
     return NextResponse.json(newLog, { status: 201 })
