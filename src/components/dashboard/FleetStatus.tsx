@@ -2,11 +2,19 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
-import { vehicleStats } from '@/lib/data';
+import { useAppStore } from '@/lib/store';
 
 export function FleetStatus() {
+    const { vehicles } = useAppStore();
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
     const containerRef = useRef<HTMLDivElement>(null);
+
+    // Calculate vehicle stats from real data
+    const vehicleStats = [
+        { name: 'Active', value: vehicles.filter(v => v.status === 'Active').length, color: '#16a34a' },
+        { name: 'Maintenance', value: vehicles.filter(v => v.status === 'Maintenance').length, color: '#ca8a04' },
+        { name: 'OutOfService', value: vehicles.filter(v => v.status === 'OutOfService').length, color: '#dc2626' },
+    ].filter(stat => stat.value > 0); // Only show statuses with vehicles
 
     useEffect(() => {
         const updateDimensions = () => {

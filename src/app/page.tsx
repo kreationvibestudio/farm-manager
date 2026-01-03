@@ -46,7 +46,7 @@ export default function Home() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard
             title="Total FFB Harvested"
-            value={`${totalHarvest.toLocaleString()} kg`}
+            value={`${totalHarvest.toLocaleString()} bunches`}
             trend="+2.5%"
             trendUp={true}
             icon={<TrendingUp className="h-4 w-4" />}
@@ -96,7 +96,7 @@ export default function Home() {
                 <tr>
                   <th className="p-4 font-medium">Date</th>
                   <th className="p-4 font-medium">Block</th>
-                  <th className="p-4 font-medium">Weight (kg)</th>
+                  <th className="p-4 font-medium">Bunches</th>
                   <th className="p-4 font-medium">Supervisor</th>
                 </tr>
               </thead>
@@ -106,7 +106,7 @@ export default function Home() {
                     key={log.id}
                     date={new Date(log.date).toLocaleDateString()} 
                     block={log.blockId} 
-                    weight={log.bunches.toLocaleString()} 
+                    weight={`${log.bunches.toLocaleString()} bunches`} 
                     user={log.supervisorName || log.supervisorId || 'N/A'} 
                   />
                 ))}
