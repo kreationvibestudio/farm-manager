@@ -1,19 +1,21 @@
-import type { NextAuthOptions } from "next-auth";
-import CredentialsProvider from "next-auth/providers/credentials";
+import NextAuth from "next-auth";
+import Credentials from "next-auth/providers/credentials";
 
 // Rate limiting (simple in-memory - use Redis in production)
 const loginAttempts = new Map<string, { count: number; resetAt: number }>();
 
 function getClientIP(req: any): string {
-    return req?.headers?.['x-forwarded-for']?.split(',')[0]?.trim() || 
-           req?.headers?.['x-real-ip'] || 
+    return req?.headers?.get?.('x-forwarded-for')?.split(',')[0]?.trim() || 
+           req?.headers?.get?.('x-real-ip') || 
+           req?.headers?.['x-forwarded-for']?.split(',')[0]?.trim() ||
+           req?.headers?.['x-real-ip'] ||
            req?.socket?.remoteAddress || 
            'unknown';
 }
 
-export const authOptions: NextAuthOptions = {
+export const { handlers, signIn, signOut, auth } = NextAuth({
     providers: [
-        CredentialsProvider({
+        Credentials({
             name: "Credentials",
             credentials: {
                 username: { label: "Username", type: "text" },
@@ -78,7 +80,7 @@ export const authOptions: NextAuthOptions = {
     },
     callbacks: {
         async session({ session, token }) {
-            if (token) {
+            if (token && session.user) {
                 (session.user as any).id = token.sub || "1";
             }
             return session;
@@ -89,21 +91,17 @@ export const authOptions: NextAuthOptions = {
             }
             return token;
         },
-        async signIn({ user, account, profile }) {
-            // Log login attempt (will be logged in the authorize function on success)
-            return true;
-        },
     },
     session: {
         strategy: "jwt",
         maxAge: 8 * 60 * 60, // 8 hours
     },
-    secret: process.env.NEXTAUTH_SECRET || (() => {
+    secret: process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET || (() => {
         // Warn if secret is missing but don't crash
         if (typeof window === 'undefined') { // Server-side only
-            console.error('⚠️ NEXTAUTH_SECRET is not set! Authentication will not work properly.');
+            console.error('⚠️ NEXTAUTH_SECRET or AUTH_SECRET is not set! Authentication will not work properly.');
             console.error('Please set NEXTAUTH_SECRET in your Vercel environment variables.');
         }
         return 'temporary-secret-change-in-production'; // Temporary fallback
     })(),
-};
+});

@@ -8,7 +8,7 @@
  */
 import { updateSession } from '@/lib/supabase/middleware'
 import { NextRequest, NextResponse } from 'next/server'
-import { getToken } from "next-auth/jwt"
+import { auth } from "@/lib/auth"
 
 export async function middleware(request: NextRequest) {
   // Always allow login page, auth API, static files, and favicon
@@ -30,24 +30,21 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Check for NextAuth session token
-  let token
+  // Check for NextAuth session
+  let session
   try {
-    token = await getToken({ 
-      req: request,
-      secret: secret
-    })
+    session = await auth()
   } catch (error) {
-    console.error('Error getting token in middleware:', error)
-    // If token check fails, redirect to login
+    console.error('Error getting session in middleware:', error)
+    // If session check fails, redirect to login
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     url.searchParams.set('callbackUrl', request.nextUrl.pathname)
     return NextResponse.redirect(url)
   }
 
-  // If no token and not on login page, redirect to login
-  if (!token) {
+  // If no session and not on login page, redirect to login
+  if (!session) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     url.searchParams.set('callbackUrl', request.nextUrl.pathname)
