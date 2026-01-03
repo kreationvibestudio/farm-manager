@@ -9,30 +9,6 @@ if (!process.env.NEXTAUTH_SECRET) {
 
 const handler = NextAuth(authOptions);
 
-// Helper function to create a compatible request object for NextAuth
-// NextAuth v4 expects req.query.nextauth to be an array of route segments
-function createNextAuthRequest(req: NextRequest, params: { nextauth: string[] }) {
-  const url = req.nextUrl;
-  
-  // Get the nextauth route segments from params
-  const nextauthRoute = params.nextauth || [];
-  
-  // Create a request object compatible with NextAuth's expected format
-  // NextAuth expects req.query.nextauth to be an array
-  const nextAuthReq = {
-    url: url.toString(),
-    query: {
-      nextauth: nextauthRoute,
-    },
-    headers: req.headers,
-    method: req.method,
-    body: req.body,
-    cookies: req.cookies,
-  } as any;
-  
-  return nextAuthReq;
-}
-
 // Wrap handler with error handling
 export async function GET(
   req: NextRequest,
@@ -55,9 +31,44 @@ export async function GET(
     // Get params
     const routeParams = await params;
     
-    // Create compatible request object for NextAuth
-    const nextAuthReq = createNextAuthRequest(req, routeParams);
-    return await handler(nextAuthReq);
+    // Extract the nextauth route segments from the pathname
+    const pathname = req.nextUrl.pathname;
+    const segments = pathname.replace('/api/auth/', '').split('/').filter(Boolean);
+    
+    // Create a proper Request object for NextAuth
+    const url = new URL(req.url);
+    
+    // Create the request object
+    const nextAuthReq = new Request(url, {
+      method: req.method,
+      headers: req.headers,
+    });
+    
+    // Add query property that NextAuth expects
+    // NextAuth v4 expects req.query.nextauth to be an array
+    Object.defineProperty(nextAuthReq, 'query', {
+      value: { nextauth: segments },
+      writable: false,
+      configurable: false,
+    });
+    
+    // Call the handler and ensure we get a Response
+    const response = await handler(nextAuthReq);
+    
+    // Validate response
+    if (!response || !(response instanceof Response)) {
+      console.error("NextAuth handler returned invalid response:", response);
+      return NextResponse.json(
+        { 
+          error: "Authentication configuration error",
+          message: "Authentication handler returned invalid response",
+          code: "INVALID_RESPONSE"
+        },
+        { status: 500 }
+      );
+    }
+    
+    return response;
   } catch (error: any) {
     console.error("NextAuth GET error:", error);
     console.error("Error stack:", error.stack);
@@ -95,9 +106,52 @@ export async function POST(
     // Get params
     const routeParams = await params;
     
-    // Create compatible request object for NextAuth
-    const nextAuthReq = createNextAuthRequest(req, routeParams);
-    return await handler(nextAuthReq);
+    // Extract the nextauth route segments from the pathname
+    const pathname = req.nextUrl.pathname;
+    const segments = pathname.replace('/api/auth/', '').split('/').filter(Boolean);
+    
+    // Create a proper Request object for NextAuth
+    const url = new URL(req.url);
+    
+    // Get body for POST requests
+    let body: string | null = null;
+    try {
+      body = await req.text();
+    } catch (e) {
+      // Body might not be available
+    }
+    
+    // Create the request object
+    const nextAuthReq = new Request(url, {
+      method: req.method,
+      headers: req.headers,
+      body: body,
+    });
+    
+    // Add query property that NextAuth expects
+    Object.defineProperty(nextAuthReq, 'query', {
+      value: { nextauth: segments },
+      writable: false,
+      configurable: false,
+    });
+    
+    // Call the handler and ensure we get a Response
+    const response = await handler(nextAuthReq);
+    
+    // Validate response
+    if (!response || !(response instanceof Response)) {
+      console.error("NextAuth handler returned invalid response:", response);
+      return NextResponse.json(
+        { 
+          error: "Authentication configuration error",
+          message: "Authentication handler returned invalid response",
+          code: "INVALID_RESPONSE"
+        },
+        { status: 500 }
+      );
+    }
+    
+    return response;
   } catch (error: any) {
     console.error("NextAuth POST error:", error);
     console.error("Error stack:", error.stack);
