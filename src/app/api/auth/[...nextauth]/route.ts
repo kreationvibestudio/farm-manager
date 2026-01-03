@@ -7,93 +7,127 @@ if (!process.env.NEXTAUTH_SECRET) {
   console.error("❌ NEXTAUTH_SECRET is not set. Please set it in your environment variables.");
 }
 
+// Create NextAuth handler
 const handler = NextAuth(authOptions);
 
-// NextAuth v4 App Router handler
-// The handler expects a request with query.nextauth array
+// NextAuth v4 was designed for Pages Router which uses plain objects, not Request objects
+// We need to create a plain object that mimics the Pages Router request format
+function createPagesRouterRequest(
+  req: NextRequest,
+  segments: string[]
+): any {
+  const url = new URL(req.url);
+  
+  // Create a plain object that mimics Next.js Pages Router request
+  // This is what NextAuth v4 expects
+  const pagesRouterReq: any = {
+    url: url.toString(),
+    method: req.method,
+    headers: Object.fromEntries(req.headers.entries()),
+    query: {
+      nextauth: segments,
+    },
+    cookies: Object.fromEntries(
+      req.cookies.getAll().map(c => [c.name, c.value])
+    ),
+    body: undefined, // Will be set for POST
+  };
+  
+  // Add socket property that some NextAuth code might check
+  pagesRouterReq.socket = {
+    remoteAddress: req.headers.get('x-forwarded-for')?.split(',')[0] || 
+                   req.headers.get('x-real-ip') || 
+                   'unknown',
+  };
+  
+  return pagesRouterReq;
+}
+
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ nextauth: string[] }> }
+  context: { params: Promise<{ nextauth: string[] }> }
 ) {
   try {
-    const routeParams = await params;
-    const pathname = req.nextUrl.pathname;
-    const segments = pathname.replace('/api/auth/', '').split('/').filter(Boolean);
+    const { nextauth } = await context.params;
+    const segments = nextauth || [];
     
-    // Create request URL with query parameter
-    const url = new URL(req.url);
+    // Create Pages Router-style request object
+    const pagesRouterReq = createPagesRouterRequest(req, segments);
     
-    // Create request object
-    const request = new Request(url, {
-      method: req.method,
-      headers: req.headers,
-    });
+    // Call NextAuth handler
+    const response = await handler(pagesRouterReq);
     
-    // Add query property that NextAuth expects
-    (request as any).query = { nextauth: segments };
-    
-    const response = await handler(request);
-    
-    // Ensure we return a valid Response
+    // NextAuth should return a Response, but if it doesn't, create one
     if (!response) {
-      return NextResponse.json({ error: "Authentication handler returned no response" }, { status: 500 });
+      return NextResponse.json({ error: "No response from NextAuth" }, { status: 500 });
+    }
+    
+    // If response is not a Response object, wrap it
+    if (!(response instanceof Response)) {
+      return NextResponse.json(response, { status: 200 });
     }
     
     return response;
   } catch (error: any) {
     console.error("NextAuth GET error:", error);
-    return NextResponse.json(
-      { error: "Authentication error", message: error.message || "Unknown error" },
-      { status: 500 }
-    );
+    console.error("Error details:", {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+    });
+    return NextResponse.json({ 
+      error: "Authentication error", 
+      message: error.message || "Unknown error" 
+    }, { status: 500 });
   }
 }
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: Promise<{ nextauth: string[] }> }
+  context: { params: Promise<{ nextauth: string[] }> }
 ) {
   try {
-    const routeParams = await params;
-    const pathname = req.nextUrl.pathname;
-    const segments = pathname.replace('/api/auth/', '').split('/').filter(Boolean);
+    const { nextauth } = await context.params;
+    const segments = nextauth || [];
     
-    // Create request URL
-    const url = new URL(req.url);
-    
-    // Get body
+    // Read body
     let body: string | null = null;
     try {
       if (req.body) {
         body = await req.text();
       }
     } catch (e) {
-      // Body might not be available or already consumed
+      // Body might be unavailable
     }
     
-    // Create request object
-    const request = new Request(url, {
-      method: req.method,
-      headers: req.headers,
-      body: body,
-    });
+    // Create Pages Router-style request object
+    const pagesRouterReq = createPagesRouterRequest(req, segments);
+    pagesRouterReq.body = body;
     
-    // Add query property that NextAuth expects
-    (request as any).query = { nextauth: segments };
+    // Call NextAuth handler
+    const response = await handler(pagesRouterReq);
     
-    const response = await handler(request);
-    
-    // Ensure we return a valid Response
+    // NextAuth should return a Response, but if it doesn't, create one
     if (!response) {
-      return NextResponse.json({ error: "Authentication handler returned no response" }, { status: 500 });
+      return NextResponse.json({ error: "No response from NextAuth" }, { status: 500 });
+    }
+    
+    // If response is not a Response object, wrap it
+    if (!(response instanceof Response)) {
+      return NextResponse.json(response, { status: 200 });
     }
     
     return response;
   } catch (error: any) {
     console.error("NextAuth POST error:", error);
-    return NextResponse.json(
-      { error: "Authentication error", message: error.message || "Unknown error" },
-      { status: 500 }
-    );
+    console.error("Error details:", {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+    });
+    return NextResponse.json({ 
+      error: "Authentication error", 
+      message: error.message || "Unknown error" 
+    }, { status: 500 });
   }
 }
