@@ -69,7 +69,7 @@ export interface VehicleWithLocation extends Vehicle {
 }
 
 // Farm Maintenance Types
-export type MaintenanceActivity = 'Slashing' | 'Pruning' | 'Ring Weeding' | 'Fertilizer Application';
+export type MaintenanceActivity = 'Pruning' | 'Fertilizer Application' | 'Herbicide Application' | 'Slashing' | 'Ring Weeding';
 
 export interface MaintenanceLog {
     id: string;

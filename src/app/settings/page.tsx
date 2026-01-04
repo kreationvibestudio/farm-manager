@@ -1,6 +1,7 @@
 import { Settings, User, Bell, Shield, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import Link from "next/link";
 
 export default function SettingsPage() {
     return (
@@ -79,8 +80,12 @@ export default function SettingsPage() {
                             Need help with the platform? Check our documentation or contact support.
                         </p>
                         <div className="flex gap-4 mt-4">
-                            <Button variant="outline">Documentation</Button>
-                            <Button>Contact Support</Button>
+                            <Link href="/documentation">
+                                <Button variant="outline">Documentation</Button>
+                            </Link>
+                            <Link href="/contact">
+                                <Button>Contact Support</Button>
+                            </Link>
                         </div>
                     </CardContent>
                 </Card>

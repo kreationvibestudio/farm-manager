@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS maintenance_logs (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   date DATE NOT NULL DEFAULT CURRENT_DATE,
   block_id TEXT NOT NULL,
-  activity TEXT NOT NULL CHECK (activity IN ('Slashing', 'Pruning', 'Ring Weeding', 'Fertilizer Application')),
+  activity TEXT NOT NULL CHECK (activity IN ('Pruning', 'Fertilizer Application', 'Herbicide Application', 'Slashing', 'Ring Weeding')),
   supervisor_id UUID REFERENCES staff(id),
   staff_count INTEGER,
   notes TEXT,

@@ -38,10 +38,11 @@ export function BlockMaintenanceStatus({ logs }: BlockMaintenanceStatusProps) {
 
         return {
             blockId,
-            slashing: getLastDate('Slashing'),
             pruning: getLastDate('Pruning'),
-            ringWeeding: getLastDate('Ring Weeding'),
             fertilizer: getLastDate('Fertilizer Application'),
+            herbicide: getLastDate('Herbicide Application'),
+            slashing: getLastDate('Slashing'),
+            ringWeeding: getLastDate('Ring Weeding'),
             getStatusColor,
             getDaysAgo,
         };
@@ -70,10 +71,11 @@ export function BlockMaintenanceStatus({ logs }: BlockMaintenanceStatusProps) {
                     <thead className="bg-muted/50 text-muted-foreground uppercase text-xs font-semibold">
                         <tr>
                             <th className="p-4">Block</th>
-                            <th className="p-4">Slashing</th>
                             <th className="p-4">Pruning</th>
-                            <th className="p-4">Ring Weeding</th>
                             <th className="p-4">Fertilizer</th>
+                            <th className="p-4">Herbicide</th>
+                            <th className="p-4">Slashing</th>
+                            <th className="p-4">Ring Weeding</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-border">
@@ -84,20 +86,6 @@ export function BlockMaintenanceStatus({ logs }: BlockMaintenanceStatusProps) {
                                         <MapPin className="h-4 w-4 text-muted-foreground" />
                                         {status.blockId}
                                     </div>
-                                </td>
-                                <td className="p-4">
-                                    {status.slashing ? (
-                                        <div className="flex items-center gap-2">
-                                            <Badge className={status.getStatusColor(status.getDaysAgo(status.slashing))}>
-                                                {status.getDaysAgo(status.slashing)}d ago
-                                            </Badge>
-                                            <span className="text-xs text-muted-foreground">
-                                                {new Date(status.slashing).toLocaleDateString()}
-                                            </span>
-                                        </div>
-                                    ) : (
-                                        <span className="text-muted-foreground text-xs">Never</span>
-                                    )}
                                 </td>
                                 <td className="p-4">
                                     {status.pruning ? (
@@ -114,20 +102,6 @@ export function BlockMaintenanceStatus({ logs }: BlockMaintenanceStatusProps) {
                                     )}
                                 </td>
                                 <td className="p-4">
-                                    {status.ringWeeding ? (
-                                        <div className="flex items-center gap-2">
-                                            <Badge className={status.getStatusColor(status.getDaysAgo(status.ringWeeding))}>
-                                                {status.getDaysAgo(status.ringWeeding)}d ago
-                                            </Badge>
-                                            <span className="text-xs text-muted-foreground">
-                                                {new Date(status.ringWeeding).toLocaleDateString()}
-                                            </span>
-                                        </div>
-                                    ) : (
-                                        <span className="text-muted-foreground text-xs">Never</span>
-                                    )}
-                                </td>
-                                <td className="p-4">
                                     {status.fertilizer ? (
                                         <div className="flex items-center gap-2">
                                             <Badge className={status.getStatusColor(status.getDaysAgo(status.fertilizer))}>
@@ -135,6 +109,48 @@ export function BlockMaintenanceStatus({ logs }: BlockMaintenanceStatusProps) {
                                             </Badge>
                                             <span className="text-xs text-muted-foreground">
                                                 {new Date(status.fertilizer).toLocaleDateString()}
+                                            </span>
+                                        </div>
+                                    ) : (
+                                        <span className="text-muted-foreground text-xs">Never</span>
+                                    )}
+                                </td>
+                                <td className="p-4">
+                                    {status.herbicide ? (
+                                        <div className="flex items-center gap-2">
+                                            <Badge className={status.getStatusColor(status.getDaysAgo(status.herbicide))}>
+                                                {status.getDaysAgo(status.herbicide)}d ago
+                                            </Badge>
+                                            <span className="text-xs text-muted-foreground">
+                                                {new Date(status.herbicide).toLocaleDateString()}
+                                            </span>
+                                        </div>
+                                    ) : (
+                                        <span className="text-muted-foreground text-xs">Never</span>
+                                    )}
+                                </td>
+                                <td className="p-4">
+                                    {status.slashing ? (
+                                        <div className="flex items-center gap-2">
+                                            <Badge className={status.getStatusColor(status.getDaysAgo(status.slashing))}>
+                                                {status.getDaysAgo(status.slashing)}d ago
+                                            </Badge>
+                                            <span className="text-xs text-muted-foreground">
+                                                {new Date(status.slashing).toLocaleDateString()}
+                                            </span>
+                                        </div>
+                                    ) : (
+                                        <span className="text-muted-foreground text-xs">Never</span>
+                                    )}
+                                </td>
+                                <td className="p-4">
+                                    {status.ringWeeding ? (
+                                        <div className="flex items-center gap-2">
+                                            <Badge className={status.getStatusColor(status.getDaysAgo(status.ringWeeding))}>
+                                                {status.getDaysAgo(status.ringWeeding)}d ago
+                                            </Badge>
+                                            <span className="text-xs text-muted-foreground">
+                                                {new Date(status.ringWeeding).toLocaleDateString()}
                                             </span>
                                         </div>
                                     ) : (

@@ -48,18 +48,20 @@ export function ActivityTimelineChart({ logs }: ActivityTimelineChartProps) {
         const dayLogs = logs.filter(log => log.date === date);
         return {
             date: new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-            'Slashing': dayLogs.filter(l => l.activity === 'Slashing').length,
             'Pruning': dayLogs.filter(l => l.activity === 'Pruning').length,
-            'Ring Weeding': dayLogs.filter(l => l.activity === 'Ring Weeding').length,
             'Fertilizer Application': dayLogs.filter(l => l.activity === 'Fertilizer Application').length,
+            'Herbicide Application': dayLogs.filter(l => l.activity === 'Herbicide Application').length,
+            'Slashing': dayLogs.filter(l => l.activity === 'Slashing').length,
+            'Ring Weeding': dayLogs.filter(l => l.activity === 'Ring Weeding').length,
         };
     });
 
     const colors = {
-        'Slashing': '#f97316',
         'Pruning': '#3b82f6',
-        'Ring Weeding': '#22c55e',
         'Fertilizer Application': '#a855f7',
+        'Herbicide Application': '#eab308',
+        'Slashing': '#f97316',
+        'Ring Weeding': '#22c55e',
     };
 
     return (
@@ -74,21 +76,25 @@ export function ActivityTimelineChart({ logs }: ActivityTimelineChartProps) {
                     <ResponsiveContainer width="100%" height="100%">
                         <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                             <defs>
-                                <linearGradient id="colorSlashing" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor={colors['Slashing']} stopOpacity={0.8} />
-                                    <stop offset="95%" stopColor={colors['Slashing']} stopOpacity={0} />
-                                </linearGradient>
                                 <linearGradient id="colorPruning" x1="0" y1="0" x2="0" y2="1">
                                     <stop offset="5%" stopColor={colors['Pruning']} stopOpacity={0.8} />
                                     <stop offset="95%" stopColor={colors['Pruning']} stopOpacity={0} />
                                 </linearGradient>
-                                <linearGradient id="colorRingWeeding" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor={colors['Ring Weeding']} stopOpacity={0.8} />
-                                    <stop offset="95%" stopColor={colors['Ring Weeding']} stopOpacity={0} />
-                                </linearGradient>
                                 <linearGradient id="colorFertilizer" x1="0" y1="0" x2="0" y2="1">
                                     <stop offset="5%" stopColor={colors['Fertilizer Application']} stopOpacity={0.8} />
                                     <stop offset="95%" stopColor={colors['Fertilizer Application']} stopOpacity={0} />
+                                </linearGradient>
+                                <linearGradient id="colorHerbicide" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor={colors['Herbicide Application']} stopOpacity={0.8} />
+                                    <stop offset="95%" stopColor={colors['Herbicide Application']} stopOpacity={0} />
+                                </linearGradient>
+                                <linearGradient id="colorSlashing" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor={colors['Slashing']} stopOpacity={0.8} />
+                                    <stop offset="95%" stopColor={colors['Slashing']} stopOpacity={0} />
+                                </linearGradient>
+                                <linearGradient id="colorRingWeeding" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor={colors['Ring Weeding']} stopOpacity={0.8} />
+                                    <stop offset="95%" stopColor={colors['Ring Weeding']} stopOpacity={0} />
                                 </linearGradient>
                             </defs>
                             <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
@@ -105,14 +111,6 @@ export function ActivityTimelineChart({ logs }: ActivityTimelineChartProps) {
                             />
                             <Area
                                 type="monotone"
-                                dataKey="Slashing"
-                                stackId="1"
-                                stroke={colors['Slashing']}
-                                fill="url(#colorSlashing)"
-                                strokeWidth={2}
-                            />
-                            <Area
-                                type="monotone"
                                 dataKey="Pruning"
                                 stackId="1"
                                 stroke={colors['Pruning']}
@@ -121,18 +119,34 @@ export function ActivityTimelineChart({ logs }: ActivityTimelineChartProps) {
                             />
                             <Area
                                 type="monotone"
-                                dataKey="Ring Weeding"
-                                stackId="1"
-                                stroke={colors['Ring Weeding']}
-                                fill="url(#colorRingWeeding)"
-                                strokeWidth={2}
-                            />
-                            <Area
-                                type="monotone"
                                 dataKey="Fertilizer Application"
                                 stackId="1"
                                 stroke={colors['Fertilizer Application']}
                                 fill="url(#colorFertilizer)"
+                                strokeWidth={2}
+                            />
+                            <Area
+                                type="monotone"
+                                dataKey="Herbicide Application"
+                                stackId="1"
+                                stroke={colors['Herbicide Application']}
+                                fill="url(#colorHerbicide)"
+                                strokeWidth={2}
+                            />
+                            <Area
+                                type="monotone"
+                                dataKey="Slashing"
+                                stackId="1"
+                                stroke={colors['Slashing']}
+                                fill="url(#colorSlashing)"
+                                strokeWidth={2}
+                            />
+                            <Area
+                                type="monotone"
+                                dataKey="Ring Weeding"
+                                stackId="1"
+                                stroke={colors['Ring Weeding']}
+                                fill="url(#colorRingWeeding)"
                                 strokeWidth={2}
                             />
                         </AreaChart>

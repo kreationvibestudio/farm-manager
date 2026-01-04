@@ -11,10 +11,11 @@ interface MaintenanceTableProps {
 }
 
 const activityColors: Record<MaintenanceLog['activity'], string> = {
-    'Slashing': 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300',
     'Pruning': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-    'Ring Weeding': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
     'Fertilizer Application': 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300',
+    'Herbicide Application': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
+    'Slashing': 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300',
+    'Ring Weeding': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
 };
 
 export function MaintenanceTable({ logs, onDelete }: MaintenanceTableProps) {

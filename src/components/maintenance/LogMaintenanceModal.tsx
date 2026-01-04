@@ -16,7 +16,7 @@ export function LogMaintenanceModal({ isOpen, onClose }: LogMaintenanceModalProp
     const [formData, setFormData] = useState({
         date: new Date().toISOString().split('T')[0],
         blockId: "",
-        activity: 'Slashing' as MaintenanceActivity,
+        activity: 'Pruning' as MaintenanceActivity,
         supervisorId: "",
         staffCount: undefined as number | undefined,
         notes: "",
@@ -40,7 +40,7 @@ export function LogMaintenanceModal({ isOpen, onClose }: LogMaintenanceModalProp
             setFormData({
                 date: new Date().toISOString().split('T')[0],
                 blockId: "",
-                activity: 'Slashing',
+                activity: 'Pruning',
                 supervisorId: "",
                 staffCount: undefined,
                 notes: "",
@@ -130,10 +130,11 @@ export function LogMaintenanceModal({ isOpen, onClose }: LogMaintenanceModalProp
                             onChange={(e) => setFormData({ ...formData, activity: e.target.value as MaintenanceActivity })}
                             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                         >
-                            <option value="Slashing">Slashing</option>
                             <option value="Pruning">Pruning</option>
-                            <option value="Ring Weeding">Ring Weeding</option>
                             <option value="Fertilizer Application">Fertilizer Application</option>
+                            <option value="Herbicide Application">Herbicide Application</option>
+                            <option value="Slashing">Slashing</option>
+                            <option value="Ring Weeding">Ring Weeding</option>
                         </select>
                     </div>
 

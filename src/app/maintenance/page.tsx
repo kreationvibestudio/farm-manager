@@ -31,18 +31,20 @@ export default function MaintenancePage() {
 
     // Count unique blocks per activity
     const blockCounts = {
-        'Slashing': new Set(maintenanceLogs.filter(l => l.activity === 'Slashing').map(l => l.blockId)).size,
         'Pruning': new Set(maintenanceLogs.filter(l => l.activity === 'Pruning').map(l => l.blockId)).size,
-        'Ring Weeding': new Set(maintenanceLogs.filter(l => l.activity === 'Ring Weeding').map(l => l.blockId)).size,
         'Fertilizer Application': new Set(maintenanceLogs.filter(l => l.activity === 'Fertilizer Application').map(l => l.blockId)).size,
+        'Herbicide Application': new Set(maintenanceLogs.filter(l => l.activity === 'Herbicide Application').map(l => l.blockId)).size,
+        'Slashing': new Set(maintenanceLogs.filter(l => l.activity === 'Slashing').map(l => l.blockId)).size,
+        'Ring Weeding': new Set(maintenanceLogs.filter(l => l.activity === 'Ring Weeding').map(l => l.blockId)).size,
     };
 
     // Count total activities per type
     const activityCounts = {
-        'Slashing': maintenanceLogs.filter(l => l.activity === 'Slashing').length,
         'Pruning': maintenanceLogs.filter(l => l.activity === 'Pruning').length,
-        'Ring Weeding': maintenanceLogs.filter(l => l.activity === 'Ring Weeding').length,
         'Fertilizer Application': maintenanceLogs.filter(l => l.activity === 'Fertilizer Application').length,
+        'Herbicide Application': maintenanceLogs.filter(l => l.activity === 'Herbicide Application').length,
+        'Slashing': maintenanceLogs.filter(l => l.activity === 'Slashing').length,
+        'Ring Weeding': maintenanceLogs.filter(l => l.activity === 'Ring Weeding').length,
     };
 
     const handleDelete = (id: string) => {
@@ -73,7 +75,7 @@ export default function MaintenancePage() {
                         Farm Maintenance
                     </h1>
                     <p className="text-muted-foreground mt-1">
-                        Track maintenance activities: slashing, pruning, ring weeding, and fertilizer application.
+                        Track maintenance activities: pruning, fertilizer application, herbicide application, slashing, and ring weeding.
                     </p>
                 </div>
                 <Button 
@@ -90,14 +92,7 @@ export default function MaintenancePage() {
                 </div>
             )}
 
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <div className="rounded-xl border bg-card p-4 shadow-sm">
-                    <div className="text-sm font-medium text-muted-foreground">Blocks Slashed</div>
-                    <div className="mt-2 text-2xl font-bold">{blockCounts['Slashing']}</div>
-                    <div className="text-xs text-muted-foreground mt-1">
-                        {activityCounts['Slashing']} {activityCounts['Slashing'] === 1 ? 'activity' : 'activities'}
-                    </div>
-                </div>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
                 <div className="rounded-xl border bg-card p-4 shadow-sm">
                     <div className="text-sm font-medium text-muted-foreground">Blocks Pruned</div>
                     <div className="mt-2 text-2xl font-bold">{blockCounts['Pruning']}</div>
@@ -106,17 +101,31 @@ export default function MaintenancePage() {
                     </div>
                 </div>
                 <div className="rounded-xl border bg-card p-4 shadow-sm">
-                    <div className="text-sm font-medium text-muted-foreground">Blocks Ring Weeded</div>
-                    <div className="mt-2 text-2xl font-bold">{blockCounts['Ring Weeding']}</div>
-                    <div className="text-xs text-muted-foreground mt-1">
-                        {activityCounts['Ring Weeding']} {activityCounts['Ring Weeding'] === 1 ? 'activity' : 'activities'}
-                    </div>
-                </div>
-                <div className="rounded-xl border bg-card p-4 shadow-sm">
                     <div className="text-sm font-medium text-muted-foreground">Blocks Fertilized</div>
                     <div className="mt-2 text-2xl font-bold">{blockCounts['Fertilizer Application']}</div>
                     <div className="text-xs text-muted-foreground mt-1">
                         {activityCounts['Fertilizer Application']} {activityCounts['Fertilizer Application'] === 1 ? 'activity' : 'activities'}
+                    </div>
+                </div>
+                <div className="rounded-xl border bg-card p-4 shadow-sm">
+                    <div className="text-sm font-medium text-muted-foreground">Blocks Herbicide Applied</div>
+                    <div className="mt-2 text-2xl font-bold">{blockCounts['Herbicide Application']}</div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                        {activityCounts['Herbicide Application']} {activityCounts['Herbicide Application'] === 1 ? 'activity' : 'activities'}
+                    </div>
+                </div>
+                <div className="rounded-xl border bg-card p-4 shadow-sm">
+                    <div className="text-sm font-medium text-muted-foreground">Blocks Slashed</div>
+                    <div className="mt-2 text-2xl font-bold">{blockCounts['Slashing']}</div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                        {activityCounts['Slashing']} {activityCounts['Slashing'] === 1 ? 'activity' : 'activities'}
+                    </div>
+                </div>
+                <div className="rounded-xl border bg-card p-4 shadow-sm">
+                    <div className="text-sm font-medium text-muted-foreground">Blocks Ring Weeded</div>
+                    <div className="mt-2 text-2xl font-bold">{blockCounts['Ring Weeding']}</div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                        {activityCounts['Ring Weeding']} {activityCounts['Ring Weeding'] === 1 ? 'activity' : 'activities'}
                     </div>
                 </div>
             </div>
