@@ -56,20 +56,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     if (error) {
                         console.error('Database query error for username:', credentials.username, error);
                         // Continue to fallback
-                    } else if (user) {
+                    } else if (user && user.password_hash) {
                         // Verify password
-                        const isValid = await bcrypt.compare(credentials.password, user.password_hash);
+                        const isValid = await bcrypt.compare(credentials.password || '', (user.password_hash as any) as string);
                         
                         if (isValid) {
                             loginAttempts.delete(ip); // Reset on success
                             
-                            // Update last_login_at
+                            // Update last_login_at (non-blocking)
                             supabase
                                 .from('users')
                                 .update({ last_login_at: new Date().toISOString() })
                                 .eq('id', user.id)
                                 .then(() => {})
-                                .catch(() => {}); // Non-blocking
+                                .catch(() => {});
                             
                             return {
                                 id: user.id,

@@ -3,7 +3,7 @@
 import { User } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Edit, UserMinus, User } from "lucide-react";
+import { Edit, UserMinus, User as UserIcon } from "lucide-react";
 
 interface UsersTableProps {
     users: User[];
@@ -51,7 +51,7 @@ export function UsersTable({ users, onEdit, onDelete }: UsersTableProps) {
                                     <td className="p-4">
                                         <div className="flex items-center gap-3">
                                             <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                                                <User className="h-5 w-5 text-primary" />
+                                                <UserIcon className="h-5 w-5 text-primary" />
                                             </div>
                                             <span className="font-medium">{user.username}</span>
                                         </div>

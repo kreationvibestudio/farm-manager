@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Lock, Eye, EyeOff, CheckCircle, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -82,11 +82,14 @@ export default function ChangePasswordPage() {
                 confirmPassword: "",
             });
 
-            // Redirect to home after 2 seconds
+            // Sign out and redirect to login immediately so user can log in with new password
+            // This ensures the session is refreshed with the updated must_change_password flag
             setTimeout(() => {
-                router.push("/");
-                router.refresh();
-            }, 2000);
+                signOut({ 
+                    callbackUrl: "/login",
+                    redirect: true 
+                });
+            }, 1000); // Reduced to 1 second - just enough to show success message
         } catch (error: any) {
             setError(error.message || "Failed to change password. Please try again.");
         } finally {
@@ -126,7 +129,7 @@ export default function ChangePasswordPage() {
                         <div className="text-center py-4">
                             <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
                             <p className="text-green-600 font-medium mb-2">Password changed successfully!</p>
-                            <p className="text-sm text-muted-foreground">Redirecting to dashboard...</p>
+                            <p className="text-sm text-muted-foreground">Redirecting to login...</p>
                         </div>
                     ) : (
                         <form onSubmit={handleSubmit} className="space-y-4">
