@@ -51,6 +51,25 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
+  // Check if user must change password
+  const mustChangePassword = (session.user as any)?.mustChangePassword
+  const isChangePasswordPage = request.nextUrl.pathname.startsWith('/change-password')
+  const isChangePasswordAPI = request.nextUrl.pathname.startsWith('/api/users/change-password')
+
+  // If user must change password and not on change-password page, redirect them
+  if (mustChangePassword && !isChangePasswordPage && !isChangePasswordAPI) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/change-password'
+    return NextResponse.redirect(url)
+  }
+
+  // If user doesn't need to change password but is on change-password page, redirect to home
+  if (!mustChangePassword && isChangePasswordPage) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/'
+    return NextResponse.redirect(url)
+  }
+
   // Skip Supabase check if NextAuth session exists - NextAuth is sufficient for authentication
   // Only use Supabase for database operations, not for auth checks
   // This significantly improves performance by avoiding redundant session checks

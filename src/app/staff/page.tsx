@@ -7,8 +7,13 @@ import { Button } from "@/components/ui/button";
 import { UserPlus, Users, UserMinus, Trash2, Loader2 } from "lucide-react";
 import { Staff } from "@/types";
 import { useAppStore } from "@/lib/store";
+import { useSession } from "next-auth/react";
 
 export default function StaffPage() {
+    const { data: session } = useSession();
+    const userRole = (session?.user as any)?.role;
+    const canManageStaff = userRole === 'Admin' || userRole === 'Operator';
+    
     const { 
         staff, 
         isLoading, 
@@ -126,33 +131,35 @@ export default function StaffPage() {
                             Manage your plantation staff members and their roles.
                         </p>
                     </div>
-                    <div className="flex gap-2">
-                        <Button 
-                            onClick={handleCleanupDuplicates}
-                            variant="outline"
-                            disabled={isCleaning}
-                            className="gap-2"
-                        >
-                            {isCleaning ? (
-                                <>
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                    Cleaning...
-                                </>
-                            ) : (
-                                <>
-                                    <Trash2 className="h-4 w-4" />
-                                    Remove Duplicates
-                                </>
-                            )}
-                        </Button>
-                        <Button 
-                            onClick={() => setShowAddModal(true)}
-                            className="gap-2 shadow-lg shadow-secondary/20 bg-secondary hover:bg-secondary/90 text-secondary-foreground"
-                        >
-                            <UserPlus className="h-4 w-4" />
-                            Hire Staff
-                        </Button>
-                    </div>
+                    {canManageStaff && (
+                        <div className="flex gap-2">
+                            <Button 
+                                onClick={handleCleanupDuplicates}
+                                variant="outline"
+                                disabled={isCleaning}
+                                className="gap-2"
+                            >
+                                {isCleaning ? (
+                                    <>
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                        Cleaning...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Trash2 className="h-4 w-4" />
+                                        Remove Duplicates
+                                    </>
+                                )}
+                            </Button>
+                            <Button 
+                                onClick={() => setShowAddModal(true)}
+                                className="gap-2 shadow-lg shadow-secondary/20 bg-secondary hover:bg-secondary/90 text-secondary-foreground"
+                            >
+                                <UserPlus className="h-4 w-4" />
+                                Hire Staff
+                            </Button>
+                        </div>
+                    )}
                 </div>
 
                 {error && (
@@ -199,6 +206,7 @@ export default function StaffPage() {
                         staff={staff}
                         onEdit={handleEdit}
                         onDelete={handleDelete}
+                        canManage={canManageStaff}
                     />
                 )}
 

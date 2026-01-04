@@ -34,6 +34,15 @@ export async function POST(request: NextRequest) {
     }
     const { session } = authResult
     
+    // Check permissions: Only Admin and Operator can add staff
+    const userRole = (session.user as any)?.role
+    if (userRole !== 'Admin' && userRole !== 'Operator') {
+      return NextResponse.json(
+        { error: 'Only Admins and Operators can add staff' },
+        { status: 403 }
+      )
+    }
+    
     const body = await request.json()
     const staff = await addStaff(body)
     

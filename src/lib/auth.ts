@@ -1,5 +1,7 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
+import { createAdminClient } from "@/lib/supabase/admin";
+import bcrypt from "bcryptjs";
 
 // Rate limiting (simple in-memory - use Redis in production)
 const loginAttempts = new Map<string, { count: number; resetAt: number }>();
@@ -35,20 +37,80 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     throw new Error("Too many login attempts. Please try again in 15 minutes.");
                 }
 
-                const username = process.env.ADMIN_USERNAME;
-                const password = process.env.ADMIN_PASSWORD;
-
-                if (!username || !password) {
-                    throw new Error("Authentication not configured. Please set ADMIN_USERNAME and ADMIN_PASSWORD environment variables.");
+                if (!credentials?.username || !credentials?.password) {
+                    attempts.count++;
+                    loginAttempts.set(ip, attempts);
+                    return null;
                 }
 
-                if (
-                    credentials?.username === username &&
-                    credentials?.password === password
-                ) {
-                    loginAttempts.delete(ip); // Reset on success
-                    // Login audit logging is now handled in the signIn callback
-                    return { id: "1", name: "Admin User", email: "admin@plantation.com" };
+                // Try database authentication first
+                try {
+                    const supabase = createAdminClient();
+                    const { data: user, error } = await supabase
+                        .from('users')
+                        .select('id, username, password_hash, full_name, role, phone_number, must_change_password')
+                        .eq('username', credentials.username)
+                        .is('deleted_at', null)
+                        .single();
+
+                    if (error) {
+                        console.error('Database query error for username:', credentials.username, error);
+                        // Continue to fallback
+                    } else if (user) {
+                        // Verify password
+                        const isValid = await bcrypt.compare(credentials.password, user.password_hash);
+                        
+                        if (isValid) {
+                            loginAttempts.delete(ip); // Reset on success
+                            
+                            // Update last_login_at
+                            supabase
+                                .from('users')
+                                .update({ last_login_at: new Date().toISOString() })
+                                .eq('id', user.id)
+                                .then(() => {})
+                                .catch(() => {}); // Non-blocking
+                            
+                            return {
+                                id: user.id,
+                                name: user.full_name,
+                                email: `${user.username}@farmmanager.com`,
+                                role: user.role,
+                                mustChangePassword: user.must_change_password || false,
+                            };
+                        } else {
+                            console.error('Password verification failed for user:', credentials.username);
+                        }
+                    } else {
+                        console.error('User not found in database:', credentials.username);
+                    }
+                } catch (dbError: any) {
+                    // If database check fails, fall back to environment variables
+                    console.error('Database authentication error:', dbError?.message || dbError);
+                    // Check if it's a missing environment variable error
+                    if (dbError?.message?.includes('Missing SUPABASE_SERVICE_ROLE_KEY')) {
+                        console.error('⚠️ SUPABASE_SERVICE_ROLE_KEY is not set. Cannot authenticate with database.');
+                    }
+                }
+
+                // Fall back to environment variables for backward compatibility
+                const envUsername = process.env.ADMIN_USERNAME;
+                const envPassword = process.env.ADMIN_PASSWORD;
+
+                if (envUsername && envPassword) {
+                    if (
+                        credentials.username === envUsername &&
+                        credentials.password === envPassword
+                    ) {
+                        loginAttempts.delete(ip); // Reset on success
+                        return { 
+                            id: "env-admin", 
+                            name: "Admin User", 
+                            email: "admin@plantation.com",
+                            role: "Admin",
+                            mustChangePassword: false,
+                        };
+                    }
                 }
                 
                 attempts.count++;
@@ -93,12 +155,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         async session({ session, token }) {
             if (token && session.user) {
                 (session.user as any).id = token.sub || "1";
+                (session.user as any).role = token.role || "Admin";
+                (session.user as any).mustChangePassword = token.mustChangePassword || false;
             }
             return session;
         },
         async jwt({ token, user }) {
             if (user) {
                 token.sub = user.id;
+                token.role = (user as any).role || "Admin";
+                token.mustChangePassword = (user as any).mustChangePassword || false;
             }
             return token;
         },

@@ -160,7 +160,7 @@ export default function ContactPage() {
                             <p className="text-sm text-muted-foreground mb-2">
                                 Send us an email for general inquiries or support requests.
                             </p>
-                            <p className="font-medium">support@farmmanager.com</p>
+                            <p className="font-medium">support@A&Hatman.com</p>
                         </CardContent>
                     </Card>
 
@@ -175,7 +175,8 @@ export default function ContactPage() {
                             <p className="text-sm text-muted-foreground mb-2">
                                 Call us during business hours for immediate assistance.
                             </p>
-                            <p className="font-medium">+234 (0) XXX XXX XXXX</p>
+                            <p className="font-medium">07061350467</p>
+                            <p className="font-medium mt-1">08028890064</p>
                             <p className="text-xs text-muted-foreground mt-2">
                                 Monday - Friday: 8:00 AM - 5:00 PM
                             </p>
@@ -194,8 +195,8 @@ export default function ContactPage() {
                                 Visit us at our office.
                             </p>
                             <p className="font-medium">
-                                123 Plantation Road<br />
-                                Oil Palm Estate<br />
+                                10 MM Way<br />
+                                Benin City, Edo State<br />
                                 Nigeria
                             </p>
                         </CardContent>

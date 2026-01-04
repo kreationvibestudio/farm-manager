@@ -9,6 +9,7 @@ interface StaffTableProps {
     staff: Staff[];
     onEdit: (staff: Staff) => void;
     onDelete: (id: string) => void;
+    canManage?: boolean; // If false, hide edit/delete buttons
 }
 
 const roleColors: Record<Staff['role'], string> = {
@@ -18,7 +19,7 @@ const roleColors: Record<Staff['role'], string> = {
     Worker: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300',
 };
 
-export function StaffTable({ staff, onEdit, onDelete }: StaffTableProps) {
+export function StaffTable({ staff, onEdit, onDelete, canManage = true }: StaffTableProps) {
     return (
         <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
@@ -58,28 +59,34 @@ export function StaffTable({ staff, onEdit, onDelete }: StaffTableProps) {
                                         {member.contact || 'N/A'}
                                     </td>
                                     <td className="p-4">
-                                        <div className="flex items-center justify-end gap-2">
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => onEdit(member)}
-                                                className="h-8 px-3"
-                                                title="Edit staff member"
-                                            >
-                                                <Edit className="h-4 w-4 mr-1" />
-                                                Edit
-                                            </Button>
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => onDelete(member.id)}
-                                                className="h-8 px-3 text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground"
-                                                title="Fire staff member"
-                                            >
-                                                <UserMinus className="h-4 w-4 mr-1" />
-                                                Fire
-                                            </Button>
-                                        </div>
+                                        {canManage ? (
+                                            <div className="flex items-center justify-end gap-2">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => onEdit(member)}
+                                                    className="h-8 px-3"
+                                                    title="Edit staff member"
+                                                >
+                                                    <Edit className="h-4 w-4 mr-1" />
+                                                    Edit
+                                                </Button>
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => onDelete(member.id)}
+                                                    className="h-8 px-3 text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground"
+                                                    title="Fire staff member"
+                                                >
+                                                    <UserMinus className="h-4 w-4 mr-1" />
+                                                    Fire
+                                                </Button>
+                                            </div>
+                                        ) : (
+                                            <div className="text-right text-muted-foreground text-xs">
+                                                View only
+                                            </div>
+                                        )}
                                     </td>
                                 </tr>
                             ))

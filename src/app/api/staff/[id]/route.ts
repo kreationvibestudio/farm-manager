@@ -14,6 +14,15 @@ export async function PUT(
     }
     const { session } = authResult
     
+    // Check permissions: Only Admin and Operator can update staff
+    const userRole = (session.user as any)?.role
+    if (userRole !== 'Admin' && userRole !== 'Operator') {
+      return NextResponse.json(
+        { error: 'Only Admins and Operators can update staff' },
+        { status: 403 }
+      )
+    }
+    
     const { id } = await params
     const body = await request.json()
     
@@ -65,6 +74,15 @@ export async function DELETE(
       return authResult // Unauthorized response
     }
     const { session } = authResult
+    
+    // Check permissions: Only Admin and Operator can delete staff
+    const userRole = (session.user as any)?.role
+    if (userRole !== 'Admin' && userRole !== 'Operator') {
+      return NextResponse.json(
+        { error: 'Only Admins and Operators can delete staff' },
+        { status: 403 }
+      )
+    }
     
     const { id } = await params
     const userId = (session.user as any)?.id || session.user?.email || 'unknown'

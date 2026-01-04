@@ -45,6 +45,18 @@ export interface Staff {
     contact?: string;
 }
 
+export interface User {
+    id: string;
+    username: string;
+    full_name: string;
+    role: 'Admin' | 'Operator' | 'Support';
+    phone_number?: string;
+    must_change_password: boolean;
+    created_at?: string;
+    updated_at?: string;
+    last_login_at?: string;
+}
+
 export interface DailySummary {
     date: string;
     totalHarvestBunches: number; // Changed from totalHarvestKg
