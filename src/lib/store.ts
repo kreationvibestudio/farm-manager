@@ -1,7 +1,20 @@
 "use client";
 
 import { create } from 'zustand';
-import { InventoryItem, Vehicle, HarvestLog, Staff, MaintenanceLog } from '@/types';
+import {
+  InventoryItem,
+  Vehicle,
+  HarvestLog,
+  Staff,
+  MaintenanceLog,
+  CostEntry,
+  CostCategory,
+  SalesRecord,
+  Budget,
+  BudgetItem,
+  BudgetCategory,
+  FinancialSummary
+} from '@/types';
 
 interface AppState {
     // Inventory
@@ -41,6 +54,44 @@ interface AppState {
     addMaintenanceLog: (log: Omit<MaintenanceLog, 'id' | 'created_at' | 'updated_at'>) => Promise<void>;
     updateMaintenanceLog: (id: string, updates: Partial<MaintenanceLog>) => Promise<void>;
     deleteMaintenanceLog: (id: string) => Promise<void>;
+
+    // Financial Management
+    // Costs
+    costEntries: CostEntry[];
+    costCategories: CostCategory[];
+    fetchCostEntries: (filters?: any) => Promise<void>;
+    fetchCostCategories: () => Promise<void>;
+    addCostEntry: (entry: Omit<CostEntry, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt' | 'deletedBy'>) => Promise<void>;
+    updateCostEntry: (id: string, updates: Partial<CostEntry>) => Promise<void>;
+    deleteCostEntry: (id: string) => Promise<void>;
+    approveCostEntry: (id: string) => Promise<void>;
+
+    // Sales
+    salesRecords: SalesRecord[];
+    fetchSalesRecords: (filters?: any) => Promise<void>;
+    addSalesRecord: (record: Omit<SalesRecord, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt' | 'deletedBy'>) => Promise<void>;
+    updateSalesRecord: (id: string, updates: Partial<SalesRecord>) => Promise<void>;
+    deleteSalesRecord: (id: string) => Promise<void>;
+    updatePaymentStatus: (id: string, paymentReceived: number, status: string) => Promise<void>;
+
+    // Budgets
+    budgets: Budget[];
+    budgetCategories: BudgetCategory[];
+    fetchBudgets: (filters?: any) => Promise<void>;
+    fetchBudgetCategories: () => Promise<void>;
+    addBudget: (budget: Omit<Budget, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt' | 'deletedBy'>) => Promise<void>;
+    updateBudget: (id: string, updates: Partial<Budget>) => Promise<void>;
+    deleteBudget: (id: string) => Promise<void>;
+    getBudgetItems: (budgetId: string) => Promise<BudgetItem[]>;
+    addBudgetItem: (item: Omit<BudgetItem, 'id' | 'createdAt' | 'updatedAt' | 'actualSpent'>) => Promise<void>;
+    updateBudgetItem: (id: string, updates: Partial<BudgetItem>) => Promise<void>;
+    calculateBudgetVariance: (budgetId: string) => Promise<any>;
+    approveBudget: (id: string) => Promise<void>;
+    submitBudget: (id: string) => Promise<void>;
+
+    // Financial Summary
+    financialSummary: FinancialSummary | null;
+    fetchFinancialSummary: (startDate: string, endDate: string) => Promise<void>;
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
@@ -50,6 +101,13 @@ export const useAppStore = create<AppState>((set, get) => ({
     harvestLogs: [],
     staff: [],
     maintenanceLogs: [],
+    // Financial Management
+    costEntries: [],
+    costCategories: [],
+    salesRecords: [],
+    budgets: [],
+    budgetCategories: [],
+    financialSummary: null,
     isLoading: false,
     error: null,
 
@@ -461,6 +519,398 @@ export const useAppStore = create<AppState>((set, get) => ({
                 maintenanceLogs: state.maintenanceLogs.filter(l => l.id !== id),
                 isLoading: false,
             }));
+        } catch (error: any) {
+            set({ error: error.message, isLoading: false });
+        }
+    },
+
+    // Financial Management Actions
+    // Cost actions
+    fetchCostEntries: async (filters = {}) => {
+        set({ isLoading: true, error: null });
+        try {
+            const queryParams = new URLSearchParams();
+            if (filters.startDate) queryParams.set('startDate', filters.startDate);
+            if (filters.endDate) queryParams.set('endDate', filters.endDate);
+            if (filters.categoryId) queryParams.set('categoryId', filters.categoryId);
+            if (filters.blockId) queryParams.set('blockId', filters.blockId);
+
+            const response = await fetch(`/api/financial/costs?${queryParams}`);
+            if (!response.ok) throw new Error('Failed to fetch cost entries');
+            const data = await response.json();
+            set({ costEntries: data, isLoading: false });
+        } catch (error: any) {
+            set({ error: error.message, isLoading: false });
+        }
+    },
+
+    fetchCostCategories: async () => {
+        try {
+            const response = await fetch('/api/financial/costs/categories');
+            if (!response.ok) throw new Error('Failed to fetch cost categories');
+            const data = await response.json();
+            set({ costCategories: data });
+        } catch (error: any) {
+            set({ error: error.message });
+        }
+    },
+
+    addCostEntry: async (entry) => {
+        set({ isLoading: true, error: null });
+        try {
+            const response = await fetch('/api/financial/costs', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(entry),
+            });
+            if (!response.ok) throw new Error('Failed to add cost entry');
+            const newEntry = await response.json();
+            set((state) => ({
+                costEntries: [newEntry, ...state.costEntries],
+                isLoading: false,
+            }));
+        } catch (error: any) {
+            set({ error: error.message, isLoading: false });
+        }
+    },
+
+    updateCostEntry: async (id, updates) => {
+        set({ isLoading: true, error: null });
+        try {
+            const response = await fetch(`/api/financial/costs/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updates),
+            });
+            if (!response.ok) throw new Error('Failed to update cost entry');
+            const updatedEntry = await response.json();
+            set((state) => ({
+                costEntries: state.costEntries.map(entry =>
+                    entry.id === id ? updatedEntry : entry
+                ),
+                isLoading: false,
+            }));
+        } catch (error: any) {
+            set({ error: error.message, isLoading: false });
+        }
+    },
+
+    deleteCostEntry: async (id) => {
+        set({ isLoading: true, error: null });
+        try {
+            const response = await fetch(`/api/financial/costs/${id}`, {
+                method: 'DELETE',
+            });
+            if (!response.ok) throw new Error('Failed to delete cost entry');
+            set((state) => ({
+                costEntries: state.costEntries.filter(entry => entry.id !== id),
+                isLoading: false,
+            }));
+        } catch (error: any) {
+            set({ error: error.message, isLoading: false });
+        }
+    },
+
+    approveCostEntry: async (id) => {
+        set({ isLoading: true, error: null });
+        try {
+            const response = await fetch(`/api/financial/costs/${id}/approve`, {
+                method: 'POST',
+            });
+            if (!response.ok) throw new Error('Failed to approve cost entry');
+            const updatedEntry = await response.json();
+            set((state) => ({
+                costEntries: state.costEntries.map(entry =>
+                    entry.id === id ? updatedEntry : entry
+                ),
+                isLoading: false,
+            }));
+        } catch (error: any) {
+            set({ error: error.message, isLoading: false });
+        }
+    },
+
+    // Sales actions
+    fetchSalesRecords: async (filters = {}) => {
+        set({ isLoading: true, error: null });
+        try {
+            const queryParams = new URLSearchParams();
+            if (filters.startDate) queryParams.set('startDate', filters.startDate);
+            if (filters.endDate) queryParams.set('endDate', filters.endDate);
+            if (filters.buyerName) queryParams.set('buyerName', filters.buyerName);
+            if (filters.paymentStatus) queryParams.set('paymentStatus', filters.paymentStatus);
+            if (filters.productType) queryParams.set('productType', filters.productType);
+
+            const response = await fetch(`/api/financial/sales?${queryParams}`);
+            if (!response.ok) throw new Error('Failed to fetch sales records');
+            const data = await response.json();
+            set({ salesRecords: data, isLoading: false });
+        } catch (error: any) {
+            set({ error: error.message, isLoading: false });
+        }
+    },
+
+    addSalesRecord: async (record) => {
+        set({ isLoading: true, error: null });
+        try {
+            const response = await fetch('/api/financial/sales', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(record),
+            });
+            if (!response.ok) throw new Error('Failed to add sales record');
+            const newRecord = await response.json();
+            set((state) => ({
+                salesRecords: [newRecord, ...state.salesRecords],
+                isLoading: false,
+            }));
+        } catch (error: any) {
+            set({ error: error.message, isLoading: false });
+        }
+    },
+
+    updateSalesRecord: async (id, updates) => {
+        set({ isLoading: true, error: null });
+        try {
+            const response = await fetch(`/api/financial/sales/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updates),
+            });
+            if (!response.ok) throw new Error('Failed to update sales record');
+            const updatedRecord = await response.json();
+            set((state) => ({
+                salesRecords: state.salesRecords.map(record =>
+                    record.id === id ? updatedRecord : record
+                ),
+                isLoading: false,
+            }));
+        } catch (error: any) {
+            set({ error: error.message, isLoading: false });
+        }
+    },
+
+    deleteSalesRecord: async (id) => {
+        set({ isLoading: true, error: null });
+        try {
+            const response = await fetch(`/api/financial/sales/${id}`, {
+                method: 'DELETE',
+            });
+            if (!response.ok) throw new Error('Failed to delete sales record');
+            set((state) => ({
+                salesRecords: state.salesRecords.filter(record => record.id !== id),
+                isLoading: false,
+            }));
+        } catch (error: any) {
+            set({ error: error.message, isLoading: false });
+        }
+    },
+
+    updatePaymentStatus: async (id, paymentReceived, status) => {
+        set({ isLoading: true, error: null });
+        try {
+            const response = await fetch(`/api/financial/sales/${id}/payment`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ paymentReceived, status }),
+            });
+            if (!response.ok) throw new Error('Failed to update payment status');
+            const updatedRecord = await response.json();
+            set((state) => ({
+                salesRecords: state.salesRecords.map(record =>
+                    record.id === id ? updatedRecord : record
+                ),
+                isLoading: false,
+            }));
+        } catch (error: any) {
+            set({ error: error.message, isLoading: false });
+        }
+    },
+
+    // Budget actions
+    fetchBudgets: async (filters = {}) => {
+        set({ isLoading: true, error: null });
+        try {
+            const queryParams = new URLSearchParams();
+            if (filters.year) queryParams.set('year', filters.year.toString());
+            if (filters.status) queryParams.set('status', filters.status);
+
+            const response = await fetch(`/api/financial/budgets?${queryParams}`);
+            if (!response.ok) throw new Error('Failed to fetch budgets');
+            const data = await response.json();
+            set({ budgets: data, isLoading: false });
+        } catch (error: any) {
+            set({ error: error.message, isLoading: false });
+        }
+    },
+
+    fetchBudgetCategories: async () => {
+        try {
+            const response = await fetch('/api/financial/budgets/categories');
+            if (!response.ok) throw new Error('Failed to fetch budget categories');
+            const data = await response.json();
+            set({ budgetCategories: data });
+        } catch (error: any) {
+            set({ error: error.message });
+        }
+    },
+
+    addBudget: async (budget) => {
+        set({ isLoading: true, error: null });
+        try {
+            const response = await fetch('/api/financial/budgets', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(budget),
+            });
+            if (!response.ok) throw new Error('Failed to add budget');
+            const newBudget = await response.json();
+            set((state) => ({
+                budgets: [newBudget, ...state.budgets],
+                isLoading: false,
+            }));
+        } catch (error: any) {
+            set({ error: error.message, isLoading: false });
+        }
+    },
+
+    updateBudget: async (id, updates) => {
+        set({ isLoading: true, error: null });
+        try {
+            const response = await fetch(`/api/financial/budgets/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updates),
+            });
+            if (!response.ok) throw new Error('Failed to update budget');
+            const updatedBudget = await response.json();
+            set((state) => ({
+                budgets: state.budgets.map(budget =>
+                    budget.id === id ? updatedBudget : budget
+                ),
+                isLoading: false,
+            }));
+        } catch (error: any) {
+            set({ error: error.message, isLoading: false });
+        }
+    },
+
+    deleteBudget: async (id) => {
+        set({ isLoading: true, error: null });
+        try {
+            const response = await fetch(`/api/financial/budgets/${id}`, {
+                method: 'DELETE',
+            });
+            if (!response.ok) throw new Error('Failed to delete budget');
+            set((state) => ({
+                budgets: state.budgets.filter(budget => budget.id !== id),
+                isLoading: false,
+            }));
+        } catch (error: any) {
+            set({ error: error.message, isLoading: false });
+        }
+    },
+
+    getBudgetItems: async (budgetId) => {
+        try {
+            const response = await fetch(`/api/financial/budgets/${budgetId}/items`);
+            if (!response.ok) throw new Error('Failed to fetch budget items');
+            return await response.json();
+        } catch (error: any) {
+            set({ error: error.message });
+            return [];
+        }
+    },
+
+    addBudgetItem: async (item) => {
+        set({ isLoading: true, error: null });
+        try {
+            const response = await fetch(`/api/financial/budgets/${item.budgetId}/items`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(item),
+            });
+            if (!response.ok) throw new Error('Failed to add budget item');
+            set({ isLoading: false });
+        } catch (error: any) {
+            set({ error: error.message, isLoading: false });
+        }
+    },
+
+    updateBudgetItem: async (id, updates) => {
+        set({ isLoading: true, error: null });
+        try {
+            const response = await fetch(`/api/financial/budgets/items/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updates),
+            });
+            if (!response.ok) throw new Error('Failed to update budget item');
+            set({ isLoading: false });
+        } catch (error: any) {
+            set({ error: error.message, isLoading: false });
+        }
+    },
+
+    calculateBudgetVariance: async (budgetId) => {
+        try {
+            const response = await fetch(`/api/financial/budgets/${budgetId}/actions/variance`, {
+                method: 'POST',
+            });
+            if (!response.ok) throw new Error('Failed to calculate budget variance');
+            return await response.json();
+        } catch (error: any) {
+            set({ error: error.message });
+            return null;
+        }
+    },
+
+    approveBudget: async (id) => {
+        set({ isLoading: true, error: null });
+        try {
+            const response = await fetch(`/api/financial/budgets/${id}/actions/approve`, {
+                method: 'POST',
+            });
+            if (!response.ok) throw new Error('Failed to approve budget');
+            const updatedBudget = await response.json();
+            set((state) => ({
+                budgets: state.budgets.map(budget =>
+                    budget.id === id ? updatedBudget : budget
+                ),
+                isLoading: false,
+            }));
+        } catch (error: any) {
+            set({ error: error.message, isLoading: false });
+        }
+    },
+
+    submitBudget: async (id) => {
+        set({ isLoading: true, error: null });
+        try {
+            const response = await fetch(`/api/financial/budgets/${id}/actions/submit`, {
+                method: 'POST',
+            });
+            if (!response.ok) throw new Error('Failed to submit budget');
+            const updatedBudget = await response.json();
+            set((state) => ({
+                budgets: state.budgets.map(budget =>
+                    budget.id === id ? updatedBudget : budget
+                ),
+                isLoading: false,
+            }));
+        } catch (error: any) {
+            set({ error: error.message, isLoading: false });
+        }
+    },
+
+    // Financial Summary
+    fetchFinancialSummary: async (startDate, endDate) => {
+        set({ isLoading: true, error: null });
+        try {
+            const response = await fetch(`/api/financial/reports/summary?startDate=${startDate}&endDate=${endDate}`);
+            if (!response.ok) throw new Error('Failed to fetch financial summary');
+            const data = await response.json();
+            set({ financialSummary: data, isLoading: false });
         } catch (error: any) {
             set({ error: error.message, isLoading: false });
         }

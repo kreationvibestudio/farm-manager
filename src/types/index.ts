@@ -95,3 +95,215 @@ export interface MaintenanceLog {
     created_at?: string;
     updated_at?: string;
 }
+
+// Financial Management Types
+export interface CostCategory {
+    id: string;
+    name: string;
+    description?: string;
+    parentCategoryId?: string;
+    isActive: boolean;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface CostEntry {
+    id: string;
+    categoryId: string;
+    amount: number;
+    currency: string;
+    description: string;
+    dateIncurred: string;
+    referenceNumber?: string;
+    supplierName?: string;
+    quantity?: number;
+    unit?: string;
+    unitCost?: number;
+
+    // Related entities
+    inventoryItemId?: string;
+    vehicleId?: string;
+    staffId?: string;
+    harvestLogId?: string;
+    maintenanceLogId?: string;
+
+    // Location info
+    blockId?: string;
+    notes?: string;
+
+    // Audit fields
+    createdBy: string;
+    approvedBy?: string;
+    approvedAt?: string;
+    createdAt: string;
+    updatedAt: string;
+    deletedAt?: string;
+    deletedBy?: string;
+}
+
+export type PaymentStatus = 'Pending' | 'Partial' | 'Paid' | 'Overdue';
+export type ProductType = 'FFB' | 'CPO' | 'PK' | 'Other';
+
+export interface SalesRecord {
+    id: string;
+    saleDate: string;
+    buyerName: string;
+    buyerContact?: string;
+    productType: ProductType;
+    quantitySold: number;
+    unit: string;
+    unitPrice: number;
+    totalAmount: number;
+    currency: string;
+
+    // Quality information
+    qualityGrade?: string;
+    moistureContent?: number;
+    foreignMatter?: number;
+
+    // Related harvest data
+    harvestLogIds?: string[];
+    totalFfbBunches?: number;
+    averageBunchWeight?: number;
+
+    // Transportation
+    transportCost?: number;
+    transportSupplier?: string;
+
+    // Payment information
+    paymentTerms?: string;
+    paymentDueDate?: string;
+    paymentStatus: PaymentStatus;
+    paymentReceived: number;
+
+    // Block information
+    blocksInvolved?: string[];
+
+    // Notes and reference
+    invoiceNumber?: string;
+    deliveryNote?: string;
+    notes?: string;
+
+    // Audit fields
+    createdBy: string;
+    approvedBy?: string;
+    approvedAt?: string;
+    createdAt: string;
+    updatedAt: string;
+    deletedAt?: string;
+    deletedBy?: string;
+}
+
+export type BudgetCategoryType = 'Cost' | 'Revenue' | 'Investment';
+export type BudgetStatus = 'Draft' | 'Submitted' | 'Approved' | 'Active' | 'Closed';
+
+export interface BudgetCategory {
+    id: string;
+    name: string;
+    description?: string;
+    categoryType: BudgetCategoryType;
+    parentCategoryId?: string;
+    isActive: boolean;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface Budget {
+    id: string;
+    name: string;
+    description?: string;
+    budgetYear: number;
+    budgetQuarter?: number;
+    startDate: string;
+    endDate: string;
+    totalBudget: number;
+    currency: string;
+
+    // Status and approval
+    status: BudgetStatus;
+    submittedBy?: string;
+    submittedAt?: string;
+    approvedBy?: string;
+    approvedAt?: string;
+
+    // Notes
+    notes?: string;
+
+    // Audit fields
+    createdBy: string;
+    createdAt: string;
+    updatedAt: string;
+    deletedAt?: string;
+    deletedBy?: string;
+}
+
+export interface BudgetItem {
+    id: string;
+    budgetId: string;
+    budgetCategoryId: string;
+    costCategoryId?: string;
+
+    // Budget amounts
+    plannedAmount: number;
+    allocatedAmount: number;
+    actualSpent: number;
+
+    // Block or department allocation
+    blockId?: string;
+    department?: string;
+
+    // Notes
+    notes?: string;
+
+    createdAt: string;
+    updatedAt: string;
+}
+
+export type FinancialReportType = 'ProfitLoss' | 'BudgetVariance' | 'CostAnalysis' | 'RevenueAnalysis' | 'CashFlow';
+
+export interface FinancialReport {
+    id: string;
+    name: string;
+    description?: string;
+    reportType: FinancialReportType;
+
+    // Date range
+    startDate: string;
+    endDate: string;
+
+    // Filters
+    filters?: any;
+
+    // Report data
+    reportData?: any;
+    generatedAt?: string;
+    generatedBy?: string;
+
+    // Access control
+    isPublic: boolean;
+    createdBy: string;
+
+    createdAt: string;
+    updatedAt: string;
+    deletedAt?: string;
+    deletedBy?: string;
+}
+
+export interface FinancialSummary {
+    totalRevenue: number;
+    totalCosts: number;
+    netProfit: number;
+    profitMargin: number;
+    budgetVariance: number;
+    topCostCategories: Array<{
+        category: string;
+        amount: number;
+        percentage: number;
+    }>;
+    monthlyTrends: Array<{
+        month: string;
+        revenue: number;
+        costs: number;
+        profit: number;
+    }>;
+}

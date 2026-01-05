@@ -44,6 +44,9 @@ yarn-error.log*
 .cursor/
 .gemini/
 
+# System files
+nul
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
