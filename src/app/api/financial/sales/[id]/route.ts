@@ -74,6 +74,10 @@ export async function DELETE(
     }
     const { session } = authResult
 
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'User not authenticated' }, { status: 401 })
+    }
+
     await salesAPI.deleteSalesRecord(params.id, session.user.id)
 
     // Log audit event (non-blocking)

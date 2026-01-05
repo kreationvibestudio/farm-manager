@@ -38,6 +38,10 @@ export async function POST(request: NextRequest) {
     }
     const { session } = authResult
 
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'User not authenticated' }, { status: 401 })
+    }
+
     const body = await request.json()
     const budget = await budgetsAPI.addBudget(body, session.user.id)
 

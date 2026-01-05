@@ -15,6 +15,10 @@ export async function POST(
     }
     const { session } = authResult
 
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'User not authenticated' }, { status: 401 })
+    }
+
     let result: any
 
     switch (params.action) {

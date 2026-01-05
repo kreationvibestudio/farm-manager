@@ -38,6 +38,10 @@ export async function POST(
     }
     const { session } = authResult
 
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'User not authenticated' }, { status: 401 })
+    }
+
     const body = await request.json()
     // Ensure the budget item belongs to the correct budget
     const budgetItemData = { ...body, budgetId: params.id }
