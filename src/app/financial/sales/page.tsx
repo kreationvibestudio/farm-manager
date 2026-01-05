@@ -532,12 +532,12 @@ export default function SalesManagementPage() {
 
               <div className="space-y-2">
                 <Label>Payment Status</Label>
-                <Select value={filters.paymentStatus} onValueChange={(value) => setFilters({...filters, paymentStatus: value})}>
+                <Select value={filters.paymentStatus} onValueChange={(value) => setFilters({...filters, paymentStatus: value === "all" ? "" : value})}>
                   <SelectTrigger>
                     <SelectValue placeholder="All statuses" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All statuses</SelectItem>
+                    <SelectItem value="all">All statuses</SelectItem>
                     <SelectItem value="Pending">Pending</SelectItem>
                     <SelectItem value="Partial">Partial</SelectItem>
                     <SelectItem value="Paid">Paid</SelectItem>
@@ -548,12 +548,12 @@ export default function SalesManagementPage() {
 
               <div className="space-y-2">
                 <Label>Product Type</Label>
-                <Select value={filters.productType} onValueChange={(value) => setFilters({...filters, productType: value})}>
+                <Select value={filters.productType} onValueChange={(value) => setFilters({...filters, productType: value === "all" ? "" : value})}>
                   <SelectTrigger>
                     <SelectValue placeholder="All products" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All products</SelectItem>
+                    <SelectItem value="all">All products</SelectItem>
                     <SelectItem value="FFB">FFB</SelectItem>
                     <SelectItem value="CPO">CPO</SelectItem>
                     <SelectItem value="PK">PK</SelectItem>

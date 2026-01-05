@@ -5,9 +5,10 @@ import { logAuditEvent } from '@/lib/audit/audit-log'
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string; action: string } }
+  context: { params: Promise<{ id: string; action: string }> }
 ) {
   try {
+    const params = await context.params
     const authResult = await requireAuth()
     if (authResult instanceof NextResponse) {
       return authResult // Unauthorized response

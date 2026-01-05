@@ -54,3 +54,4 @@ next-env.d.ts
 # npm/yarn artifacts
 farm-manager@*/
 next
+.env*.local

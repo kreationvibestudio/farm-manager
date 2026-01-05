@@ -65,7 +65,7 @@ export default function CostTrackingPage() {
       await addCostEntry({
         categoryId: formData.categoryId,
         amount: parseFloat(formData.amount),
-        currency: "MYR",
+        currency: "NGN",
         description: formData.description,
         dateIncurred: formData.dateIncurred,
         supplierName: formData.supplierName || undefined,
@@ -89,7 +89,7 @@ export default function CostTrackingPage() {
       await updateCostEntry(editingEntry.id, {
         categoryId: formData.categoryId,
         amount: parseFloat(formData.amount),
-        currency: "MYR",
+        currency: "NGN",
         description: formData.description,
         dateIncurred: formData.dateIncurred,
         supplierName: formData.supplierName || undefined,
@@ -209,7 +209,7 @@ export default function CostTrackingPage() {
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="amount">Amount (RM) *</Label>
+                      <Label htmlFor="amount">Amount (₦) *</Label>
                       <Input
                         id="amount"
                         type="number"
@@ -338,7 +338,7 @@ export default function CostTrackingPage() {
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">RM {totalCosts.toLocaleString('en-MY', { minimumFractionDigits: 2 })}</div>
+              <div className="text-2xl font-bold">₦ {totalCosts.toLocaleString('en-NG', { minimumFractionDigits: 2 })}</div>
               <p className="text-xs text-muted-foreground">
                 {filteredEntries.length} entries
               </p>
@@ -398,12 +398,12 @@ export default function CostTrackingPage() {
             <div className="grid gap-4 md:grid-cols-4">
               <div className="space-y-2">
                 <Label>Category</Label>
-                <Select value={filters.categoryId} onValueChange={(value) => setFilters({...filters, categoryId: value})}>
+                <Select value={filters.categoryId} onValueChange={(value) => setFilters({...filters, categoryId: value === "all" ? "" : value})}>
                   <SelectTrigger>
                     <SelectValue placeholder="All categories" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All categories</SelectItem>
+                    <SelectItem value="all">All categories</SelectItem>
                     {costCategories.map((category) => (
                       <SelectItem key={category.id} value={category.id}>
                         {category.name}
@@ -473,7 +473,7 @@ export default function CostTrackingPage() {
                     </TableCell>
                     <TableCell>{entry.description}</TableCell>
                     <TableCell>{entry.supplierName || '-'}</TableCell>
-                    <TableCell>RM {entry.amount.toLocaleString('en-MY', { minimumFractionDigits: 2 })}</TableCell>
+                    <TableCell>₦ {entry.amount.toLocaleString('en-NG', { minimumFractionDigits: 2 })}</TableCell>
                     <TableCell>
                       <Badge variant={entry.approvedAt ? "default" : "secondary"}>
                         {entry.approvedAt ? "Approved" : "Pending"}
@@ -547,7 +547,7 @@ export default function CostTrackingPage() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="edit-amount">Amount (RM) *</Label>
+                  <Label htmlFor="edit-amount">Amount (₦) *</Label>
                   <Input
                     id="edit-amount"
                     type="number"

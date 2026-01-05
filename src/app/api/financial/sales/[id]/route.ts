@@ -5,9 +5,10 @@ import { logAuditEvent } from '@/lib/audit/audit-log'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const params = await context.params
     const authResult = await requireAuth()
     if (authResult instanceof NextResponse) {
       return authResult // Unauthorized response
@@ -26,9 +27,10 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const params = await context.params
     const authResult = await requireAuth()
     if (authResult instanceof NextResponse) {
       return authResult // Unauthorized response
@@ -62,9 +64,10 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const params = await context.params
     const authResult = await requireAuth()
     if (authResult instanceof NextResponse) {
       return authResult // Unauthorized response
