@@ -58,7 +58,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                         // Continue to fallback
                     } else if (user && user.password_hash) {
                         // Verify password
-                        const isValid = await bcrypt.compare(credentials.password || '', (user.password_hash as any) as string);
+                        const passwordHash = String(user.password_hash || '');
+                        const isValid = await bcrypt.compare(credentials.password || '', passwordHash);
                         
                         if (isValid) {
                             loginAttempts.delete(ip); // Reset on success
