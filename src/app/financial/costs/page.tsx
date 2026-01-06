@@ -17,8 +17,10 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useAppStore } from "@/lib/store";
 import { CostEntry, CostCategory } from "@/types";
+import { useSession } from "next-auth/react";
 
 export default function CostTrackingPage() {
+  const { data: session } = useSession();
   const {
     costEntries,
     costCategories,
@@ -61,6 +63,11 @@ export default function CostTrackingPage() {
   }, [fetchCostEntries, fetchCostCategories, filters]);
 
   const handleAddCostEntry = async () => {
+    if (!session?.user?.id) {
+      console.error("User not authenticated");
+      return;
+    }
+
     try {
       await addCostEntry({
         categoryId: formData.categoryId,
@@ -73,6 +80,7 @@ export default function CostTrackingPage() {
         unit: formData.unit || undefined,
         blockId: formData.blockId || undefined,
         notes: formData.notes || undefined,
+        createdBy: session.user.id,
       });
 
       setIsAddDialogOpen(false);

@@ -17,8 +17,10 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useAppStore } from "@/lib/store";
 import { SalesRecord } from "@/types";
+import { useSession } from "next-auth/react";
 
 export default function SalesManagementPage() {
+  const { data: session } = useSession();
   const {
     salesRecords,
     harvestLogs,
@@ -69,6 +71,11 @@ export default function SalesManagementPage() {
   }, [fetchSalesRecords, fetchHarvestLogs, filters]);
 
   const handleAddSalesRecord = async () => {
+    if (!session?.user?.id) {
+      console.error("User not authenticated");
+      return;
+    }
+
     try {
       // Calculate total amount
       const quantity = parseFloat(formData.quantitySold);
@@ -94,6 +101,7 @@ export default function SalesManagementPage() {
         invoiceNumber: formData.invoiceNumber || undefined,
         deliveryNote: formData.deliveryNote || undefined,
         notes: formData.notes || undefined,
+        createdBy: session.user.id,
       });
 
       setIsAddDialogOpen(false);
