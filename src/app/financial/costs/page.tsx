@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Plus, Filter, Download, Edit, Trash2, CheckCircle, Clock, DollarSign } from "lucide-react";
+import { CalendarIcon, Plus, Filter, Download, Edit, Trash2, CheckCircle, Clock, DollarSign, Shield } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useAppStore } from "@/lib/store";
@@ -20,12 +21,20 @@ import { CostEntry, CostCategory } from "@/types";
 import { useSession } from "next-auth/react";
 
 export default function CostTrackingPage() {
+  const router = useRouter();
   const { data: session } = useSession();
+  
+  // Check if user is admin
+  const isAdmin = (session?.user as any)?.role === 'Admin' || 
+                  session?.user?.name === 'Admin User' || 
+                  (session?.user?.email && session.user.email.includes('admin'));
   const {
     costEntries,
     costCategories,
+    harvestLogs,
     fetchCostEntries,
     fetchCostCategories,
+    fetchHarvestLogs,
     addCostEntry,
     updateCostEntry,
     deleteCostEntry,
@@ -57,10 +66,53 @@ export default function CostTrackingPage() {
     notes: ""
   });
 
+  // Redirect non-admins
   useEffect(() => {
-    fetchCostEntries(filters);
-    fetchCostCategories();
-  }, [fetchCostEntries, fetchCostCategories, filters]);
+    if (session && !isAdmin) {
+      router.push('/');
+    }
+  }, [session, isAdmin, router]);
+
+  useEffect(() => {
+    if (isAdmin) {
+      fetchCostEntries(filters);
+      fetchCostCategories();
+      if (harvestLogs.length === 0) {
+        fetchHarvestLogs();
+      }
+    }
+  }, [fetchCostEntries, fetchCostCategories, fetchHarvestLogs, filters, isAdmin, harvestLogs.length]);
+
+  if (!session) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Card className="max-w-md">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Shield className="h-5 w-5 text-red-500" />
+              Access Denied
+            </CardTitle>
+            <CardDescription>
+              This section is restricted to administrators only.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={() => router.push('/')} variant="outline" className="w-full">
+              Return to Dashboard
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   const handleAddCostEntry = async () => {
     if (!session?.user?.id) {
@@ -304,12 +356,19 @@ export default function CostTrackingPage() {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="block">Block/Area</Label>
-                      <Input
-                        id="block"
-                        value={formData.blockId}
-                        onChange={(e) => setFormData({...formData, blockId: e.target.value})}
-                        placeholder="Block A-01"
-                      />
+                      <Select value={formData.blockId} onValueChange={(value) => setFormData({...formData, blockId: value})}>
+                        <SelectTrigger id="block">
+                          <SelectValue placeholder="Select block..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">None</SelectItem>
+                          {[...new Set(harvestLogs.map(log => log.blockId).filter(Boolean))].sort().map((block) => (
+                            <SelectItem key={block} value={block}>
+                              {block}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
 
@@ -620,12 +679,19 @@ export default function CostTrackingPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="edit-block">Block/Area</Label>
-                  <Input
-                    id="edit-block"
-                    value={formData.blockId}
-                    onChange={(e) => setFormData({...formData, blockId: e.target.value})}
-                    placeholder="Block A-01"
-                  />
+                  <Select value={formData.blockId} onValueChange={(value) => setFormData({...formData, blockId: value})}>
+                    <SelectTrigger id="edit-block">
+                      <SelectValue placeholder="Select block..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">None</SelectItem>
+                      {[...new Set(harvestLogs.map(log => log.blockId).filter(Boolean))].sort().map((block) => (
+                        <SelectItem key={block} value={block}>
+                          {block}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 

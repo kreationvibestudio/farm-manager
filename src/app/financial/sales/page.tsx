@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Plus, Filter, Download, Edit, Trash2, CheckCircle, Clock, TrendingUp, DollarSign, Receipt } from "lucide-react";
+import { CalendarIcon, Plus, Filter, Download, Edit, Trash2, CheckCircle, Clock, TrendingUp, DollarSign, Receipt, Shield } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useAppStore } from "@/lib/store";
@@ -20,7 +21,13 @@ import { SalesRecord } from "@/types";
 import { useSession } from "next-auth/react";
 
 export default function SalesManagementPage() {
+  const router = useRouter();
   const { data: session } = useSession();
+  
+  // Check if user is admin
+  const isAdmin = (session?.user as any)?.role === 'Admin' || 
+                  session?.user?.name === 'Admin User' || 
+                  (session?.user?.email && session.user.email.includes('admin'));
   const {
     salesRecords,
     harvestLogs,
@@ -67,10 +74,50 @@ export default function SalesManagementPage() {
     paymentReceived: 0
   });
 
+  // Redirect non-admins
   useEffect(() => {
-    fetchSalesRecords(filters);
-    fetchHarvestLogs();
-  }, [fetchSalesRecords, fetchHarvestLogs, filters]);
+    if (session && !isAdmin) {
+      router.push('/');
+    }
+  }, [session, isAdmin, router]);
+
+  useEffect(() => {
+    if (isAdmin) {
+      fetchSalesRecords(filters);
+      fetchHarvestLogs();
+    }
+  }, [fetchSalesRecords, fetchHarvestLogs, filters, isAdmin]);
+
+  if (!session) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Card className="max-w-md">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Shield className="h-5 w-5 text-red-500" />
+              Access Denied
+            </CardTitle>
+            <CardDescription>
+              This section is restricted to administrators only.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={() => router.push('/')} variant="outline" className="w-full">
+              Return to Dashboard
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   const handleAddSalesRecord = async () => {
     if (!session?.user?.id) {

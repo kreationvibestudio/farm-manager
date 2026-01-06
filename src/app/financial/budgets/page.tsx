@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Plus, Filter, Download, Edit, Trash2, CheckCircle, Clock, DollarSign, FileText, Target, TrendingUp } from "lucide-react";
+import { CalendarIcon, Plus, Filter, Download, Edit, Trash2, CheckCircle, Clock, DollarSign, FileText, Target, TrendingUp, Shield } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useAppStore } from "@/lib/store";
@@ -20,7 +21,13 @@ import { Budget, BudgetItem } from "@/types";
 import { useSession } from "next-auth/react";
 
 export default function BudgetPlanningPage() {
+  const router = useRouter();
   const { data: session } = useSession();
+  
+  // Check if user is admin
+  const isAdmin = (session?.user as any)?.role === 'Admin' || 
+                  session?.user?.name === 'Admin User' || 
+                  (session?.user?.email && session.user.email.includes('admin'));
   const {
     budgets,
     budgetCategories,
@@ -77,10 +84,50 @@ export default function BudgetPlanningPage() {
     notes: ""
   });
 
+  // Redirect non-admins
   useEffect(() => {
-    fetchBudgets(filters);
-    fetchBudgetCategories();
-  }, [fetchBudgets, fetchBudgetCategories, filters]);
+    if (session && !isAdmin) {
+      router.push('/');
+    }
+  }, [session, isAdmin, router]);
+
+  useEffect(() => {
+    if (isAdmin) {
+      fetchBudgets(filters);
+      fetchBudgetCategories();
+    }
+  }, [fetchBudgets, fetchBudgetCategories, filters, isAdmin]);
+
+  if (!session) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Card className="max-w-md">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Shield className="h-5 w-5 text-red-500" />
+              Access Denied
+            </CardTitle>
+            <CardDescription>
+              This section is restricted to administrators only.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={() => router.push('/')} variant="outline" className="w-full">
+              Return to Dashboard
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   const handleAddBudget = async () => {
     if (!session?.user?.id) {

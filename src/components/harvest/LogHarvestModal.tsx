@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAppStore } from "@/lib/store";
@@ -11,28 +11,70 @@ interface LogHarvestModalProps {
 }
 
 export function LogHarvestModal({ isOpen, onClose }: LogHarvestModalProps) {
-    const addHarvestLog = useAppStore((state) => state.addHarvestLog);
+    const { addHarvestLog, harvestLogs, fetchHarvestLogs, staff, fetchStaff, vehicles, fetchVehicles } = useAppStore();
     const [formData, setFormData] = useState({
         date: new Date().toISOString().split('T')[0],
         blockId: "",
         bunches: 0,
-        supervisorId: "s2",
-        vehicleId: "v3",
+        supervisorId: "",
+        vehicleId: "",
     });
+
+    useEffect(() => {
+        // Fetch data when modal opens
+        if (isOpen) {
+            if (harvestLogs.length === 0) {
+                fetchHarvestLogs();
+            }
+            if (staff.length === 0) {
+                fetchStaff();
+            }
+            if (vehicles.length === 0) {
+                fetchVehicles();
+            }
+        }
+    }, [isOpen, harvestLogs.length, staff.length, vehicles.length, fetchHarvestLogs, fetchStaff, fetchVehicles]);
+
+    useEffect(() => {
+        if (!isOpen) {
+            setFormData({
+                date: new Date().toISOString().split('T')[0],
+                blockId: "",
+                bunches: 0,
+                supervisorId: "",
+                vehicleId: "",
+            });
+        }
+    }, [isOpen]);
 
     if (!isOpen) return null;
 
-    const handleSubmit = (e: React.FormEvent) => {
+    // Extract unique block IDs from harvest logs and sort them
+    const uniqueBlocks = [...new Set(harvestLogs.map(log => log.blockId).filter(Boolean))].sort();
+    
+    // Get supervisors (Managers and Supervisors)
+    const supervisors = staff.filter(s => s.role === 'Supervisor' || s.role === 'Manager');
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        addHarvestLog(formData);
-        setFormData({
-            date: new Date().toISOString().split('T')[0],
-            blockId: "",
-            bunches: 0,
-            supervisorId: "s2",
-            vehicleId: "v3",
-        });
-        onClose();
+        try {
+            const logData: any = {
+                date: formData.date,
+                blockId: formData.blockId,
+                bunches: formData.bunches,
+            };
+            if (formData.supervisorId) {
+                logData.supervisorId = formData.supervisorId;
+            }
+            if (formData.vehicleId) {
+                logData.vehicleId = formData.vehicleId;
+            }
+            await addHarvestLog(logData);
+            onClose();
+        } catch (error: any) {
+            console.error('Error saving harvest log:', error);
+            alert(error?.message || 'Failed to save harvest log. Please try again.');
+        }
     };
 
     return (
@@ -59,15 +101,25 @@ export function LogHarvestModal({ isOpen, onClose }: LogHarvestModalProps) {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium mb-1">Block ID</label>
-                        <input
-                            type="text"
+                        <label className="block text-sm font-medium mb-1">Block ID *</label>
+                        <select
                             required
                             value={formData.blockId}
                             onChange={(e) => setFormData({ ...formData, blockId: e.target.value })}
                             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                            placeholder="e.g., Block A-15"
-                        />
+                        >
+                            <option value="">Select block...</option>
+                            {uniqueBlocks.map((block) => (
+                                <option key={block} value={block}>
+                                    {block}
+                                </option>
+                            ))}
+                        </select>
+                        {uniqueBlocks.length === 0 && (
+                            <p className="text-xs text-muted-foreground mt-1">
+                                No blocks found. Add a harvest log first to populate block list.
+                            </p>
+                        )}
                     </div>
 
                     <div>
@@ -91,9 +143,12 @@ export function LogHarvestModal({ isOpen, onClose }: LogHarvestModalProps) {
                                 onChange={(e) => setFormData({ ...formData, supervisorId: e.target.value })}
                                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                             >
-                                <option value="s1">John Doe</option>
-                                <option value="s2">Jane Smith</option>
-                                <option value="s3">Bob Wilson</option>
+                                <option value="">Select supervisor...</option>
+                                {supervisors.map((s) => (
+                                    <option key={s.id} value={s.id}>
+                                        {s.name} ({s.role})
+                                    </option>
+                                ))}
                             </select>
                         </div>
                         <div>
@@ -103,9 +158,12 @@ export function LogHarvestModal({ isOpen, onClose }: LogHarvestModalProps) {
                                 onChange={(e) => setFormData({ ...formData, vehicleId: e.target.value })}
                                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                             >
-                                <option value="v1">Tractor 01</option>
-                                <option value="v2">Tractor 02</option>
-                                <option value="v3">Truck 01</option>
+                                <option value="">Select vehicle...</option>
+                                {vehicles.map((v) => (
+                                    <option key={v.id} value={v.id}>
+                                        {v.name} {v.licensePlate ? `(${v.licensePlate})` : ''}
+                                    </option>
+                                ))}
                             </select>
                         </div>
                     </div>

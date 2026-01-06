@@ -29,6 +29,22 @@ const navigation = [
 export function Sidebar({ className }: { className?: string }) {
   const pathname = usePathname();
   const { data: session } = useSession();
+  
+  // Check if user is admin
+  const isAdmin = (session?.user as any)?.role === 'Admin' || 
+                  session?.user?.name === 'Admin User' || 
+                  (session?.user?.email && session.user.email.includes('admin'));
+  
+  // Filter navigation based on admin status
+  const filteredNavigation = navigation.filter(item => {
+    // Hide financial management and user management from non-admins
+    if (!isAdmin) {
+      if (item.name === 'Financial Management' || item.name === 'User Management') {
+        return false;
+      }
+    }
+    return true;
+  });
 
   const handleLogout = async () => {
     try {
@@ -57,8 +73,8 @@ export function Sidebar({ className }: { className?: string }) {
 
       <div className="flex-1 overflow-y-auto py-4">
         <nav className="space-y-1 px-3">
-          {navigation.map((item) => {
-            const isActive = pathname === item.href;
+          {filteredNavigation.map((item) => {
+            const isActive = pathname === item.href || (item.children && item.children.some(child => pathname === child.href));
             return (
               <Link
                 key={item.name}
@@ -153,25 +169,38 @@ export function MobileNav() {
           {/* Sidebar */}
           <div className="absolute top-14 left-0 bottom-0 w-64 bg-card border-r border-border overflow-y-auto animate-in slide-in-from-left duration-300">
             <nav className="space-y-1 p-3">
-              {navigation.map((item) => {
-                const isActive = pathname === item.href;
-                return (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    onClick={() => setIsOpen(false)}
-                    className={cn(
-                      "group flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium transition-colors",
-                      isActive
-                        ? "bg-primary/10 text-primary"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                    )}
-                  >
-                    <item.icon className={cn("h-5 w-5 shrink-0", isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground")} aria-hidden="true" />
-                    {item.name}
-                  </Link>
-                );
-              })}
+              {(() => {
+                const isAdmin = (session?.user as any)?.role === 'Admin' || 
+                                session?.user?.name === 'Admin User' || 
+                                (session?.user?.email && session.user.email.includes('admin'));
+                const filteredNav = navigation.filter(item => {
+                  if (!isAdmin) {
+                    if (item.name === 'Financial Management' || item.name === 'User Management') {
+                      return false;
+                    }
+                  }
+                  return true;
+                });
+                return filteredNav.map((item) => {
+                  const isActive = pathname === item.href || (item.children && item.children.some(child => pathname === child.href));
+                  return (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      onClick={() => setIsOpen(false)}
+                      className={cn(
+                        "group flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium transition-colors",
+                        isActive
+                          ? "bg-primary/10 text-primary"
+                          : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                      )}
+                    >
+                      <item.icon className={cn("h-5 w-5 shrink-0", isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground")} aria-hidden="true" />
+                      {item.name}
+                    </Link>
+                  );
+                });
+              })()}
             </nav>
 
             <div className="border-t border-border p-4 mt-4">

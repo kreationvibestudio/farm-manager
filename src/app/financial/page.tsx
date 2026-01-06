@@ -1,13 +1,22 @@
 "use client";
 
 import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { DollarSign, TrendingUp, TrendingDown, Calculator, Receipt, Wallet, Target, PieChart } from "lucide-react";
+import { DollarSign, TrendingUp, TrendingDown, Calculator, Receipt, Wallet, Target, PieChart, Plus, Shield } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 
 export default function FinancialPage() {
+  const router = useRouter();
+  const { data: session } = useSession();
+  
+  // Check if user is admin
+  const isAdmin = (session?.user as any)?.role === 'Admin' || 
+                  session?.user?.name === 'Admin User' || 
+                  (session?.user?.email && session.user.email.includes('admin'));
   const {
     costEntries,
     salesRecords,
@@ -34,6 +43,44 @@ export default function FinancialPage() {
 
   const pendingPayments = salesRecords.filter(r => r.paymentStatus === 'Pending').length;
   const activeBudgets = budgets.filter(b => b.status === 'Active').length;
+
+  // Redirect non-admins
+  useEffect(() => {
+    if (session && !isAdmin) {
+      router.push('/');
+    }
+  }, [session, isAdmin, router]);
+
+  if (!session) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Card className="max-w-md">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Shield className="h-5 w-5 text-red-500" />
+              Access Denied
+            </CardTitle>
+            <CardDescription>
+              This section is restricted to administrators only.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={() => router.push('/')} variant="outline" className="w-full">
+              Return to Dashboard
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -116,7 +163,7 @@ export default function FinancialPage() {
 
         {/* Quick Actions */}
         <div className="grid gap-4 md:grid-cols-3">
-          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => window.location.href = '/financial/costs'}>
+          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => router.push('/financial/costs')}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Calculator className="h-5 w-5" />
@@ -127,14 +174,25 @@ export default function FinancialPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between mb-4">
                 <span className="text-2xl font-bold">{costEntries.length}</span>
                 <Badge variant="secondary">Active</Badge>
               </div>
+              <Button 
+                size="sm" 
+                className="w-full" 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  router.push('/financial/costs');
+                }}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Cost Entry
+              </Button>
             </CardContent>
           </Card>
 
-          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => window.location.href = '/financial/sales'}>
+          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => router.push('/financial/sales')}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <TrendingUp className="h-5 w-5" />
@@ -145,14 +203,25 @@ export default function FinancialPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between mb-4">
                 <span className="text-2xl font-bold">{salesRecords.length}</span>
                 <Badge variant="secondary">Active</Badge>
               </div>
+              <Button 
+                size="sm" 
+                className="w-full" 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  router.push('/financial/sales');
+                }}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Sales Record
+              </Button>
             </CardContent>
           </Card>
 
-          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => window.location.href = '/financial/budgets'}>
+          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => router.push('/financial/budgets')}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Wallet className="h-5 w-5" />
@@ -163,10 +232,21 @@ export default function FinancialPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between mb-4">
                 <span className="text-2xl font-bold">{budgets.length}</span>
                 <Badge variant="secondary">Active</Badge>
               </div>
+              <Button 
+                size="sm" 
+                className="w-full" 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  router.push('/financial/budgets');
+                }}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Create Budget
+              </Button>
             </CardContent>
           </Card>
         </div>
