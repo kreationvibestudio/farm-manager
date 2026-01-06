@@ -30,15 +30,17 @@ export function FleetStatus({ onClick }: FleetStatusProps) {
             }
         };
 
-        updateDimensions();
-        window.addEventListener('resize', updateDimensions);
+        // Use requestAnimationFrame to ensure DOM is ready
+        requestAnimationFrame(() => {
+            updateDimensions();
+            // Also set a timeout as fallback
+            setTimeout(updateDimensions, 50);
+        });
         
-        // Small delay to ensure container is rendered
-        const timer = setTimeout(updateDimensions, 100);
+        window.addEventListener('resize', updateDimensions);
 
         return () => {
             window.removeEventListener('resize', updateDimensions);
-            clearTimeout(timer);
         };
     }, []);
 
@@ -50,11 +52,11 @@ export function FleetStatus({ onClick }: FleetStatusProps) {
                 <h3 className="mb-4 text-lg font-semibold">Fleet Status</h3>
                 <div 
                     ref={containerRef}
-                    className="h-48 min-h-[192px] w-full"
-                    style={{ minHeight: '192px', width: '100%' }}
+                    className="h-48 w-full"
+                    style={{ minHeight: '192px', height: '192px', width: '100%' }}
                 >
                 {dimensions.width > 0 && dimensions.height > 0 ? (
-                    <ResponsiveContainer width={dimensions.width} height={dimensions.height}>
+                    <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                         <Pie
                             data={vehicleStats}
@@ -91,10 +93,17 @@ export function FleetStatus({ onClick }: FleetStatusProps) {
             </div>
             {onClick && (
                 <div 
-                    className="absolute inset-0 z-20 rounded-xl" 
+                    className="absolute inset-0 z-20 rounded-xl pointer-events-auto" 
                     onClick={onClick}
                     style={{ cursor: 'pointer' }}
                     aria-label="View fleet management"
+                    onMouseDown={(e) => {
+                        // Allow chart interactions to work
+                        const target = e.target as HTMLElement;
+                        if (target.closest('.recharts-wrapper')) {
+                            e.stopPropagation();
+                        }
+                    }}
                 />
             )}
         </div>

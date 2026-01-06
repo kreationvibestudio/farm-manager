@@ -22,15 +22,17 @@ export function HarvestChart({ onClick }: HarvestChartProps) {
             }
         };
 
-        updateDimensions();
-        window.addEventListener('resize', updateDimensions);
+        // Use requestAnimationFrame to ensure DOM is ready
+        requestAnimationFrame(() => {
+            updateDimensions();
+            // Also set a timeout as fallback
+            setTimeout(updateDimensions, 50);
+        });
         
-        // Small delay to ensure container is rendered
-        const timer = setTimeout(updateDimensions, 100);
+        window.addEventListener('resize', updateDimensions);
 
         return () => {
             window.removeEventListener('resize', updateDimensions);
-            clearTimeout(timer);
         };
     }, []);
 
@@ -42,11 +44,11 @@ export function HarvestChart({ onClick }: HarvestChartProps) {
                 <h3 className="mb-4 text-lg font-semibold">Weekly Harvest Trend</h3>
                 <div 
                     ref={containerRef}
-                    className="h-64 min-h-[256px] w-full"
-                    style={{ minHeight: '256px', width: '100%' }}
+                    className="h-64 w-full"
+                    style={{ minHeight: '256px', height: '256px', width: '100%' }}
                 >
                 {dimensions.width > 0 && dimensions.height > 0 ? (
-                    <ResponsiveContainer width={dimensions.width} height={dimensions.height}>
+                    <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={harvestStats} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                         <defs>
                             <linearGradient id="colorFfb" x1="0" y1="0" x2="0" y2="1">
@@ -84,10 +86,17 @@ export function HarvestChart({ onClick }: HarvestChartProps) {
             </div>
             {onClick && (
                 <div 
-                    className="absolute inset-0 z-20 rounded-xl" 
+                    className="absolute inset-0 z-20 rounded-xl pointer-events-auto" 
                     onClick={onClick}
                     style={{ cursor: 'pointer' }}
                     aria-label="View harvest management"
+                    onMouseDown={(e) => {
+                        // Allow chart interactions to work
+                        const target = e.target as HTMLElement;
+                        if (target.closest('.recharts-wrapper')) {
+                            e.stopPropagation();
+                        }
+                    }}
                 />
             )}
         </div>
