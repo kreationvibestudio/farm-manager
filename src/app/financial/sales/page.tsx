@@ -185,7 +185,9 @@ export default function SalesManagementPage() {
       foreignMatter: "",
       invoiceNumber: "",
       deliveryNote: "",
-      notes: ""
+      notes: "",
+      paymentStatus: "Pending",
+      paymentReceived: 0
     });
     setSelectedDate(undefined);
   };
@@ -207,7 +209,9 @@ export default function SalesManagementPage() {
       foreignMatter: record.foreignMatter?.toString() || "",
       invoiceNumber: record.invoiceNumber || "",
       deliveryNote: record.deliveryNote || "",
-      notes: record.notes || ""
+      notes: record.notes || "",
+      paymentStatus: record.paymentStatus,
+      paymentReceived: record.paymentReceived
     });
     setSelectedDate(new Date(record.saleDate));
   };
