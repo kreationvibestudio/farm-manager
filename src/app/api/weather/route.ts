@@ -101,18 +101,18 @@ export async function GET(request: NextRequest) {
           },
         ],
         location: {
-          name: 'Plantation Location',
+          name: 'Edo State, Nigeria',
           country: 'NG',
-          lat: 6.5244,
-          lon: 3.3792,
+          lat: 6.5,
+          lon: 6.0,
         },
       } as WeatherData);
     }
 
-    // Get location from query params or use default (Lagos, Nigeria)
+    // Get location from query params or use default (Edo State, Nigeria)
     const searchParams = request.nextUrl.searchParams;
-    const lat = searchParams.get('lat') || '6.5244';
-    const lon = searchParams.get('lon') || '3.3792';
+    const lat = searchParams.get('lat') || '6.5';
+    const lon = searchParams.get('lon') || '6.0';
 
     try {
       // Fetch current weather
@@ -246,7 +246,7 @@ export async function GET(request: NextRequest) {
           };
         }),
         location: {
-          name: 'Plantation Location',
+          name: 'Edo State, Nigeria',
           country: 'NG',
           lat: parseFloat(lat),
           lon: parseFloat(lon),
@@ -285,10 +285,10 @@ export async function GET(request: NextRequest) {
         };
       }),
       location: {
-        name: 'Plantation Location',
+        name: 'Edo State, Nigeria',
         country: 'NG',
-        lat: 6.5244,
-        lon: 3.3792,
+        lat: 6.5,
+        lon: 6.0,
       },
     } as WeatherData, {
       headers: {
