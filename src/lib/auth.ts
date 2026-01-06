@@ -58,7 +58,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                         // Continue to fallback
                     } else if (user && user.password_hash) {
                         // Verify password
-                        const passwordHash = String(user.password_hash || '');
+                        const passwordHash = (user.password_hash as string) || '';
                         const isValid = await bcrypt.compare(credentials.password || '', passwordHash);
                         
                         if (isValid) {
