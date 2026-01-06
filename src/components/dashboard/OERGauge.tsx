@@ -39,23 +39,15 @@ export function OERGauge({ value = 19.2, onClick }: OERGaugeProps) {
         <div 
             className={`rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:shadow-md hover:border-primary/30 ${onClick ? 'cursor-pointer relative' : ''}`}
         >
-            {onClick && (
-                <div 
-                    className="absolute inset-0 z-20 rounded-xl" 
-                    onClick={onClick}
-                    style={{ cursor: 'pointer' }}
-                    aria-label="View harvest management"
-                />
-            )}
             <div className="relative z-10">
                 <h3 className="mb-2 text-lg font-semibold">Oil Extraction Rate</h3>
                 <div 
                     ref={containerRef}
                     className="h-48 min-h-[192px] w-full relative"
-                    style={{ minHeight: '192px' }}
+                    style={{ minHeight: '192px', width: '100%' }}
                 >
                 {dimensions.width > 0 && dimensions.height > 0 ? (
-                    <ResponsiveContainer width="100%" height="100%">
+                    <ResponsiveContainer width={dimensions.width} height={dimensions.height}>
                     <RadialBarChart
                         cx="50%"
                         cy="50%"
@@ -94,6 +86,14 @@ export function OERGauge({ value = 19.2, onClick }: OERGaugeProps) {
                 )}
                 </div>
             </div>
+            {onClick && (
+                <div 
+                    className="absolute inset-0 z-20 rounded-xl" 
+                    onClick={onClick}
+                    style={{ cursor: 'pointer' }}
+                    aria-label="View harvest management"
+                />
+            )}
         </div>
     );
 }

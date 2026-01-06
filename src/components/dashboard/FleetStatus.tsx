@@ -46,23 +46,15 @@ export function FleetStatus({ onClick }: FleetStatusProps) {
         <div 
             className={`rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:shadow-md hover:border-primary/30 ${onClick ? 'cursor-pointer relative' : ''}`}
         >
-            {onClick && (
-                <div 
-                    className="absolute inset-0 z-20 rounded-xl" 
-                    onClick={onClick}
-                    style={{ cursor: 'pointer' }}
-                    aria-label="View fleet management"
-                />
-            )}
             <div className="relative z-10">
                 <h3 className="mb-4 text-lg font-semibold">Fleet Status</h3>
                 <div 
                     ref={containerRef}
                     className="h-48 min-h-[192px] w-full"
-                    style={{ minHeight: '192px' }}
+                    style={{ minHeight: '192px', width: '100%' }}
                 >
                 {dimensions.width > 0 && dimensions.height > 0 ? (
-                    <ResponsiveContainer width="100%" height="100%">
+                    <ResponsiveContainer width={dimensions.width} height={dimensions.height}>
                     <PieChart>
                         <Pie
                             data={vehicleStats}
@@ -97,6 +89,14 @@ export function FleetStatus({ onClick }: FleetStatusProps) {
                 )}
                 </div>
             </div>
+            {onClick && (
+                <div 
+                    className="absolute inset-0 z-20 rounded-xl" 
+                    onClick={onClick}
+                    style={{ cursor: 'pointer' }}
+                    aria-label="View fleet management"
+                />
+            )}
         </div>
     );
 }

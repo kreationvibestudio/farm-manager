@@ -38,23 +38,15 @@ export function HarvestChart({ onClick }: HarvestChartProps) {
         <div 
             className={`rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:shadow-md hover:border-primary/30 ${onClick ? 'cursor-pointer relative' : ''}`}
         >
-            {onClick && (
-                <div 
-                    className="absolute inset-0 z-20 rounded-xl" 
-                    onClick={onClick}
-                    style={{ cursor: 'pointer' }}
-                    aria-label="View harvest management"
-                />
-            )}
             <div className="relative z-10">
                 <h3 className="mb-4 text-lg font-semibold">Weekly Harvest Trend</h3>
                 <div 
                     ref={containerRef}
                     className="h-64 min-h-[256px] w-full"
-                    style={{ minHeight: '256px' }}
+                    style={{ minHeight: '256px', width: '100%' }}
                 >
                 {dimensions.width > 0 && dimensions.height > 0 ? (
-                    <ResponsiveContainer width="100%" height="100%">
+                    <ResponsiveContainer width={dimensions.width} height={dimensions.height}>
                     <AreaChart data={harvestStats} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                         <defs>
                             <linearGradient id="colorFfb" x1="0" y1="0" x2="0" y2="1">
@@ -90,6 +82,14 @@ export function HarvestChart({ onClick }: HarvestChartProps) {
                 )}
                 </div>
             </div>
+            {onClick && (
+                <div 
+                    className="absolute inset-0 z-20 rounded-xl" 
+                    onClick={onClick}
+                    style={{ cursor: 'pointer' }}
+                    aria-label="View harvest management"
+                />
+            )}
         </div>
     );
 }
