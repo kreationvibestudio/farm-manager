@@ -61,7 +61,7 @@ export default function FinancialPage() {
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">RM {totalRevenue.toLocaleString('en-MY', { minimumFractionDigits: 2 })}</div>
+              <div className="text-2xl font-bold">₦ {totalRevenue.toLocaleString('en-NG', { minimumFractionDigits: 2 })}</div>
               <p className="text-xs text-muted-foreground">
                 {salesRecords.length} transactions
               </p>
@@ -74,7 +74,7 @@ export default function FinancialPage() {
               <Calculator className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">RM {totalCosts.toLocaleString('en-MY', { minimumFractionDigits: 2 })}</div>
+              <div className="text-2xl font-bold">₦ {totalCosts.toLocaleString('en-NG', { minimumFractionDigits: 2 })}</div>
               <p className="text-xs text-muted-foreground">
                 {costEntries.length} entries
               </p>
@@ -92,7 +92,7 @@ export default function FinancialPage() {
             </CardHeader>
             <CardContent>
               <div className={`text-2xl font-bold ${netProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                RM {netProfit.toLocaleString('en-MY', { minimumFractionDigits: 2 })}
+                ₦ {netProfit.toLocaleString('en-NG', { minimumFractionDigits: 2 })}
               </div>
               <p className="text-xs text-muted-foreground">
                 {profitMargin.toFixed(1)}% margin
@@ -188,7 +188,7 @@ export default function FinancialPage() {
                         {new Date(entry.dateIncurred).toLocaleDateString()}
                       </p>
                     </div>
-                    <span className="font-medium">RM {entry.amount.toLocaleString('en-MY', { minimumFractionDigits: 2 })}</span>
+                    <span className="font-medium">₦ {entry.amount.toLocaleString('en-NG', { minimumFractionDigits: 2 })}</span>
                   </div>
                 ))}
                 {costEntries.length === 0 && (
@@ -214,7 +214,7 @@ export default function FinancialPage() {
                       </p>
                     </div>
                     <div className="text-right">
-                      <span className="font-medium">RM {record.totalAmount.toLocaleString('en-MY', { minimumFractionDigits: 2 })}</span>
+                      <span className="font-medium">₦ {record.totalAmount.toLocaleString('en-NG', { minimumFractionDigits: 2 })}</span>
                       <Badge variant={record.paymentStatus === 'Paid' ? 'default' : 'secondary'} className="ml-2">
                         {record.paymentStatus}
                       </Badge>
@@ -242,7 +242,7 @@ export default function FinancialPage() {
                   <div>
                     <h4 className="font-medium">{budget.name}</h4>
                     <p className="text-sm text-muted-foreground">
-                      {budget.budgetYear} • RM {budget.totalBudget.toLocaleString('en-MY')}
+                      {budget.budgetYear} • ₦ {budget.totalBudget.toLocaleString('en-NG')}
                     </p>
                   </div>
                   <div className="text-right">

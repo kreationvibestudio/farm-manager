@@ -37,7 +37,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     throw new Error("Too many login attempts. Please try again in 15 minutes.");
                 }
 
-                if (!credentials?.username || !credentials?.password) {
+                // Type guard to ensure credentials are strings
+                const username = typeof credentials?.username === 'string' ? credentials.username : '';
+                const password = typeof credentials?.password === 'string' ? credentials.password : '';
+                
+                if (!username || !password) {
                     attempts.count++;
                     loginAttempts.set(ip, attempts);
                     return null;
@@ -49,27 +53,27 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     const { data: user, error } = await supabase
                         .from('users')
                         .select('id, username, password_hash, full_name, role, phone_number, must_change_password')
-                        .eq('username', credentials.username)
+                        .eq('username', username)
                         .is('deleted_at', null)
                         .single();
 
                     if (error) {
-                        console.error('Database query error for username:', credentials.username, error);
+                        console.error('Database query error for username:', username, error);
                         // Continue to fallback
                     } else if (user && user.password_hash) {
                         // Verify password
                         const passwordHash = (user.password_hash as string) || '';
-                        const isValid = await bcrypt.compare(credentials.password || '', passwordHash);
+                        const password = typeof credentials.password === 'string' ? credentials.password : '';
+                        const isValid = await bcrypt.compare(password, passwordHash);
                         
                         if (isValid) {
                             loginAttempts.delete(ip); // Reset on success
                             
                             // Update last_login_at (non-blocking)
-                            supabase
+                            Promise.resolve(supabase
                                 .from('users')
                                 .update({ last_login_at: new Date().toISOString() })
-                                .eq('id', user.id)
-                                .then(() => {})
+                                .eq('id', user.id))
                                 .catch(() => {});
                             
                             return {
@@ -80,10 +84,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                                 mustChangePassword: user.must_change_password || false,
                             };
                         } else {
-                            console.error('Password verification failed for user:', credentials.username);
+                            console.error('Password verification failed for user:', username);
                         }
                     } else {
-                        console.error('User not found in database:', credentials.username);
+                        console.error('User not found in database:', username);
                     }
                 } catch (dbError: any) {
                     // If database check fails, fall back to environment variables
@@ -100,8 +104,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
                 if (envUsername && envPassword) {
                     if (
-                        credentials.username === envUsername &&
-                        credentials.password === envPassword
+                        username === envUsername &&
+                        password === envPassword
                     ) {
                         loginAttempts.delete(ip); // Reset on success
                         return { 

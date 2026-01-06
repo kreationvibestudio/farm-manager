@@ -2,9 +2,16 @@
 
 import { Cloud, Sun, Droplets, Wind, Thermometer } from 'lucide-react';
 
-export function WeatherWidget() {
+interface WeatherWidgetProps {
+    onClick?: () => void;
+}
+
+export function WeatherWidget({ onClick }: WeatherWidgetProps) {
     return (
-        <div className="rounded-xl border border-border bg-gradient-to-br from-sky-500 to-blue-600 p-6 shadow-sm text-white">
+        <div 
+            className={`rounded-xl border border-border bg-gradient-to-br from-sky-500 to-blue-600 p-6 shadow-sm text-white transition-all hover:shadow-md hover:scale-[1.02] ${onClick ? 'cursor-pointer' : ''}`}
+            onClick={onClick}
+        >
             <div className="flex items-start justify-between">
                 <div>
                     <h3 className="text-sm font-medium opacity-80">Plantation Weather</h3>

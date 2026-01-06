@@ -8,9 +8,10 @@ interface ResourceTankProps {
     max?: number;
     unit?: string;
     lowThreshold?: number;
+    onClick?: () => void;
 }
 
-export function ResourceTank({ current = 1200, max = 3000, unit = 'L', lowThreshold = 0.3 }: ResourceTankProps) {
+export function ResourceTank({ current = 1200, max = 3000, unit = 'L', lowThreshold = 0.3, onClick }: ResourceTankProps) {
     const [animatedLevel, setAnimatedLevel] = useState(0);
     const percentage = (current / max) * 100;
     const isLow = percentage / 100 < lowThreshold;
@@ -21,7 +22,10 @@ export function ResourceTank({ current = 1200, max = 3000, unit = 'L', lowThresh
     }, [percentage]);
 
     return (
-        <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+        <div 
+            className={`rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:shadow-md hover:border-primary/30 ${onClick ? 'cursor-pointer' : ''}`}
+            onClick={onClick}
+        >
             <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold">Diesel Reserve</h3>
                 <Fuel className={`h-5 w-5 ${isLow ? 'text-red-500' : 'text-primary'}`} />

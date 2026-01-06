@@ -4,7 +4,11 @@ import { useEffect, useState, useRef } from 'react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { harvestStats } from '@/lib/data';
 
-export function HarvestChart() {
+interface HarvestChartProps {
+    onClick?: () => void;
+}
+
+export function HarvestChart({ onClick }: HarvestChartProps) {
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -31,7 +35,10 @@ export function HarvestChart() {
     }, []);
 
     return (
-        <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+        <div 
+            className={`rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:shadow-md hover:border-primary/30 ${onClick ? 'cursor-pointer' : ''}`}
+            onClick={onClick}
+        >
             <h3 className="mb-4 text-lg font-semibold">Weekly Harvest Trend</h3>
             <div 
                 ref={containerRef}

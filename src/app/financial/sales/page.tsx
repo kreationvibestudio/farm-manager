@@ -94,7 +94,7 @@ export default function SalesManagementPage() {
         unit: formData.unit,
         unitPrice: unitPrice,
         totalAmount: totalAmount,
-        currency: "MYR",
+        currency: "NGN",
         transportCost: transportCost > 0 ? transportCost : undefined,
         transportSupplier: formData.transportSupplier || undefined,
         qualityGrade: formData.qualityGrade || undefined,
@@ -133,7 +133,7 @@ export default function SalesManagementPage() {
         unit: formData.unit,
         unitPrice: unitPrice,
         totalAmount: totalAmount,
-        currency: "MYR",
+        currency: "NGN",
         transportCost: transportCost > 0 ? transportCost : undefined,
         transportSupplier: formData.transportSupplier || undefined,
         qualityGrade: formData.qualityGrade || undefined,
@@ -481,7 +481,7 @@ export default function SalesManagementPage() {
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">RM {totalRevenue.toLocaleString('en-MY', { minimumFractionDigits: 2 })}</div>
+              <div className="text-2xl font-bold">₦ {totalRevenue.toLocaleString('en-NG', { minimumFractionDigits: 2 })}</div>
               <p className="text-xs text-muted-foreground">
                 {filteredRecords.length} sales records
               </p>
@@ -494,7 +494,7 @@ export default function SalesManagementPage() {
               <CheckCircle className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">RM {paidAmount.toLocaleString('en-MY', { minimumFractionDigits: 2 })}</div>
+              <div className="text-2xl font-bold">₦ {paidAmount.toLocaleString('en-NG', { minimumFractionDigits: 2 })}</div>
               <p className="text-xs text-muted-foreground">
                 Collected payments
               </p>
@@ -521,7 +521,7 @@ export default function SalesManagementPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                RM {(filteredRecords.length > 0 ? filteredRecords.reduce((sum, r) => sum + r.unitPrice, 0) / filteredRecords.length : 0).toFixed(2)}
+                ₦ {(filteredRecords.length > 0 ? filteredRecords.reduce((sum, r) => sum + r.unitPrice, 0) / filteredRecords.length : 0).toFixed(2)}
               </div>
               <p className="text-xs text-muted-foreground">
                 Average unit price
@@ -637,8 +637,8 @@ export default function SalesManagementPage() {
                       <Badge variant="outline">{record.productType}</Badge>
                     </TableCell>
                     <TableCell>{record.quantitySold.toLocaleString()} {record.unit}</TableCell>
-                    <TableCell>RM {record.unitPrice.toFixed(2)}</TableCell>
-                    <TableCell>RM {record.totalAmount.toLocaleString('en-MY', { minimumFractionDigits: 2 })}</TableCell>
+                    <TableCell>₦ {record.unitPrice.toFixed(2)}</TableCell>
+                    <TableCell>₦ {record.totalAmount.toLocaleString('en-NG', { minimumFractionDigits: 2 })}</TableCell>
                     <TableCell>
                       <Badge variant={
                         record.paymentStatus === 'Paid' ? 'default' :

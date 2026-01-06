@@ -39,8 +39,8 @@ export default function BudgetPlanningPage() {
   } = useAppStore();
 
   const [filters, setFilters] = useState({
-    year: "",
-    status: "",
+    year: "all",
+    status: "all",
     search: ""
   });
 
@@ -93,7 +93,7 @@ export default function BudgetPlanningPage() {
         name: budgetFormData.name,
         description: budgetFormData.description,
         budgetYear: budgetFormData.budgetYear,
-        budgetQuarter: budgetFormData.budgetQuarter ? parseInt(budgetFormData.budgetQuarter) : undefined,
+        budgetQuarter: budgetFormData.budgetQuarter && budgetFormData.budgetQuarter !== "all" ? parseInt(budgetFormData.budgetQuarter) : undefined,
         startDate: budgetFormData.startDate,
         endDate: budgetFormData.endDate,
         totalBudget: parseFloat(budgetFormData.totalBudget),
@@ -118,7 +118,7 @@ export default function BudgetPlanningPage() {
         name: budgetFormData.name,
         description: budgetFormData.description,
         budgetYear: budgetFormData.budgetYear,
-        budgetQuarter: budgetFormData.budgetQuarter ? parseInt(budgetFormData.budgetQuarter) : undefined,
+        budgetQuarter: budgetFormData.budgetQuarter && budgetFormData.budgetQuarter !== "all" ? parseInt(budgetFormData.budgetQuarter) : undefined,
         startDate: budgetFormData.startDate,
         endDate: budgetFormData.endDate,
         totalBudget: parseFloat(budgetFormData.totalBudget),
@@ -165,7 +165,7 @@ export default function BudgetPlanningPage() {
       name: "",
       description: "",
       budgetYear: new Date().getFullYear(),
-      budgetQuarter: "",
+      budgetQuarter: "all",
       startDate: "",
       endDate: "",
       totalBudget: "",
@@ -183,7 +183,7 @@ export default function BudgetPlanningPage() {
       name: budget.name,
       description: budget.description || "",
       budgetYear: budget.budgetYear,
-      budgetQuarter: budget.budgetQuarter?.toString() || "",
+      budgetQuarter: budget.budgetQuarter?.toString() || "all",
       startDate: budget.startDate,
       endDate: budget.endDate,
       totalBudget: budget.totalBudget.toString(),
@@ -240,6 +240,12 @@ export default function BudgetPlanningPage() {
 
   const filteredBudgets = budgets.filter(budget => {
     if (filters.search && !budget.name.toLowerCase().includes(filters.search.toLowerCase())) {
+      return false;
+    }
+    if (filters.year && filters.year !== "all" && budget.budgetYear.toString() !== filters.year) {
+      return false;
+    }
+    if (filters.status && filters.status !== "all" && budget.status !== filters.status) {
       return false;
     }
     return true;
@@ -391,7 +397,7 @@ export default function BudgetPlanningPage() {
                           <SelectValue placeholder="Select quarter" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Full Year</SelectItem>
+                          <SelectItem value="all">Full Year</SelectItem>
                           <SelectItem value="1">Q1 (Jan-Mar)</SelectItem>
                           <SelectItem value="2">Q2 (Apr-Jun)</SelectItem>
                           <SelectItem value="3">Q3 (Jul-Sep)</SelectItem>
@@ -495,7 +501,7 @@ export default function BudgetPlanningPage() {
                     <SelectValue placeholder="All years" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All years</SelectItem>
+                    <SelectItem value="all">All years</SelectItem>
                     <SelectItem value="2024">2024</SelectItem>
                     <SelectItem value="2025">2025</SelectItem>
                     <SelectItem value="2026">2026</SelectItem>
@@ -510,7 +516,7 @@ export default function BudgetPlanningPage() {
                     <SelectValue placeholder="All statuses" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All statuses</SelectItem>
+                    <SelectItem value="all">All statuses</SelectItem>
                     <SelectItem value="Draft">Draft</SelectItem>
                     <SelectItem value="Submitted">Submitted</SelectItem>
                     <SelectItem value="Approved">Approved</SelectItem>
@@ -698,7 +704,7 @@ export default function BudgetPlanningPage() {
                       <SelectValue placeholder="Select quarter" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Full Year</SelectItem>
+                      <SelectItem value="all">Full Year</SelectItem>
                       <SelectItem value="1">Q1 (Jan-Mar)</SelectItem>
                       <SelectItem value="2">Q2 (Apr-Jun)</SelectItem>
                       <SelectItem value="3">Q3 (Jul-Sep)</SelectItem>
@@ -768,15 +774,15 @@ export default function BudgetPlanningPage() {
                         <TableCell>
                           {budgetCategories.find(c => c.id === item.budgetCategoryId)?.name || 'Unknown'}
                         </TableCell>
-                        <TableCell>RM {item.plannedAmount.toLocaleString('en-MY', { minimumFractionDigits: 2 })}</TableCell>
-                        <TableCell>RM {item.allocatedAmount.toLocaleString('en-MY', { minimumFractionDigits: 2 })}</TableCell>
-                        <TableCell>RM {item.actualSpent.toLocaleString('en-MY', { minimumFractionDigits: 2 })}</TableCell>
+                        <TableCell>₦ {item.plannedAmount.toLocaleString('en-NG', { minimumFractionDigits: 2 })}</TableCell>
+                        <TableCell>₦ {item.allocatedAmount.toLocaleString('en-NG', { minimumFractionDigits: 2 })}</TableCell>
+                        <TableCell>₦ {item.actualSpent.toLocaleString('en-NG', { minimumFractionDigits: 2 })}</TableCell>
                         <TableCell>
                           <span className={cn(
                             "font-medium",
                             variance >= 0 ? "text-green-600" : "text-red-600"
                           )}>
-                            {variance >= 0 ? '+' : ''}RM {variance.toLocaleString('en-MY', { minimumFractionDigits: 2 })}
+                            {variance >= 0 ? '+' : ''}₦ {variance.toLocaleString('en-NG', { minimumFractionDigits: 2 })}
                             ({variancePercent.toFixed(1)}%)
                           </span>
                         </TableCell>

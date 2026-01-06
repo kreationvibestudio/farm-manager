@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { HarvestChart } from "@/components/dashboard/HarvestChart";
 import { FleetStatus } from "@/components/dashboard/FleetStatus";
 import { OERGauge } from "@/components/dashboard/OERGauge";
@@ -10,6 +11,7 @@ import { TrendingUp, Package, Truck, AlertTriangle } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 
 export default function Home() {
+  const router = useRouter();
   const { 
     inventory, 
     vehicles, 
@@ -50,6 +52,7 @@ export default function Home() {
             trend="+2.5%"
             trendUp={true}
             icon={<TrendingUp className="h-4 w-4" />}
+            onClick={() => router.push('/harvest')}
           />
           <StatCard
             title="Oil Extraction Rate"
@@ -57,12 +60,14 @@ export default function Home() {
             trend="-0.1%"
             trendUp={false}
             icon={<Package className="h-4 w-4" />}
+            onClick={() => router.push('/harvest')}
           />
           <StatCard
             title="Active Tractors"
             value={`${activeVehiclesCount}/${vehicles.length}`}
             status="Operating"
             icon={<Truck className="h-4 w-4" />}
+            onClick={() => router.push('/fleet')}
           />
           <StatCard
             title="Diesel Reserve"
@@ -70,22 +75,23 @@ export default function Home() {
             status={dieselReserve < 500 ? "Low Stock" : "Adequate"}
             alert={dieselReserve < 500}
             icon={<AlertTriangle className="h-4 w-4" />}
+            onClick={() => router.push('/inventory')}
           />
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
           <div className="lg:col-span-2">
-            <HarvestChart />
+            <HarvestChart onClick={() => router.push('/harvest')} />
           </div>
           <div>
-            <WeatherWidget />
+            <WeatherWidget onClick={() => router.push('/weather')} />
           </div>
         </div>
 
         <div className="grid gap-6 md:grid-cols-3">
-          <OERGauge />
-          <FleetStatus />
-          <ResourceTank />
+          <OERGauge onClick={() => router.push('/harvest')} />
+          <FleetStatus onClick={() => router.push('/fleet')} />
+          <ResourceTank current={dieselReserve} max={3000} onClick={() => router.push('/inventory')} />
         </div>
 
         <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
@@ -126,7 +132,7 @@ export default function Home() {
   );
 }
 
-function StatCard({ title, value, trend, trendUp, status, alert, icon }: {
+function StatCard({ title, value, trend, trendUp, status, alert, icon, onClick }: {
   title: string;
   value: string;
   trend?: string;
@@ -134,9 +140,13 @@ function StatCard({ title, value, trend, trendUp, status, alert, icon }: {
   status?: string;
   alert?: boolean;
   icon?: React.ReactNode;
+  onClick?: () => void;
 }) {
   return (
-    <div className="rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:shadow-md hover:border-primary/30">
+    <div 
+      className={`rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:shadow-md hover:border-primary/30 ${onClick ? 'cursor-pointer' : ''}`}
+      onClick={onClick}
+    >
       <div className="flex flex-row items-center justify-between pb-2">
         <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
         <div className={`p-2 rounded-lg ${alert ? 'bg-red-100 text-red-600 dark:bg-red-900/30' : 'bg-primary/10 text-primary'}`}>

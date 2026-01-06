@@ -343,7 +343,7 @@ SELECT
   '2024-01-01',
   '2024-12-31',
   2500000.00,
-  'MYR',
+  'NGN',
   'Active',
   id
 FROM users

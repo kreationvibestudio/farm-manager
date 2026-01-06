@@ -4,7 +4,11 @@ import { useEffect, useState, useRef } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { useAppStore } from '@/lib/store';
 
-export function FleetStatus() {
+interface FleetStatusProps {
+    onClick?: () => void;
+}
+
+export function FleetStatus({ onClick }: FleetStatusProps) {
     const { vehicles } = useAppStore();
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
     const containerRef = useRef<HTMLDivElement>(null);
@@ -39,7 +43,10 @@ export function FleetStatus() {
     }, []);
 
     return (
-        <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+        <div 
+            className={`rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:shadow-md hover:border-primary/30 ${onClick ? 'cursor-pointer' : ''}`}
+            onClick={onClick}
+        >
             <h3 className="mb-4 text-lg font-semibold">Fleet Status</h3>
             <div 
                 ref={containerRef}

@@ -5,9 +5,10 @@ import { RadialBarChart, RadialBar, ResponsiveContainer, PolarAngleAxis } from '
 
 interface OERGaugeProps {
     value?: number;
+    onClick?: () => void;
 }
 
-export function OERGauge({ value = 19.2 }: OERGaugeProps) {
+export function OERGauge({ value = 19.2, onClick }: OERGaugeProps) {
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
     const containerRef = useRef<HTMLDivElement>(null);
     const data = [{ name: 'OER', value, fill: '#16a34a' }];
@@ -35,7 +36,10 @@ export function OERGauge({ value = 19.2 }: OERGaugeProps) {
     }, []);
 
     return (
-        <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+        <div 
+            className={`rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:shadow-md hover:border-primary/30 ${onClick ? 'cursor-pointer' : ''}`}
+            onClick={onClick}
+        >
             <h3 className="mb-2 text-lg font-semibold">Oil Extraction Rate</h3>
             <div 
                 ref={containerRef}

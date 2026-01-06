@@ -28,6 +28,11 @@ ADMIN_USERNAME=admin
 ADMIN_PASSWORD=plantation123
 ```
 
+#### Weather API (OpenWeatherMap):
+```
+OPENWEATHER_API_KEY=fe10e9f9aa5ef5fa4c37774dd4975e08
+```
+
 ### Steps:
 
 1. Go to https://vercel.com/dashboard
