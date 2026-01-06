@@ -356,12 +356,12 @@ export default function CostTrackingPage() {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="block">Block/Area</Label>
-                      <Select value={formData.blockId} onValueChange={(value) => setFormData({...formData, blockId: value})}>
+                      <Select value={formData.blockId || "none"} onValueChange={(value) => setFormData({...formData, blockId: value === "none" ? "" : value})}>
                         <SelectTrigger id="block">
                           <SelectValue placeholder="Select block..." />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">None</SelectItem>
+                          <SelectItem value="none">None</SelectItem>
                           {[...new Set(harvestLogs.map(log => log.blockId).filter(Boolean))].sort().map((block) => (
                             <SelectItem key={block} value={block}>
                               {block}
@@ -679,12 +679,12 @@ export default function CostTrackingPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="edit-block">Block/Area</Label>
-                  <Select value={formData.blockId} onValueChange={(value) => setFormData({...formData, blockId: value})}>
+                  <Select value={formData.blockId || "none"} onValueChange={(value) => setFormData({...formData, blockId: value === "none" ? "" : value})}>
                     <SelectTrigger id="edit-block">
                       <SelectValue placeholder="Select block..." />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">None</SelectItem>
+                      <SelectItem value="none">None</SelectItem>
                       {[...new Set(harvestLogs.map(log => log.blockId).filter(Boolean))].sort().map((block) => (
                         <SelectItem key={block} value={block}>
                           {block}
