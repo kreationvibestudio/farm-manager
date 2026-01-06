@@ -62,7 +62,9 @@ export default function SalesManagementPage() {
     foreignMatter: "",
     invoiceNumber: "",
     deliveryNote: "",
-    notes: ""
+    notes: "",
+    paymentStatus: "Pending",
+    paymentReceived: 0
   });
 
   useEffect(() => {
@@ -101,6 +103,8 @@ export default function SalesManagementPage() {
         invoiceNumber: formData.invoiceNumber || undefined,
         deliveryNote: formData.deliveryNote || undefined,
         notes: formData.notes || undefined,
+        paymentStatus: formData.paymentStatus as any,
+        paymentReceived: parseFloat(formData.paymentReceived.toString() || "0"),
         createdBy: session.user.id,
       });
 
