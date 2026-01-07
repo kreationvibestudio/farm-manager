@@ -132,24 +132,49 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate and normalize role
-    const roleString = String(role).trim();
+    // Validate and normalize role - handle all possible cases
+    let roleString: string;
+    if (typeof role === 'string') {
+      roleString = role.trim();
+    } else if (role === null || role === undefined) {
+      return NextResponse.json(
+        { error: 'Role is required and cannot be null or undefined' },
+        { status: 400 }
+      );
+    } else {
+      roleString = String(role).trim();
+    }
+    
+    // Remove any non-printable characters
+    roleString = roleString.replace(/[\x00-\x1F\x7F]/g, '');
+    
     console.log('Role validation:', {
       originalRole: role,
       roleType: typeof role,
       roleString: roleString,
-      isValid: ['Admin', 'Operator', 'Support'].includes(roleString)
+      roleStringLength: roleString.length,
+      roleStringCharCodes: roleString.split('').map(c => c.charCodeAt(0)),
+      isValid: ['Admin', 'Operator', 'Support'].includes(roleString),
+      comparison: {
+        'Admin': roleString === 'Admin',
+        'Operator': roleString === 'Operator',
+        'Support': roleString === 'Support'
+      }
     });
     
-    if (!['Admin', 'Operator', 'Support'].includes(roleString)) {
+    const validRoles = ['Admin', 'Operator', 'Support'];
+    if (!validRoles.includes(roleString)) {
       console.error('Invalid role value:', {
         received: role,
         type: typeof role,
         normalized: roleString,
-        validOptions: ['Admin', 'Operator', 'Support']
+        normalizedLength: roleString.length,
+        normalizedCharCodes: roleString.split('').map(c => c.charCodeAt(0)),
+        validOptions: validRoles,
+        receivedCharCodes: typeof role === 'string' ? role.split('').map(c => c.charCodeAt(0)) : 'N/A'
       });
       return NextResponse.json(
-        { error: `Invalid role. Received: "${roleString}". Must be exactly one of: Admin, Operator, or Support (case-sensitive)` },
+        { error: `Invalid role. Received: "${roleString}" (length: ${roleString.length}, charCodes: [${roleString.split('').map(c => c.charCodeAt(0)).join(', ')}]). Must be exactly one of: Admin, Operator, or Support (case-sensitive)` },
         { status: 400 }
       );
     }
