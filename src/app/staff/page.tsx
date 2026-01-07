@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { StaffTable } from "@/components/staff/StaffTable";
 import { AddStaffModal } from "@/components/staff/AddStaffModal";
 import { BulkHireModal } from "@/components/staff/BulkHireModal";
+import { BulkFireModal } from "@/components/staff/BulkFireModal";
 import { Button } from "@/components/ui/button";
 import { UserPlus, Users, UserMinus, Trash2, Loader2, UsersRound } from "lucide-react";
 import { Staff } from "@/types";
@@ -27,6 +28,7 @@ export default function StaffPage() {
 
     const [showAddModal, setShowAddModal] = useState(false);
     const [showBulkHireModal, setShowBulkHireModal] = useState(false);
+    const [showBulkFireModal, setShowBulkFireModal] = useState(false);
     const [editStaff, setEditStaff] = useState<Staff | null>(null);
     const [isCleaning, setIsCleaning] = useState(false);
     const [cleanupMessage, setCleanupMessage] = useState<string | null>(null);
@@ -132,7 +134,36 @@ export default function StaffPage() {
         }
     };
 
-    const handleBulkFire = async () => {
+    const handleBulkFire = async (staffIds: string[]) => {
+        if (staffIds.length === 0) {
+            throw new Error('Please select at least one staff member to fire.');
+        }
+
+        setIsBulkFiring(true);
+        try {
+            const response = await fetch('/api/staff/bulk-fire', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ staffIds }),
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || 'Failed to fire staff members');
+            }
+
+            // Clear selection and refresh
+            setSelectedStaffIds([]);
+            await fetchStaff();
+        } catch (error: any) {
+            throw error; // Re-throw to let modal handle it
+        } finally {
+            setIsBulkFiring(false);
+        }
+    };
+
+    const handleBulkFireFromSelection = async () => {
         if (selectedStaffIds.length === 0) {
             alert('Please select at least one staff member to fire.');
             return;
@@ -147,27 +178,10 @@ export default function StaffPage() {
             return;
         }
 
-        setIsBulkFiring(true);
         try {
-            const response = await fetch('/api/staff/bulk-fire', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ staffIds: selectedStaffIds }),
-            });
-
-            const result = await response.json();
-
-            if (!response.ok) {
-                throw new Error(result.error || 'Failed to fire staff members');
-            }
-
-            // Clear selection and refresh
-            setSelectedStaffIds([]);
-            await fetchStaff();
+            await handleBulkFire(selectedStaffIds);
         } catch (error: any) {
             alert(`Error: ${error.message}`);
-        } finally {
-            setIsBulkFiring(false);
         }
     };
 
@@ -215,6 +229,14 @@ export default function StaffPage() {
                                         Remove Duplicates
                                     </>
                                 )}
+                            </Button>
+                            <Button 
+                                onClick={() => setShowBulkFireModal(true)}
+                                variant="outline"
+                                className="gap-2 text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground"
+                            >
+                                <UserMinus className="h-4 w-4" />
+                                Bulk Fire
                             </Button>
                             <Button 
                                 onClick={() => setShowBulkHireModal(true)}
@@ -289,7 +311,7 @@ export default function StaffPage() {
                             <Button
                                 variant="destructive"
                                 size="sm"
-                                onClick={handleBulkFire}
+                                onClick={handleBulkFireFromSelection}
                                 disabled={isBulkFiring}
                                 className="gap-2"
                             >
@@ -335,6 +357,13 @@ export default function StaffPage() {
                     isOpen={showBulkHireModal}
                     onClose={() => setShowBulkHireModal(false)}
                     onSave={handleBulkHire}
+                />
+
+                <BulkFireModal
+                    isOpen={showBulkFireModal}
+                    onClose={() => setShowBulkFireModal(false)}
+                    onFire={handleBulkFire}
+                    staff={staff}
                 />
             </main>
         </div>
