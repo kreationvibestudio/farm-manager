@@ -19,6 +19,7 @@ import { cn } from "@/lib/utils";
 import { useAppStore } from "@/lib/store";
 import { SalesRecord } from "@/types";
 import { useSession } from "next-auth/react";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
 
 export default function SalesManagementPage() {
   const router = useRouter();
