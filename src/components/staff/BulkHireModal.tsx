@@ -162,14 +162,14 @@ export function BulkHireModal({ isOpen, onClose, onSave }: BulkHireModalProps) {
                                                     </td>
                                                     <td className="p-3">
                                                         <Select
-                                                            value={staff.designation || ''}
-                                                            onValueChange={(value) => updateRow(index, 'designation', value as StaffDesignation | '')}
+                                                            value={staff.designation && staff.designation !== '' ? staff.designation : 'none'}
+                                                            onValueChange={(value) => updateRow(index, 'designation', value === 'none' ? '' : value as StaffDesignation)}
                                                         >
                                                             <SelectTrigger className="w-full">
                                                                 <SelectValue placeholder="Optional" />
                                                             </SelectTrigger>
                                                             <SelectContent>
-                                                                <SelectItem value="">None</SelectItem>
+                                                                <SelectItem value="none">None</SelectItem>
                                                                 <SelectItem value="Estate Manager">Estate Manager</SelectItem>
                                                                 <SelectItem value="Farm Manager">Farm Manager</SelectItem>
                                                                 <SelectItem value="Office Data Analyst">Office Data Analyst</SelectItem>
