@@ -260,7 +260,7 @@ export default function CostTrackingPage() {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="category">Category *</Label>
-                      <Select value={formData.categoryId || ""} onValueChange={(value) => setFormData({...formData, categoryId: value})}>
+                      <Select value={formData.categoryId || undefined} onValueChange={(value) => setFormData({...formData, categoryId: value})}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select category" />
                         </SelectTrigger>
@@ -613,7 +613,7 @@ export default function CostTrackingPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="edit-category">Category *</Label>
-                  <Select value={formData.categoryId || ""} onValueChange={(value) => setFormData({...formData, categoryId: value})}>
+                  <Select value={formData.categoryId || undefined} onValueChange={(value) => setFormData({...formData, categoryId: value})}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
