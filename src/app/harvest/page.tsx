@@ -22,12 +22,12 @@ export default function HarvestPage() {
         fetchHarvestLogs();
     }, [fetchHarvestLogs]);
 
-    const totalYield = (harvestLogs || []).reduce((acc, log) => acc + (log.bunches || 0), 0);
-    const averageDaily = (harvestLogs || []).length > 0 ? Math.round(totalYield / harvestLogs.length) : 0;
+    const totalYield = harvestLogs.reduce((acc, log) => acc + log.bunches, 0);
+    const averageDaily = harvestLogs.length > 0 ? Math.round(totalYield / harvestLogs.length) : 0;
 
     // Find best performing block
-    const blockTotals = (harvestLogs || []).reduce((acc, log) => {
-        acc[log.blockId] = (acc[log.blockId] || 0) + (log.bunches || 0);
+    const blockTotals = harvestLogs.reduce((acc, log) => {
+        acc[log.blockId] = (acc[log.blockId] || 0) + log.bunches;
         return acc;
     }, {} as Record<string, number>);
     const bestBlock = Object.entries(blockTotals).sort((a, b) => b[1] - a[1])[0]?.[0] || "N/A";

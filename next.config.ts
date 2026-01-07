@@ -8,9 +8,7 @@ const nextConfig: NextConfig = {
     // Note: In Next.js 16+, middleware is still supported
     // The warning is about future changes, but current implementation is fine
   },
-  // Optimize CSS loading to prevent preload warnings
-  optimizeFonts: true,
-  // Disable CSS preloading for better performance
+  // Disable powered-by header for security
   poweredByHeader: false,
   async headers() {
     return [
