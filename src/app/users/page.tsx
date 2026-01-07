@@ -41,14 +41,26 @@ export default function UsersPage() {
 
     const handleAdd = async (userData: Omit<User, 'id' | 'created_at' | 'updated_at' | 'last_login_at'> & { password: string }) => {
         try {
+            // Debug logging
+            console.log('handleAdd - userData:', {
+                ...userData,
+                password: '[REDACTED]',
+                role: userData.role,
+                roleType: typeof userData.role
+            });
+            
+            const requestBody = JSON.stringify(userData);
+            console.log('Request body:', requestBody);
+            
             const response = await fetch('/api/users', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(userData),
+                body: requestBody,
             });
 
             if (!response.ok) {
                 const result = await response.json();
+                console.error('API error response:', result);
                 throw new Error(result.error || 'Failed to create user');
             }
 

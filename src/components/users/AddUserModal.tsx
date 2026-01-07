@@ -67,14 +67,25 @@ export function AddUserModal({ isOpen, onClose, onSave, editUser }: AddUserModal
         }
 
         try {
-            await onSave({
+            const userData = {
                 username: formData.username.trim(),
                 password: formData.password,
                 full_name: formData.full_name.trim(),
                 role: formData.role.trim() as User['role'], // Ensure role is trimmed and typed correctly
                 phone_number: formData.phone_number?.trim() || undefined,
                 must_change_password: editUser ? editUser.must_change_password : true,
+            };
+            
+            // Debug logging
+            console.log('Sending user data:', {
+                ...userData,
+                password: '[REDACTED]',
+                roleType: typeof userData.role,
+                roleValue: userData.role,
+                roleLength: userData.role?.length
             });
+            
+            await onSave(userData);
             onClose();
             setFormData({
                 username: '',
