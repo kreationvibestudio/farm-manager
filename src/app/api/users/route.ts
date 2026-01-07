@@ -255,9 +255,9 @@ export async function POST(request: NextRequest) {
       } else if (insertError.code === '23514') { // Check constraint violation
         // Check constraint violation - usually means role or other field doesn't match allowed values
         if (insertError.message && insertError.message.includes('role')) {
-          errorMessage = 'Invalid role. Role must be exactly one of: Admin, Operator, or Support (case-sensitive).';
+          errorMessage = 'Database constraint error: The role value does not match the database constraint. Please contact the administrator. The role must be exactly one of: Admin, Operator, or Support (case-sensitive).';
         } else {
-          errorMessage = `Invalid data: ${insertError.message || insertError.details || 'Please check that all fields meet the requirements.'}`;
+          errorMessage = `Database constraint error: ${insertError.message || insertError.details || 'Please check that all fields meet the requirements.'}`;
         }
       } else if (insertError.message) {
         // Use the error message if available (even in production for specific errors)
