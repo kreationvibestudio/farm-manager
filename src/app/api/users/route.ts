@@ -85,6 +85,16 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { username, password, full_name, role, phone_number } = body;
 
+    console.log('Received user creation request:', {
+      username: username,
+      hasPassword: !!password,
+      full_name: full_name,
+      role: role,
+      roleType: typeof role,
+      roleLength: role?.length,
+      phone_number: phone_number
+    });
+
     // Validate required fields
     if (!username || !password || !full_name || !role) {
       const missingFields = [];
@@ -93,6 +103,7 @@ export async function POST(request: NextRequest) {
       if (!full_name) missingFields.push('full_name');
       if (!role) missingFields.push('role');
       
+      console.error('Missing required fields:', missingFields);
       return NextResponse.json(
         { error: `Missing required fields: ${missingFields.join(', ')}` },
         { status: 400 }
@@ -122,13 +133,28 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate and normalize role
-    const normalizedRole = role.trim();
-    if (!['Admin', 'Operator', 'Support'].includes(normalizedRole)) {
+    const roleString = String(role).trim();
+    console.log('Role validation:', {
+      originalRole: role,
+      roleType: typeof role,
+      roleString: roleString,
+      isValid: ['Admin', 'Operator', 'Support'].includes(roleString)
+    });
+    
+    if (!['Admin', 'Operator', 'Support'].includes(roleString)) {
+      console.error('Invalid role value:', {
+        received: role,
+        type: typeof role,
+        normalized: roleString,
+        validOptions: ['Admin', 'Operator', 'Support']
+      });
       return NextResponse.json(
-        { error: 'Invalid role. Must be exactly one of: Admin, Operator, or Support (case-sensitive)' },
+        { error: `Invalid role. Received: "${roleString}". Must be exactly one of: Admin, Operator, or Support (case-sensitive)` },
         { status: 400 }
       );
     }
+    
+    const normalizedRole = roleString;
 
     const supabase = createAdminClient();
 
