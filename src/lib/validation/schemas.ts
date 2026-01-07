@@ -42,7 +42,7 @@ export const salesRecordSchema = z.object({
   buyerName: nonEmptyString,
   buyerContact: optionalString,
   productType: z.enum(['FFB', 'CPO', 'PK', 'Other'], {
-    errorMap: () => ({ message: 'Invalid product type' })
+    message: 'Invalid product type'
   }),
   quantitySold: positiveNumber.max(999999999, 'Quantity is too large'),
   unit: z.string().min(1).max(20),
@@ -101,9 +101,7 @@ export const budgetItemSchema = z.object({
 export const maintenanceLogSchema = z.object({
   date: dateString,
   blockId: nonEmptyString.max(50),
-  activity: z.enum(['Pruning', 'Fertilizer Application', 'Herbicide Application', 'Slashing', 'Ring Weeding'], {
-    errorMap: () => ({ message: 'Invalid maintenance activity' })
-  }),
+  activity: z.enum(['Pruning', 'Fertilizer Application', 'Herbicide Application', 'Slashing', 'Ring Weeding']),
   supervisorId: uuidSchema.optional(),
   staffCount: z.number().int().min(0).max(1000).optional(),
   notes: optionalString,
@@ -123,9 +121,7 @@ export const harvestLogSchema = z.object({
 // Inventory Item Schema
 export const inventoryItemSchema = z.object({
   name: nonEmptyString.max(200),
-  category: z.enum(['Fertilizer', 'Herbicide', 'Fuel', 'Spare Part', 'Tool', 'Other'], {
-    errorMap: () => ({ message: 'Invalid category' })
-  }),
+  category: z.enum(['Fertilizer', 'Herbicide', 'Fuel', 'Spare Part', 'Tool', 'Other']),
   quantity: nonNegativeNumber.max(999999999),
   unit: z.string().min(1).max(20),
   minLevel: nonNegativeNumber.max(999999999),
@@ -134,9 +130,7 @@ export const inventoryItemSchema = z.object({
 // Vehicle Schema
 export const vehicleSchema = z.object({
   name: nonEmptyString.max(100),
-  type: z.enum(['Tractor', 'Truck', 'Motorcycle', 'Other'], {
-    errorMap: () => ({ message: 'Invalid vehicle type' })
-  }),
+  type: z.enum(['Tractor', 'Truck', 'Motorcycle', 'Other']),
   status: z.enum(['Active', 'Maintenance', 'OutOfService']).default('Active'),
   licensePlate: optionalString.max(20),
   lastMaintenance: dateString.optional(),
@@ -146,9 +140,7 @@ export const vehicleSchema = z.object({
 // Staff Schema
 export const staffSchema = z.object({
   name: nonEmptyString.max(200),
-  role: z.enum(['Manager', 'Supervisor', 'Driver', 'Worker'], {
-    errorMap: () => ({ message: 'Invalid staff role' })
-  }),
+  role: z.enum(['Manager', 'Supervisor', 'Driver', 'Worker']),
   contact: optionalString.max(50),
 });
 
@@ -157,9 +149,7 @@ export const userSchema = z.object({
   username: z.string().min(3, 'Username must be at least 3 characters').max(50, 'Username is too long').regex(/^[a-zA-Z0-9_]+$/, 'Username can only contain letters, numbers, and underscores'),
   password: z.string().min(8, 'Password must be at least 8 characters').optional(),
   fullName: nonEmptyString.max(200),
-  role: z.enum(['Admin', 'Operator', 'Support'], {
-    errorMap: () => ({ message: 'Invalid user role' })
-  }),
+  role: z.enum(['Admin', 'Operator', 'Support']),
   phoneNumber: optionalString.max(20),
   mustChangePassword: z.boolean().default(false),
 });
