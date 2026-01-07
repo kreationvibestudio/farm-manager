@@ -41,9 +41,7 @@ export const salesRecordSchema = z.object({
   saleDate: dateString,
   buyerName: nonEmptyString,
   buyerContact: optionalString,
-  productType: z.enum(['FFB', 'CPO', 'PK', 'Other'], {
-    message: 'Invalid product type'
-  }),
+  productType: z.enum(['FFB', 'CPO', 'PK', 'Other']),
   quantitySold: positiveNumber.max(999999999, 'Quantity is too large'),
   unit: z.string().min(1).max(20),
   unitPrice: positiveNumber.max(999999, 'Unit price is too large'),
@@ -132,7 +130,7 @@ export const vehicleSchema = z.object({
   name: nonEmptyString.max(100),
   type: z.enum(['Tractor', 'Truck', 'Motorcycle', 'Other']),
   status: z.enum(['Active', 'Maintenance', 'OutOfService']).default('Active'),
-  licensePlate: optionalString.max(20),
+  licensePlate: z.string().max(20).optional(),
   lastMaintenance: dateString.optional(),
   currentDriverId: optionalString,
 });
@@ -141,7 +139,7 @@ export const vehicleSchema = z.object({
 export const staffSchema = z.object({
   name: nonEmptyString.max(200),
   role: z.enum(['Manager', 'Supervisor', 'Driver', 'Worker']),
-  contact: optionalString.max(50),
+  contact: z.string().max(50).optional(),
 });
 
 // User Schema (for creating/updating users)
@@ -150,7 +148,7 @@ export const userSchema = z.object({
   password: z.string().min(8, 'Password must be at least 8 characters').optional(),
   fullName: nonEmptyString.max(200),
   role: z.enum(['Admin', 'Operator', 'Support']),
-  phoneNumber: optionalString.max(20),
+  phoneNumber: z.string().max(20).optional(),
   mustChangePassword: z.boolean().default(false),
 });
 
