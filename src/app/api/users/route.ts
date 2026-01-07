@@ -121,9 +121,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!['Admin', 'Operator', 'Support'].includes(role)) {
+    // Validate and normalize role
+    const normalizedRole = role.trim();
+    if (!['Admin', 'Operator', 'Support'].includes(normalizedRole)) {
       return NextResponse.json(
-        { error: 'Invalid role. Must be Admin, Operator, or Support' },
+        { error: 'Invalid role. Must be exactly one of: Admin, Operator, or Support (case-sensitive)' },
         { status: 400 }
       );
     }
@@ -162,7 +164,7 @@ export async function POST(request: NextRequest) {
       username: username.trim(),
       password_hash,
       full_name: full_name.trim(),
-      role,
+      role: normalizedRole, // Use normalized role
       phone_number: phone_number?.trim() || null,
       must_change_password: true, // New users must change password on first login
     };
@@ -182,7 +184,12 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (insertError) {
-      console.error('Error creating user:', insertError);
+      console.error('Error creating user - Full error:', JSON.stringify(insertError, null, 2));
+      console.error('Error code:', insertError.code);
+      console.error('Error message:', insertError.message);
+      console.error('Error details:', insertError.details);
+      console.error('Error hint:', insertError.hint);
+      console.error('Insert data that failed:', JSON.stringify(insertData, null, 2));
       
       // Provide specific error messages based on error code
       let errorMessage = 'Failed to create user. Please check that all fields are valid and the username is unique.';
@@ -195,15 +202,23 @@ export async function POST(request: NextRequest) {
       } else if (insertError.code === '23503') { // Foreign key constraint violation
         errorMessage = 'Invalid reference. Please check the provided data.';
       } else if (insertError.code === '23514') { // Check constraint violation
-        errorMessage = 'Invalid data. Please check that all fields meet the requirements.';
+        // Check constraint violation - usually means role or other field doesn't match allowed values
+        if (insertError.message && insertError.message.includes('role')) {
+          errorMessage = 'Invalid role. Role must be exactly one of: Admin, Operator, or Support (case-sensitive).';
+        } else {
+          errorMessage = `Invalid data: ${insertError.message || insertError.details || 'Please check that all fields meet the requirements.'}`;
+        }
       } else if (insertError.message) {
         // Use the error message if available (even in production for specific errors)
         if (insertError.message.includes('duplicate') || insertError.message.includes('unique')) {
           errorMessage = 'Username already exists. Please choose a different username.';
         } else if (insertError.message.includes('null') || insertError.message.includes('required')) {
           errorMessage = 'Missing required field. Please fill in all required fields.';
-        } else if (process.env.NODE_ENV === 'development') {
-          errorMessage = `Failed to create user: ${insertError.message} (Code: ${insertError.code || 'N/A'})`;
+        } else if (insertError.message.includes('check') || insertError.message.includes('constraint')) {
+          errorMessage = `Invalid data: ${insertError.message}`;
+        } else {
+          // In production, show a more helpful message
+          errorMessage = `Failed to create user: ${insertError.message}`;
         }
       }
       

@@ -68,11 +68,11 @@ export function AddUserModal({ isOpen, onClose, onSave, editUser }: AddUserModal
 
         try {
             await onSave({
-                username: formData.username,
+                username: formData.username.trim(),
                 password: formData.password,
-                full_name: formData.full_name,
-                role: formData.role,
-                phone_number: formData.phone_number || undefined,
+                full_name: formData.full_name.trim(),
+                role: formData.role.trim() as User['role'], // Ensure role is trimmed and typed correctly
+                phone_number: formData.phone_number?.trim() || undefined,
                 must_change_password: editUser ? editUser.must_change_password : true,
             });
             onClose();
