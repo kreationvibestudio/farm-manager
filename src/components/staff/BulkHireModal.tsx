@@ -162,7 +162,7 @@ export function BulkHireModal({ isOpen, onClose, onSave }: BulkHireModalProps) {
                                                     </td>
                                                     <td className="p-3">
                                                         <Select
-                                                            value={staff.designation && staff.designation !== '' ? staff.designation : 'none'}
+                                                            value={staff.designation ? staff.designation : 'none'}
                                                             onValueChange={(value) => updateRow(index, 'designation', value === 'none' ? '' : value as StaffDesignation)}
                                                         >
                                                             <SelectTrigger className="w-full">
