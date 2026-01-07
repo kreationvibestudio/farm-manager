@@ -85,9 +85,31 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { username, password, full_name, role, phone_number } = body;
 
+    // Validate required fields
     if (!username || !password || !full_name || !role) {
+      const missingFields = [];
+      if (!username) missingFields.push('username');
+      if (!password) missingFields.push('password');
+      if (!full_name) missingFields.push('full_name');
+      if (!role) missingFields.push('role');
+      
       return NextResponse.json(
-        { error: 'Username, password, full name, and role are required' },
+        { error: `Missing required fields: ${missingFields.join(', ')}` },
+        { status: 400 }
+      );
+    }
+
+    // Validate username format
+    if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+      return NextResponse.json(
+        { error: 'Username can only contain letters, numbers, and underscores' },
+        { status: 400 }
+      );
+    }
+
+    if (username.length < 3 || username.length > 50) {
+      return NextResponse.json(
+        { error: 'Username must be between 3 and 50 characters' },
         { status: 400 }
       );
     }
@@ -109,12 +131,20 @@ export async function POST(request: NextRequest) {
     const supabase = createAdminClient();
 
     // Check if username already exists
-    const { data: existingUser } = await supabase
+    const { data: existingUser, error: checkError } = await supabase
       .from('users')
       .select('id')
       .eq('username', username)
       .is('deleted_at', null)
-      .single();
+      .maybeSingle(); // Use maybeSingle() instead of single() to avoid error when no user found
+
+    if (checkError && checkError.code !== 'PGRST116') { // PGRST116 = no rows returned (expected)
+      console.error('Error checking for existing user:', checkError);
+      return NextResponse.json(
+        { error: 'Failed to validate username availability' },
+        { status: 500 }
+      );
+    }
 
     if (existingUser) {
       return NextResponse.json(
@@ -143,8 +173,12 @@ export async function POST(request: NextRequest) {
 
     if (insertError) {
       console.error('Error creating user:', insertError);
+      // Return more detailed error message in development, generic in production
+      const errorMessage = process.env.NODE_ENV === 'development' 
+        ? `Failed to create user: ${insertError.message || insertError.code || 'Unknown error'}`
+        : 'Failed to create user. Please check that all fields are valid and the username is unique.';
       return NextResponse.json(
-        { error: 'Failed to create user' },
+        { error: errorMessage },
         { status: 500 }
       );
     }
@@ -174,8 +208,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(user, { status: 201 });
   } catch (error: any) {
     console.error('Error in POST /api/users:', error);
+    const errorMessage = process.env.NODE_ENV === 'development'
+      ? error.message || 'Failed to create user'
+      : 'Failed to create user. Please try again.';
     return NextResponse.json(
-      { error: error.message || 'Failed to create user' },
+      { error: errorMessage },
       { status: 500 }
     );
   }

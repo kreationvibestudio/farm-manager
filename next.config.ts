@@ -10,6 +10,9 @@ const nextConfig: NextConfig = {
   },
   // Disable powered-by header for security
   poweredByHeader: false,
+  // Note: CSS preload warnings are browser performance hints from Next.js
+  // They're harmless but indicate resources are preloaded but not used immediately
+  // This is normal behavior and doesn't affect functionality
   async headers() {
     return [
       {
