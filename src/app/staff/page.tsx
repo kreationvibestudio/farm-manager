@@ -3,8 +3,9 @@
 import { useState, useEffect } from "react";
 import { StaffTable } from "@/components/staff/StaffTable";
 import { AddStaffModal } from "@/components/staff/AddStaffModal";
+import { BulkHireModal } from "@/components/staff/BulkHireModal";
 import { Button } from "@/components/ui/button";
-import { UserPlus, Users, UserMinus, Trash2, Loader2 } from "lucide-react";
+import { UserPlus, Users, UserMinus, Trash2, Loader2, UsersRound } from "lucide-react";
 import { Staff } from "@/types";
 import { useAppStore } from "@/lib/store";
 import { useSession } from "next-auth/react";
@@ -25,9 +26,12 @@ export default function StaffPage() {
     } = useAppStore();
 
     const [showAddModal, setShowAddModal] = useState(false);
+    const [showBulkHireModal, setShowBulkHireModal] = useState(false);
     const [editStaff, setEditStaff] = useState<Staff | null>(null);
     const [isCleaning, setIsCleaning] = useState(false);
     const [cleanupMessage, setCleanupMessage] = useState<string | null>(null);
+    const [selectedStaffIds, setSelectedStaffIds] = useState<string[]>([]);
+    const [isBulkFiring, setIsBulkFiring] = useState(false);
 
     useEffect(() => {
         fetchStaff();
@@ -106,6 +110,67 @@ export default function StaffPage() {
         }
     };
 
+    const handleBulkHire = async (staffList: Omit<Staff, 'id'>[]) => {
+        try {
+            const response = await fetch('/api/staff/bulk-hire', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ staffList }),
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || 'Failed to hire staff members');
+            }
+
+            // Refresh staff list
+            await fetchStaff();
+            setShowBulkHireModal(false);
+        } catch (error: any) {
+            throw error; // Re-throw to let modal handle it
+        }
+    };
+
+    const handleBulkFire = async () => {
+        if (selectedStaffIds.length === 0) {
+            alert('Please select at least one staff member to fire.');
+            return;
+        }
+
+        const selectedNames = staff
+            .filter(s => selectedStaffIds.includes(s.id))
+            .map(s => s.name)
+            .join(', ');
+
+        if (!confirm(`Are you sure you want to fire ${selectedStaffIds.length} staff member(s)?\n\n${selectedNames}\n\nThis action cannot be undone.`)) {
+            return;
+        }
+
+        setIsBulkFiring(true);
+        try {
+            const response = await fetch('/api/staff/bulk-fire', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ staffIds: selectedStaffIds }),
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || 'Failed to fire staff members');
+            }
+
+            // Clear selection and refresh
+            setSelectedStaffIds([]);
+            await fetchStaff();
+        } catch (error: any) {
+            alert(`Error: ${error.message}`);
+        } finally {
+            setIsBulkFiring(false);
+        }
+    };
+
     const handleCloseModal = () => {
         setShowAddModal(false);
         setEditStaff(null);
@@ -150,6 +215,14 @@ export default function StaffPage() {
                                         Remove Duplicates
                                     </>
                                 )}
+                            </Button>
+                            <Button 
+                                onClick={() => setShowBulkHireModal(true)}
+                                variant="outline"
+                                className="gap-2"
+                            >
+                                <UsersRound className="h-4 w-4" />
+                                Bulk Hire
                             </Button>
                             <Button 
                                 onClick={() => setShowAddModal(true)}
@@ -197,6 +270,45 @@ export default function StaffPage() {
                     </div>
                 </div>
 
+                {selectedStaffIds.length > 0 && canManageStaff && (
+                    <div className="rounded-lg border border-primary bg-primary/10 p-4 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <UsersRound className="h-5 w-5 text-primary" />
+                            <span className="font-medium">
+                                {selectedStaffIds.length} staff member(s) selected
+                            </span>
+                        </div>
+                        <div className="flex gap-2">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setSelectedStaffIds([])}
+                            >
+                                Clear Selection
+                            </Button>
+                            <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={handleBulkFire}
+                                disabled={isBulkFiring}
+                                className="gap-2"
+                            >
+                                {isBulkFiring ? (
+                                    <>
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                        Firing...
+                                    </>
+                                ) : (
+                                    <>
+                                        <UserMinus className="h-4 w-4" />
+                                        Bulk Fire ({selectedStaffIds.length})
+                                    </>
+                                )}
+                            </Button>
+                        </div>
+                    </div>
+                )}
+
                 {isLoading ? (
                     <div className="text-center py-12 text-muted-foreground">
                         Loading staff members...
@@ -207,6 +319,8 @@ export default function StaffPage() {
                         onEdit={handleEdit}
                         onDelete={handleDelete}
                         canManage={canManageStaff}
+                        onBulkSelect={setSelectedStaffIds}
+                        showCheckboxes={canManageStaff}
                     />
                 )}
 
@@ -215,6 +329,12 @@ export default function StaffPage() {
                     onClose={handleCloseModal}
                     onSave={editStaff ? handleUpdate : handleAdd}
                     editStaff={editStaff}
+                />
+
+                <BulkHireModal
+                    isOpen={showBulkHireModal}
+                    onClose={() => setShowBulkHireModal(false)}
+                    onSave={handleBulkHire}
                 />
             </main>
         </div>
