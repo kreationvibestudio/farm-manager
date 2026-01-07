@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth/api-auth';
 import { createAdminClient } from '@/lib/supabase/admin';
 import bcrypt from 'bcryptjs';
+import { validatePassword } from '@/lib/utils/password-validation';
+import { sanitizeError } from '@/lib/utils/error-handler';
 
 export async function POST(request: NextRequest) {
   try {
@@ -21,9 +23,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (newPassword.length < 8) {
+    // Validate password strength
+    const passwordValidation = validatePassword(newPassword);
+    if (!passwordValidation.isValid) {
       return NextResponse.json(
-        { error: 'New password must be at least 8 characters long' },
+        { 
+          error: 'Password does not meet security requirements',
+          details: passwordValidation.errors
+        },
         { status: 400 }
       );
     }
@@ -90,8 +97,9 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     console.error('Error changing password:', error);
+    const sanitized = sanitizeError(error);
     return NextResponse.json(
-      { error: error.message || 'Failed to change password' },
+      { error: sanitized.message },
       { status: 500 }
     );
   }

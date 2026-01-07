@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DollarSign, TrendingUp, TrendingDown, Calculator, Receipt, Wallet, Target, PieChart, Plus, Shield } from "lucide-react";
 import { useAppStore } from "@/lib/store";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
 
 export default function FinancialPage() {
   const router = useRouter();
@@ -36,13 +37,13 @@ export default function FinancialPage() {
     fetchFinancialSummary("2024-01-01", "2024-12-31");
   }, [fetchCostEntries, fetchSalesRecords, fetchBudgets, fetchFinancialSummary]);
 
-  const totalCosts = costEntries.reduce((sum, entry) => sum + entry.amount, 0);
-  const totalRevenue = salesRecords.reduce((sum, record) => sum + record.totalAmount, 0);
+  const totalCosts = (costEntries || []).reduce((sum, entry) => sum + entry.amount, 0);
+  const totalRevenue = (salesRecords || []).reduce((sum, record) => sum + record.totalAmount, 0);
   const netProfit = totalRevenue - totalCosts;
   const profitMargin = totalRevenue > 0 ? (netProfit / totalRevenue) * 100 : 0;
 
-  const pendingPayments = salesRecords.filter(r => r.paymentStatus === 'Pending').length;
-  const activeBudgets = budgets.filter(b => b.status === 'Active').length;
+  const pendingPayments = (salesRecords || []).filter(r => r.paymentStatus === 'Pending').length;
+  const activeBudgets = (budgets || []).filter(b => b.status === 'Active').length;
 
   // Redirect non-admins
   useEffect(() => {
@@ -85,6 +86,7 @@ export default function FinancialPage() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <header className="sticky top-0 z-10 border-b border-border bg-background/80 px-6 py-4 backdrop-blur-md">
+        <Breadcrumb items={[{ label: "Financial Management" }]} className="mb-4" />
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-primary">Financial Management</h1>
@@ -260,7 +262,7 @@ export default function FinancialPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {costEntries.slice(0, 5).map((entry) => (
+                {(costEntries || []).slice(0, 5).map((entry) => (
                   <div key={entry.id} className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium">{entry.description}</p>
@@ -271,7 +273,7 @@ export default function FinancialPage() {
                     <span className="font-medium">₦ {entry.amount.toLocaleString('en-NG', { minimumFractionDigits: 2 })}</span>
                   </div>
                 ))}
-                {costEntries.length === 0 && (
+                {(costEntries || []).length === 0 && (
                   <p className="text-sm text-muted-foreground">No cost entries yet</p>
                 )}
               </div>
@@ -285,7 +287,7 @@ export default function FinancialPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {salesRecords.slice(0, 5).map((record) => (
+                {(salesRecords || []).slice(0, 5).map((record) => (
                   <div key={record.id} className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium">{record.buyerName}</p>
@@ -301,7 +303,7 @@ export default function FinancialPage() {
                     </div>
                   </div>
                 ))}
-                {salesRecords.length === 0 && (
+                {(salesRecords || []).length === 0 && (
                   <p className="text-sm text-muted-foreground">No sales records yet</p>
                 )}
               </div>
@@ -317,7 +319,7 @@ export default function FinancialPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {budgets.slice(0, 3).map((budget) => (
+              {(budgets || []).slice(0, 3).map((budget) => (
                 <div key={budget.id} className="flex items-center justify-between p-4 border rounded-lg">
                   <div>
                     <h4 className="font-medium">{budget.name}</h4>

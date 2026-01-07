@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import * as salesAPI from '@/lib/api/financial/sales'
 import { requireAuth } from '@/lib/auth/api-auth'
 import { logAuditEvent } from '@/lib/audit/audit-log'
+import { sanitizeError } from '@/lib/utils/error-handler'
 
 export async function GET(
   request: NextRequest,
@@ -21,7 +22,8 @@ export async function GET(
 
     return NextResponse.json(salesRecord)
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    const sanitized = sanitizeError(error)
+    return NextResponse.json({ error: sanitized.message }, { status: 500 })
   }
 }
 
@@ -58,7 +60,8 @@ export async function PUT(
     if (error.message === "Unauthorized") {
       return NextResponse.json({ error: "Unauthorized. Please log in." }, { status: 401 })
     }
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    const sanitized = sanitizeError(error)
+    return NextResponse.json({ error: sanitized.message }, { status: 500 })
   }
 }
 
@@ -96,6 +99,7 @@ export async function DELETE(
     if (error.message === "Unauthorized") {
       return NextResponse.json({ error: "Unauthorized. Please log in." }, { status: 401 })
     }
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    const sanitized = sanitizeError(error)
+    return NextResponse.json({ error: sanitized.message }, { status: 500 })
   }
 }

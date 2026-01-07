@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Lock, Eye, EyeOff, CheckCircle, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { validatePassword, getPasswordStrengthColor } from "@/lib/utils/password-validation";
 
 export default function ChangePasswordPage() {
     const { data: session, status } = useSession();
@@ -21,6 +22,7 @@ export default function ChangePasswordPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState(false);
+    const [passwordValidation, setPasswordValidation] = useState<{ isValid: boolean; errors: string[]; strength: 'weak' | 'medium' | 'strong' } | null>(null);
 
     useEffect(() => {
         if (status === "unauthenticated") {
@@ -42,8 +44,10 @@ export default function ChangePasswordPage() {
         setError("");
         setSuccess(false);
 
-        if (formData.newPassword.length < 8) {
-            setError("New password must be at least 8 characters long");
+        // Validate password strength
+        const validation = validatePassword(formData.newPassword);
+        if (!validation.isValid) {
+            setError(validation.errors.join('. ') || "Password does not meet requirements");
             return;
         }
 
@@ -173,7 +177,15 @@ export default function ChangePasswordPage() {
                                         id="newPassword"
                                         type={showNewPassword ? "text" : "password"}
                                         value={formData.newPassword}
-                                        onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
+                                        onChange={(e) => {
+                                            const newPassword = e.target.value;
+                                            setFormData({ ...formData, newPassword });
+                                            if (newPassword) {
+                                                setPasswordValidation(validatePassword(newPassword));
+                                            } else {
+                                                setPasswordValidation(null);
+                                            }
+                                        }}
                                         required
                                         minLength={8}
                                         className="w-full rounded-md border border-input bg-background px-3 py-2 pr-10 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
@@ -187,7 +199,28 @@ export default function ChangePasswordPage() {
                                         {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                                     </button>
                                 </div>
-                                <p className="text-xs text-muted-foreground">Must be at least 8 characters long</p>
+                                {passwordValidation && (
+                                    <div className="space-y-1">
+                                        <p className={`text-xs font-medium ${getPasswordStrengthColor(passwordValidation.strength)}`}>
+                                            Password Strength: {passwordValidation.strength.toUpperCase()}
+                                        </p>
+                                        {passwordValidation.errors.length > 0 && (
+                                            <ul className="text-xs text-red-600 space-y-0.5">
+                                                {passwordValidation.errors.map((err, idx) => (
+                                                    <li key={idx}>• {err}</li>
+                                                ))}
+                                            </ul>
+                                        )}
+                                        {passwordValidation.isValid && (
+                                            <p className="text-xs text-green-600">✓ Password meets all requirements</p>
+                                        )}
+                                    </div>
+                                )}
+                                {!passwordValidation && (
+                                    <p className="text-xs text-muted-foreground">
+                                        Must be at least 8 characters with uppercase, lowercase, number, and special character
+                                    </p>
+                                )}
                             </div>
 
                             <div className="space-y-2">

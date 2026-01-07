@@ -18,6 +18,7 @@ export async function getStaff(): Promise<Staff[]> {
       id: s.id,
       name: s.name,
       role: s.role as Staff['role'],
+      designation: s.designation as Staff['designation'] || undefined,
       contact: s.contact || undefined,
     }))
   } catch (error) {
@@ -51,6 +52,7 @@ export async function addStaff(staff: Omit<Staff, 'id'>) {
     .insert({
       name: staff.name.trim(), // Trim whitespace
       role: staff.role,
+      designation: staff.designation || null,
       contact: staff.contact?.trim() || null,
     })
     .select()
@@ -86,6 +88,7 @@ export async function updateStaff(id: string, updates: Partial<Staff>) {
   }
   
   if (updates.role !== undefined) updateData.role = updates.role
+  if (updates.designation !== undefined) updateData.designation = updates.designation || null
   if (updates.contact !== undefined) updateData.contact = updates.contact?.trim() || null
 
   const { data, error } = await supabase

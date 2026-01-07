@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Staff } from "@/types";
+import { Staff, StaffDesignation } from "@/types";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 
@@ -13,9 +13,15 @@ interface AddStaffModalProps {
 }
 
 export function AddStaffModal({ isOpen, onClose, onSave, editStaff }: AddStaffModalProps) {
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<{
+        name: string;
+        role: Staff['role'];
+        designation: StaffDesignation | '';
+        contact: string;
+    }>({
         name: '',
-        role: 'Worker' as Staff['role'],
+        role: 'Worker',
+        designation: '',
         contact: '',
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -26,12 +32,14 @@ export function AddStaffModal({ isOpen, onClose, onSave, editStaff }: AddStaffMo
             setFormData({
                 name: editStaff.name,
                 role: editStaff.role,
+                designation: editStaff.designation || '',
                 contact: editStaff.contact || '',
             });
         } else {
             setFormData({
                 name: '',
                 role: 'Worker',
+                designation: '',
                 contact: '',
             });
         }
@@ -45,9 +53,12 @@ export function AddStaffModal({ isOpen, onClose, onSave, editStaff }: AddStaffMo
         setIsSubmitting(true);
         setErrorMessage('');
         try {
-            await onSave(formData);
+            await onSave({
+                ...formData,
+                designation: formData.designation || undefined,
+            });
             onClose();
-            setFormData({ name: '', role: 'Worker', contact: '' });
+            setFormData({ name: '', role: 'Worker', designation: '', contact: '' });
             setErrorMessage('');
         } catch (error: any) {
             console.error('Error saving staff:', error);
@@ -109,6 +120,25 @@ export function AddStaffModal({ isOpen, onClose, onSave, editStaff }: AddStaffMo
                             <option value="Supervisor">Supervisor</option>
                             <option value="Driver">Driver</option>
                             <option value="Worker">Worker</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium mb-2">
+                            Designation
+                        </label>
+                        <select
+                            value={formData.designation || ''}
+                            onChange={(e) => setFormData({ ...formData, designation: e.target.value as StaffDesignation | '' })}
+                            className="w-full px-3 py-2 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+                        >
+                            <option value="">Select Designation (Optional)</option>
+                            <option value="Estate Manager">Estate Manager</option>
+                            <option value="Farm Manager">Farm Manager</option>
+                            <option value="Office Data Analyst">Office Data Analyst</option>
+                            <option value="Store Keeper">Store Keeper</option>
+                            <option value="Plantation Data Analyst">Plantation Data Analyst</option>
+                            <option value="Mill Manager">Mill Manager</option>
                         </select>
                     </div>
 

@@ -17,6 +17,7 @@ import { CalendarIcon, Plus, Filter, Download, Edit, Trash2, CheckCircle, Clock,
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useAppStore } from "@/lib/store";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { Budget, BudgetItem } from "@/types";
 import { useSession } from "next-auth/react";
 
@@ -305,6 +306,10 @@ export default function BudgetPlanningPage() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <header className="sticky top-0 z-10 border-b border-border bg-background/80 px-6 py-4 backdrop-blur-md">
+        <Breadcrumb items={[
+          { label: "Financial Management", href: "/financial" },
+          { label: "Budget Planning" }
+        ]} className="mb-4" />
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-primary">Budget Planning</h1>
@@ -439,9 +444,15 @@ export default function BudgetPlanningPage() {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="quarter">Quarter (Optional)</Label>
-                      <Select value={budgetFormData.budgetQuarter} onValueChange={(value) => setBudgetFormData({...budgetFormData, budgetQuarter: value})}>
+                      <Select value={budgetFormData.budgetQuarter || "all"} onValueChange={(value) => setBudgetFormData({...budgetFormData, budgetQuarter: value})}>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select quarter" />
+                          <SelectValue placeholder="Select quarter">
+                            {budgetFormData.budgetQuarter === "all" || !budgetFormData.budgetQuarter 
+                              ? "Full Year" 
+                              : budgetFormData.budgetQuarter 
+                                ? `Q${budgetFormData.budgetQuarter} (${budgetFormData.budgetQuarter === "1" ? "Jan-Mar" : budgetFormData.budgetQuarter === "2" ? "Apr-Jun" : budgetFormData.budgetQuarter === "3" ? "Jul-Sep" : "Oct-Dec"})`
+                                : "Select quarter"}
+                          </SelectValue>
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="all">Full Year</SelectItem>
@@ -528,7 +539,7 @@ export default function BudgetPlanningPage() {
             <CardContent>
               <div className="text-2xl font-bold">{budgetCategories.length}</div>
               <p className="text-xs text-muted-foreground">
-                Available categories
+                {budgetCategories.length === 1 ? 'Category' : 'Categories'} available
               </p>
             </CardContent>
           </Card>
@@ -746,9 +757,15 @@ export default function BudgetPlanningPage() {
                 </div>
                 <div className="space-y-2">
                   <Label>Quarter (Optional)</Label>
-                  <Select value={budgetFormData.budgetQuarter} onValueChange={(value) => setBudgetFormData({...budgetFormData, budgetQuarter: value})}>
+                  <Select value={budgetFormData.budgetQuarter || "all"} onValueChange={(value) => setBudgetFormData({...budgetFormData, budgetQuarter: value})}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select quarter" />
+                      <SelectValue placeholder="Select quarter">
+                        {budgetFormData.budgetQuarter === "all" || !budgetFormData.budgetQuarter 
+                          ? "Full Year" 
+                          : budgetFormData.budgetQuarter 
+                            ? `Q${budgetFormData.budgetQuarter} (${budgetFormData.budgetQuarter === "1" ? "Jan-Mar" : budgetFormData.budgetQuarter === "2" ? "Apr-Jun" : budgetFormData.budgetQuarter === "3" ? "Jul-Sep" : "Oct-Dec"})`
+                            : "Select quarter"}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">Full Year</SelectItem>
@@ -819,7 +836,10 @@ export default function BudgetPlanningPage() {
                     return (
                       <TableRow key={item.id}>
                         <TableCell>
-                          {budgetCategories.find(c => c.id === item.budgetCategoryId)?.name || 'Unknown'}
+                          {(() => {
+                            const category = budgetCategories.find(c => c.id === item.budgetCategoryId);
+                            return category ? category.name : item.budgetCategoryId ? `Category ID: ${item.budgetCategoryId}` : 'No category';
+                          })()}
                         </TableCell>
                         <TableCell>₦ {item.plannedAmount.toLocaleString('en-NG', { minimumFractionDigits: 2 })}</TableCell>
                         <TableCell>₦ {item.allocatedAmount.toLocaleString('en-NG', { minimumFractionDigits: 2 })}</TableCell>

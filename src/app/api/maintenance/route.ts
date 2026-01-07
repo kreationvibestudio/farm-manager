@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getMaintenanceLogs, addMaintenanceLog } from '@/lib/api/maintenance'
 import { requireAuth } from '@/lib/auth/api-auth'
 import { logAuditEvent } from '@/lib/audit/audit-log'
+import { sanitizeError } from '@/lib/utils/error-handler'
+import { maintenanceLogSchema, validateInput } from '@/lib/validation/schemas'
 
 export async function GET() {
   try {
@@ -23,7 +25,8 @@ export async function GET() {
     if (error.message?.includes('does not exist') || error.code === '42P01') {
       return NextResponse.json([])
     }
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    const sanitized = sanitizeError(error)
+    return NextResponse.json({ error: sanitized.message }, { status: 500 })
   }
 }
 
@@ -36,7 +39,20 @@ export async function POST(request: NextRequest) {
     const { session } = authResult
     
     const body = await request.json()
-    const newLog = await addMaintenanceLog(body)
+    
+    // Validate input
+    const validation = validateInput(maintenanceLogSchema, body)
+    if (!validation.success) {
+      return NextResponse.json(
+        { 
+          error: 'Invalid input data',
+          details: validation.errors.errors.map(e => `${e.path.join('.')}: ${e.message}`)
+        },
+        { status: 400 }
+      )
+    }
+    
+    const newLog = await addMaintenanceLog(validation.data)
     
     // Log audit event (non-blocking)
     logAuditEvent(session, {
@@ -59,6 +75,7 @@ export async function POST(request: NextRequest) {
         error: 'Maintenance logs table does not exist. Please run the SQL schema in Supabase Dashboard: supabase-maintenance-schema.sql' 
       }, { status: 400 })
     }
-    return NextResponse.json({ error: error.message || 'Failed to add maintenance log' }, { status: 500 })
+    const sanitized = sanitizeError(error)
+    return NextResponse.json({ error: sanitized.message }, { status: 500 })
   }
 }

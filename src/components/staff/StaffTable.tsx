@@ -28,6 +28,7 @@ export function StaffTable({ staff, onEdit, onDelete, canManage = true }: StaffT
                         <tr>
                             <th className="p-4">Name</th>
                             <th className="p-4">Role</th>
+                            <th className="p-4">Designation</th>
                             <th className="p-4">Contact</th>
                             <th className="p-4 text-right">Actions</th>
                         </tr>
@@ -35,7 +36,7 @@ export function StaffTable({ staff, onEdit, onDelete, canManage = true }: StaffT
                     <tbody className="divide-y divide-border">
                         {staff.length === 0 ? (
                             <tr>
-                                <td colSpan={4} className="p-8 text-center text-muted-foreground">
+                                <td colSpan={5} className="p-8 text-center text-muted-foreground">
                                     No staff members found. Add your first staff member!
                                 </td>
                             </tr>
@@ -54,6 +55,9 @@ export function StaffTable({ staff, onEdit, onDelete, canManage = true }: StaffT
                                         <Badge className={roleColors[member.role]}>
                                             {member.role}
                                         </Badge>
+                                    </td>
+                                    <td className="p-4 text-muted-foreground">
+                                        {member.designation || 'N/A'}
                                     </td>
                                     <td className="p-4 text-muted-foreground">
                                         {member.contact || 'N/A'}

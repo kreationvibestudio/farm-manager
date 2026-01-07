@@ -114,22 +114,43 @@ export function MapContainer({ vehicles, selectedVehicle, onVehicleSelect }: Map
       
       const isSelected = selectedVehicle === vehicle.id;
       
-      el.innerHTML = `
-        <div class="relative w-full h-full">
-          <div class="w-full h-full bg-primary rounded-full border-2 border-white shadow-lg flex items-center justify-center ${isSelected ? 'ring-4 ring-primary ring-offset-2' : ''}">
-            <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/>
-              <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1v-5a1 1 0 00-.293-.707l-2-2A1 1 0 0015 7h-1z"/>
-            </svg>
-          </div>
-          ${heading !== undefined ? `
-            <div class="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-              <div class="w-0 h-0 border-l-4 border-r-4 border-b-8 border-b-primary border-l-transparent border-r-transparent" 
-                   style="transform: rotate(${heading}deg);"></div>
-            </div>
-          ` : ''}
-        </div>
-      `;
+      // Create DOM elements safely instead of using innerHTML to prevent XSS
+      const container = document.createElement('div');
+      container.className = 'relative w-full h-full';
+      
+      const circle = document.createElement('div');
+      circle.className = `w-full h-full bg-primary rounded-full border-2 border-white shadow-lg flex items-center justify-center ${isSelected ? 'ring-4 ring-primary ring-offset-2' : ''}`;
+      
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('class', 'w-6 h-6 text-white');
+      svg.setAttribute('fill', 'currentColor');
+      svg.setAttribute('viewBox', '0 0 20 20');
+      
+      const path1 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path1.setAttribute('d', 'M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z');
+      
+      const path2 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path2.setAttribute('d', 'M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1v-5a1 1 0 00-.293-.707l-2-2A1 1 0 0015 7h-1z');
+      
+      svg.appendChild(path1);
+      svg.appendChild(path2);
+      circle.appendChild(svg);
+      container.appendChild(circle);
+      
+      // Add heading indicator if available (safely)
+      if (heading !== undefined && typeof heading === 'number' && !isNaN(heading)) {
+        const headingContainer = document.createElement('div');
+        headingContainer.className = 'absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2';
+        
+        const headingArrow = document.createElement('div');
+        headingArrow.className = 'w-0 h-0 border-l-4 border-r-4 border-b-8 border-b-primary border-l-transparent border-r-transparent';
+        headingArrow.style.transform = `rotate(${heading}deg)`;
+        
+        headingContainer.appendChild(headingArrow);
+        container.appendChild(headingContainer);
+      }
+      
+      el.appendChild(container);
 
       const marker = new mapboxgl.Marker({
         element: el,

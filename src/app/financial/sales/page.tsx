@@ -278,6 +278,10 @@ export default function SalesManagementPage() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <header className="sticky top-0 z-10 border-b border-border bg-background/80 px-6 py-4 backdrop-blur-md">
+        <Breadcrumb items={[
+          { label: "Financial Management", href: "/financial" },
+          { label: "Revenue & Sales" }
+        ]} className="mb-4" />
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-primary">Revenue & Sales</h1>
@@ -327,9 +331,9 @@ export default function SalesManagementPage() {
                   <div className="grid grid-cols-3 gap-4">
                     <div className="space-y-2">
                       <Label>Product Type *</Label>
-                      <Select value={formData.productType} onValueChange={(value) => setFormData({...formData, productType: value})}>
+                      <Select value={formData.productType || "FFB"} onValueChange={(value) => setFormData({...formData, productType: value})}>
                         <SelectTrigger>
-                          <SelectValue />
+                          <SelectValue placeholder="Select product type" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="FFB">FFB (Fresh Fruit Bunch)</SelectItem>
@@ -436,11 +440,12 @@ export default function SalesManagementPage() {
                   <div className="grid grid-cols-3 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="quality-grade">Quality Grade</Label>
-                      <Select value={formData.qualityGrade} onValueChange={(value) => setFormData({...formData, qualityGrade: value})}>
+                      <Select value={formData.qualityGrade || "none"} onValueChange={(value) => setFormData({...formData, qualityGrade: value === "none" ? "" : value})}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select grade" />
                         </SelectTrigger>
                         <SelectContent>
+                          <SelectItem value="none">None</SelectItem>
                           <SelectItem value="Grade A">Grade A</SelectItem>
                           <SelectItem value="Grade B">Grade B</SelectItem>
                           <SelectItem value="Grade C">Grade C</SelectItem>
@@ -761,14 +766,14 @@ export default function SalesManagementPage() {
               <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label>Product Type *</Label>
-                  <Select value={formData.productType} onValueChange={(value) => setFormData({...formData, productType: value})}>
+                  <Select value={formData.productType || "FFB"} onValueChange={(value) => setFormData({...formData, productType: value})}>
                     <SelectTrigger>
-                      <SelectValue />
+                      <SelectValue placeholder="Select product type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="FFB">FFB</SelectItem>
-                      <SelectItem value="CPO">CPO</SelectItem>
-                      <SelectItem value="PK">PK</SelectItem>
+                      <SelectItem value="FFB">FFB (Fresh Fruit Bunch)</SelectItem>
+                      <SelectItem value="CPO">CPO (Crude Palm Oil)</SelectItem>
+                      <SelectItem value="PK">PK (Palm Kernel)</SelectItem>
                       <SelectItem value="Other">Other</SelectItem>
                     </SelectContent>
                   </Select>

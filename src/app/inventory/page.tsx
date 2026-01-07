@@ -30,8 +30,8 @@ export default function InventoryPage() {
         fetchInventory();
     }, [fetchInventory]);
 
-    const totalItems = inventory.reduce((acc, item) => acc + item.quantity, 0);
-    const lowStockCount = inventory.filter(item => item.quantity <= item.minLevel).length;
+    const totalItems = (inventory || []).reduce((acc, item) => acc + (item.quantity || 0), 0);
+    const lowStockCount = (inventory || []).filter(item => item.quantity <= item.minLevel).length;
 
     const handleAddStock = (item: InventoryItem) => {
         setStockModal({ isOpen: true, item, mode: "add" });

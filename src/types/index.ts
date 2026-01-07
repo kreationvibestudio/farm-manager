@@ -38,10 +38,13 @@ export interface HarvestLog {
     notes?: string;
 }
 
+export type StaffDesignation = 'Estate Manager' | 'Farm Manager' | 'Office Data Analyst' | 'Store Keeper' | 'Plantation Data Analyst' | 'Mill Manager';
+
 export interface Staff {
     id: string;
     name: string;
     role: 'Manager' | 'Supervisor' | 'Driver' | 'Worker';
+    designation?: StaffDesignation;
     contact?: string;
 }
 

@@ -28,18 +28,30 @@ export default function LoginPage() {
             setError("Invalid credentials. Please try again.");
             setLoading(false);
         } else {
+            // Navigate first to prevent message channel errors
+            router.push("/");
+            
             // Log login success (non-blocking - fire and forget)
+            // Use AbortController to prevent message channel errors
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 1000);
+            
             fetch('/api/auth/login-success', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-            }).catch(error => {
-                console.error('Failed to log login event:', error);
-                // Silently fail - don't block login
+                signal: controller.signal,
+            })
+            .catch(() => {
+                // Silently fail - don't block login or log errors
+            })
+            .finally(() => {
+                clearTimeout(timeoutId);
             });
             
-            // Navigate immediately without waiting for audit log
-            router.push("/");
-            router.refresh();
+            // Refresh after navigation
+            setTimeout(() => {
+                router.refresh();
+            }, 100);
         }
     };
 

@@ -18,6 +18,7 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useAppStore } from "@/lib/store";
 import { CostEntry, CostCategory } from "@/types";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { useSession } from "next-auth/react";
 
 export default function CostTrackingPage() {
@@ -227,6 +228,10 @@ export default function CostTrackingPage() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <header className="sticky top-0 z-10 border-b border-border bg-background/80 px-6 py-4 backdrop-blur-md">
+        <Breadcrumb items={[
+          { label: "Financial Management", href: "/financial" },
+          { label: "Cost Tracking" }
+        ]} className="mb-4" />
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-primary">Cost Tracking</h1>
@@ -255,16 +260,22 @@ export default function CostTrackingPage() {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="category">Category *</Label>
-                      <Select value={formData.categoryId} onValueChange={(value) => setFormData({...formData, categoryId: value})}>
+                      <Select value={formData.categoryId || ""} onValueChange={(value) => setFormData({...formData, categoryId: value})}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select category" />
                         </SelectTrigger>
                         <SelectContent>
-                          {costCategories.map((category) => (
-                            <SelectItem key={category.id} value={category.id}>
-                              {category.name}
-                            </SelectItem>
-                          ))}
+                          {costCategories.length === 0 ? (
+                            <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                              No categories available. Please add cost categories first.
+                            </div>
+                          ) : (
+                            costCategories.map((category) => (
+                              <SelectItem key={category.id} value={category.id}>
+                                {category.name}
+                              </SelectItem>
+                            ))
+                          )}
                         </SelectContent>
                       </Select>
                     </div>
@@ -358,7 +369,9 @@ export default function CostTrackingPage() {
                       <Label htmlFor="block">Block/Area</Label>
                       <Select value={formData.blockId || "none"} onValueChange={(value) => setFormData({...formData, blockId: value === "none" ? "" : value})}>
                         <SelectTrigger id="block">
-                          <SelectValue placeholder="Select block..." />
+                          <SelectValue placeholder="Select block...">
+                            {formData.blockId || "Select block..."}
+                          </SelectValue>
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="none">None</SelectItem>
@@ -600,16 +613,22 @@ export default function CostTrackingPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="edit-category">Category *</Label>
-                  <Select value={formData.categoryId} onValueChange={(value) => setFormData({...formData, categoryId: value})}>
+                  <Select value={formData.categoryId || ""} onValueChange={(value) => setFormData({...formData, categoryId: value})}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
                     <SelectContent>
-                      {costCategories.map((category) => (
-                        <SelectItem key={category.id} value={category.id}>
-                          {category.name}
-                        </SelectItem>
-                      ))}
+                      {costCategories.length === 0 ? (
+                        <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                          No categories available. Please add cost categories first.
+                        </div>
+                      ) : (
+                        costCategories.map((category) => (
+                          <SelectItem key={category.id} value={category.id}>
+                            {category.name}
+                          </SelectItem>
+                        ))
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
@@ -681,7 +700,9 @@ export default function CostTrackingPage() {
                   <Label htmlFor="edit-block">Block/Area</Label>
                   <Select value={formData.blockId || "none"} onValueChange={(value) => setFormData({...formData, blockId: value === "none" ? "" : value})}>
                     <SelectTrigger id="edit-block">
-                      <SelectValue placeholder="Select block..." />
+                      <SelectValue placeholder="Select block...">
+                        {formData.blockId || "Select block..."}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="none">None</SelectItem>

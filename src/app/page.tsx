@@ -27,10 +27,10 @@ export default function Home() {
     fetchHarvestLogs();
   }, [fetchInventory, fetchVehicles, fetchHarvestLogs]);
 
-  const totalHarvest = harvestLogs.reduce((acc, log) => acc + log.bunches, 0);
-  const activeVehiclesCount = vehicles.filter(v => v.status === 'Active').length;
-  const lowStockCount = inventory.filter(item => item.quantity <= item.minLevel).length;
-  const dieselItem = inventory.find(item => item.name.toLowerCase().includes('diesel'));
+  const totalHarvest = (harvestLogs || []).reduce((acc, log) => acc + (log.bunches || 0), 0);
+  const activeVehiclesCount = (vehicles || []).filter(v => v.status === 'Active').length;
+  const lowStockCount = (inventory || []).filter(item => item.quantity <= item.minLevel).length;
+  const dieselItem = (inventory || []).find(item => item.name.toLowerCase().includes('diesel'));
   const dieselReserve = dieselItem?.quantity || 0;
 
   return (
@@ -64,7 +64,7 @@ export default function Home() {
           />
           <StatCard
             title="Active Tractors"
-            value={`${activeVehiclesCount}/${vehicles.length}`}
+            value={`${activeVehiclesCount}/${(vehicles || []).length}`}
             status="Operating"
             icon={<Truck className="h-4 w-4" />}
             onClick={() => router.push('/fleet')}
@@ -107,7 +107,7 @@ export default function Home() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {harvestLogs.slice(0, 5).map((log) => (
+                {(harvestLogs || []).slice(0, 5).map((log) => (
                   <TableRow 
                     key={log.id}
                     date={new Date(log.date).toLocaleDateString()} 
@@ -116,7 +116,7 @@ export default function Home() {
                     user={log.supervisorName || log.supervisorId || 'N/A'} 
                   />
                 ))}
-                {harvestLogs.length === 0 && (
+                {(harvestLogs || []).length === 0 && (
                   <tr>
                     <td colSpan={4} className="p-4 text-center text-muted-foreground">
                       No harvest logs yet
