@@ -32,20 +32,25 @@ export async function POST(request: NextRequest) {
       contact: staff.contact?.trim() || null,
     }))
 
-    // Check for duplicates before inserting
-    const names = staffToInsert.map(s => s.name.toLowerCase())
+    // Check for duplicates before inserting (case-insensitive)
+    const namesToCheck = staffToInsert.map(s => s.name.trim().toLowerCase())
     const { data: existingStaff } = await supabase
       .from('staff')
       .select('name')
       .is('deleted_at', null)
-      .in('name', names.map(n => n))
 
     if (existingStaff && existingStaff.length > 0) {
-      const duplicateNames = existingStaff.map(s => s.name).join(', ')
-      return NextResponse.json(
-        { error: `The following staff members already exist: ${duplicateNames}. Please remove them from the list or use different names.` },
-        { status: 400 }
-      )
+      const existingNamesLower = new Set(existingStaff.map(s => s.name.toLowerCase().trim()))
+      const duplicates = staffToInsert
+        .map(s => s.name.trim())
+        .filter(name => existingNamesLower.has(name.toLowerCase().trim()))
+
+      if (duplicates.length > 0) {
+        return NextResponse.json(
+          { error: `The following staff members already exist: ${duplicates.join(', ')}. Please remove them from the list or use different names.` },
+          { status: 400 }
+        )
+      }
     }
 
     // Insert all staff at once
