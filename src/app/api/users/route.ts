@@ -158,25 +158,55 @@ export async function POST(request: NextRequest) {
     const password_hash = await bcrypt.hash(password, saltRounds);
 
     // Insert user
+    const insertData = {
+      username: username.trim(),
+      password_hash,
+      full_name: full_name.trim(),
+      role,
+      phone_number: phone_number?.trim() || null,
+      must_change_password: true, // New users must change password on first login
+    };
+
+    console.log('Attempting to insert user:', { 
+      username: insertData.username, 
+      full_name: insertData.full_name, 
+      role: insertData.role,
+      has_password: !!password_hash,
+      phone_number: insertData.phone_number 
+    });
+
     const { data: newUser, error: insertError } = await supabase
       .from('users')
-      .insert({
-        username,
-        password_hash,
-        full_name,
-        role,
-        phone_number: phone_number || null,
-        must_change_password: true, // New users must change password on first login
-      })
+      .insert(insertData)
       .select('id, username, full_name, role, phone_number, must_change_password, created_at, updated_at')
       .single();
 
     if (insertError) {
       console.error('Error creating user:', insertError);
-      // Return more detailed error message in development, generic in production
-      const errorMessage = process.env.NODE_ENV === 'development' 
-        ? `Failed to create user: ${insertError.message || insertError.code || 'Unknown error'}`
-        : 'Failed to create user. Please check that all fields are valid and the username is unique.';
+      
+      // Provide specific error messages based on error code
+      let errorMessage = 'Failed to create user. Please check that all fields are valid and the username is unique.';
+      
+      // Check for common Supabase error codes
+      if (insertError.code === '23505') { // Unique constraint violation
+        errorMessage = 'Username already exists. Please choose a different username.';
+      } else if (insertError.code === '23502') { // Not null constraint violation
+        errorMessage = 'Missing required field. Please fill in all required fields.';
+      } else if (insertError.code === '23503') { // Foreign key constraint violation
+        errorMessage = 'Invalid reference. Please check the provided data.';
+      } else if (insertError.code === '23514') { // Check constraint violation
+        errorMessage = 'Invalid data. Please check that all fields meet the requirements.';
+      } else if (insertError.message) {
+        // Use the error message if available (even in production for specific errors)
+        if (insertError.message.includes('duplicate') || insertError.message.includes('unique')) {
+          errorMessage = 'Username already exists. Please choose a different username.';
+        } else if (insertError.message.includes('null') || insertError.message.includes('required')) {
+          errorMessage = 'Missing required field. Please fill in all required fields.';
+        } else if (process.env.NODE_ENV === 'development') {
+          errorMessage = `Failed to create user: ${insertError.message} (Code: ${insertError.code || 'N/A'})`;
+        }
+      }
+      
       return NextResponse.json(
         { error: errorMessage },
         { status: 500 }
