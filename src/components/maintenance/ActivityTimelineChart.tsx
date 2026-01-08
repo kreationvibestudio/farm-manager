@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from 'react';
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from 'recharts';
 import { MaintenanceLog } from '@/types';
 
 interface ActivityTimelineChartProps {
@@ -48,6 +48,7 @@ export function ActivityTimelineChart({ logs }: ActivityTimelineChartProps) {
         const dayLogs = logs.filter(log => log.date === date);
         return {
             date: new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+            fullDate: date,
             'Pruning': dayLogs.filter(l => l.activity === 'Pruning').length,
             'Fertilizer Application': dayLogs.filter(l => l.activity === 'Fertilizer Application').length,
             'Herbicide Application': dayLogs.filter(l => l.activity === 'Herbicide Application').length,
@@ -64,92 +65,115 @@ export function ActivityTimelineChart({ logs }: ActivityTimelineChartProps) {
         'Ring Weeding': '#22c55e',
     };
 
+    // Custom tooltip to show all values clearly
+    const CustomTooltip = ({ active, payload, label }: any) => {
+        if (active && payload && payload.length) {
+            return (
+                <div className="rounded-lg border bg-card p-3 shadow-md">
+                    <p className="font-semibold mb-2">{label}</p>
+                    <div className="space-y-1">
+                        {payload.map((entry: any, index: number) => (
+                            <div key={index} className="flex items-center gap-2 text-sm">
+                                <div 
+                                    className="w-3 h-3 rounded-full" 
+                                    style={{ backgroundColor: entry.color }}
+                                />
+                                <span className="text-muted-foreground">{entry.name}:</span>
+                                <span className="font-medium">{entry.value} {entry.value === 1 ? 'activity' : 'activities'}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        }
+        return null;
+    };
+
     return (
         <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
-            <h3 className="mb-4 text-lg font-semibold">Activity Timeline (Last 30 Days)</h3>
+            <div className="mb-4">
+                <h3 className="text-lg font-semibold">Activity Timeline (Last 30 Days)</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                    Daily count of maintenance activities by type - grouped bars show activities per day
+                </p>
+            </div>
             <div
                 ref={containerRef}
-                className="h-64 min-h-[256px] w-full"
-                style={{ minHeight: '256px' }}
+                className="h-80 min-h-[320px] w-full"
+                style={{ minHeight: '320px' }}
             >
                 {dimensions.width > 0 && dimensions.height > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                            <defs>
-                                <linearGradient id="colorPruning" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor={colors['Pruning']} stopOpacity={0.8} />
-                                    <stop offset="95%" stopColor={colors['Pruning']} stopOpacity={0} />
-                                </linearGradient>
-                                <linearGradient id="colorFertilizer" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor={colors['Fertilizer Application']} stopOpacity={0.8} />
-                                    <stop offset="95%" stopColor={colors['Fertilizer Application']} stopOpacity={0} />
-                                </linearGradient>
-                                <linearGradient id="colorHerbicide" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor={colors['Herbicide Application']} stopOpacity={0.8} />
-                                    <stop offset="95%" stopColor={colors['Herbicide Application']} stopOpacity={0} />
-                                </linearGradient>
-                                <linearGradient id="colorSlashing" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor={colors['Slashing']} stopOpacity={0.8} />
-                                    <stop offset="95%" stopColor={colors['Slashing']} stopOpacity={0} />
-                                </linearGradient>
-                                <linearGradient id="colorRingWeeding" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor={colors['Ring Weeding']} stopOpacity={0.8} />
-                                    <stop offset="95%" stopColor={colors['Ring Weeding']} stopOpacity={0} />
-                                </linearGradient>
-                            </defs>
-                            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                            <XAxis dataKey="date" className="text-xs" tick={{ fill: 'currentColor' }} />
-                            <YAxis className="text-xs" tick={{ fill: 'currentColor' }} />
-                            <Tooltip
-                                contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }}
-                                labelStyle={{ color: 'hsl(var(--foreground))' }}
+                        <BarChart 
+                            data={chartData} 
+                            margin={{ top: 10, right: 10, left: 20, bottom: 50 }}
+                        >
+                            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" opacity={0.3} />
+                            <XAxis 
+                                dataKey="date" 
+                                className="text-xs" 
+                                tick={{ fill: 'currentColor', fontSize: 10 }}
+                                label={{ 
+                                    value: 'Date', 
+                                    position: 'insideBottom', 
+                                    offset: -5,
+                                    style: { textAnchor: 'middle', fill: 'currentColor', fontSize: 12, fontWeight: 500 }
+                                }}
+                                angle={-45}
+                                textAnchor="end"
+                                height={70}
+                                interval="preserveStartEnd"
                             />
+                            <YAxis 
+                                className="text-xs" 
+                                tick={{ fill: 'currentColor', fontSize: 11 }}
+                                label={{ 
+                                    value: 'Number of Activities', 
+                                    angle: -90, 
+                                    position: 'insideLeft',
+                                    style: { textAnchor: 'middle', fill: 'currentColor', fontSize: 12, fontWeight: 500 }
+                                }}
+                                width={80}
+                                allowDecimals={false}
+                            />
+                            <Tooltip content={<CustomTooltip />} />
                             <Legend
-                                verticalAlign="bottom"
-                                height={36}
+                                verticalAlign="top"
+                                height={50}
+                                wrapperStyle={{ paddingBottom: '10px' }}
                                 formatter={(value) => <span className="text-xs text-muted-foreground">{value}</span>}
                             />
-                            <Area
-                                type="monotone"
+                            <Bar
                                 dataKey="Pruning"
-                                stackId="1"
-                                stroke={colors['Pruning']}
-                                fill="url(#colorPruning)"
-                                strokeWidth={2}
+                                fill={colors['Pruning']}
+                                name="Pruning"
+                                radius={[4, 4, 0, 0]}
                             />
-                            <Area
-                                type="monotone"
+                            <Bar
                                 dataKey="Fertilizer Application"
-                                stackId="1"
-                                stroke={colors['Fertilizer Application']}
-                                fill="url(#colorFertilizer)"
-                                strokeWidth={2}
+                                fill={colors['Fertilizer Application']}
+                                name="Fertilizer Application"
+                                radius={[4, 4, 0, 0]}
                             />
-                            <Area
-                                type="monotone"
+                            <Bar
                                 dataKey="Herbicide Application"
-                                stackId="1"
-                                stroke={colors['Herbicide Application']}
-                                fill="url(#colorHerbicide)"
-                                strokeWidth={2}
+                                fill={colors['Herbicide Application']}
+                                name="Herbicide Application"
+                                radius={[4, 4, 0, 0]}
                             />
-                            <Area
-                                type="monotone"
+                            <Bar
                                 dataKey="Slashing"
-                                stackId="1"
-                                stroke={colors['Slashing']}
-                                fill="url(#colorSlashing)"
-                                strokeWidth={2}
+                                fill={colors['Slashing']}
+                                name="Slashing"
+                                radius={[4, 4, 0, 0]}
                             />
-                            <Area
-                                type="monotone"
+                            <Bar
                                 dataKey="Ring Weeding"
-                                stackId="1"
-                                stroke={colors['Ring Weeding']}
-                                fill="url(#colorRingWeeding)"
-                                strokeWidth={2}
+                                fill={colors['Ring Weeding']}
+                                name="Ring Weeding"
+                                radius={[4, 4, 0, 0]}
                             />
-                        </AreaChart>
+                        </BarChart>
                     </ResponsiveContainer>
                 ) : (
                     <div className="flex items-center justify-center h-full">
