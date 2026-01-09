@@ -16,6 +16,7 @@ const activityColors: Record<MaintenanceLog['activity'], string> = {
     'Herbicide Application': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
     'Slashing': 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300',
     'Ring Weeding': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
+    'Road Maintenance': 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300',
 };
 
 export function MaintenanceTable({ logs, onDelete }: MaintenanceTableProps) {
