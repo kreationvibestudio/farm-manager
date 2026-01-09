@@ -54,6 +54,7 @@ export async function getHarvestLogs(): Promise<HarvestLog[]> {
         id: log.id,
         date: log.date,
         blockId: log.block_id,
+        palmType: log.palm_type || undefined,
         bunches: Number(log.weight_kg), // Database column still weight_kg, but we map to bunches
         supervisorId: log.supervisor_id || '',
         supervisorName: log.supervisor_id ? staffMap.get(log.supervisor_id) || null : null,
@@ -70,6 +71,7 @@ export async function getHarvestLogs(): Promise<HarvestLog[]> {
       id: log.id,
       date: log.date,
       blockId: log.block_id,
+      palmType: log.palm_type || undefined,
       bunches: Number(log.weight_kg), // Database column still weight_kg, but we map to bunches
       supervisorId: log.supervisor_id || '',
       supervisorName: log.supervisor?.name || null,
@@ -93,6 +95,7 @@ export async function addHarvestLog(log: Omit<HarvestLog, 'id'>) {
     .insert({
       date: log.date,
       block_id: log.blockId,
+      palm_type: log.palmType || null,
       weight_kg: log.bunches, // Database column still weight_kg, but we store bunches
       supervisor_id: log.supervisorId || null,
       driver_id: log.driverId || null,
@@ -107,6 +110,7 @@ export async function addHarvestLog(log: Omit<HarvestLog, 'id'>) {
     id: data.id,
     date: data.date,
     blockId: data.block_id,
+    palmType: data.palm_type || undefined,
     bunches: Number(data.weight_kg), // Map back to bunches
     supervisorId: data.supervisor_id || '',
     driverId: data.driver_id,
@@ -121,6 +125,7 @@ export async function updateHarvestLog(id: string, updates: Partial<HarvestLog>)
   
   if (updates.date) updateData.date = updates.date
   if (updates.blockId) updateData.block_id = updates.blockId
+  if (updates.palmType !== undefined) updateData.palm_type = updates.palmType || null
   if (updates.bunches !== undefined) updateData.weight_kg = updates.bunches // Database column still weight_kg
   if (updates.supervisorId !== undefined) updateData.supervisor_id = updates.supervisorId || null
   if (updates.driverId !== undefined) updateData.driver_id = updates.driverId || null
@@ -139,6 +144,7 @@ export async function updateHarvestLog(id: string, updates: Partial<HarvestLog>)
     id: data.id,
     date: data.date,
     blockId: data.block_id,
+    palmType: data.palm_type || undefined,
     bunches: Number(data.weight_kg), // Map back to bunches
     supervisorId: data.supervisor_id || '',
     driverId: data.driver_id,

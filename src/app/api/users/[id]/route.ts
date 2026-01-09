@@ -27,6 +27,16 @@ export async function PUT(
 
     const { id } = await params;
     const body = await request.json();
+    console.log('Received update request for user:', {
+      userId: id,
+      body: { 
+        ...body, 
+        password: body.password ? '[REDACTED]' : undefined,
+        roleReceived: body.role,
+        roleType: typeof body.role
+      }
+    });
+    
     const { full_name, role, phone_number, password } = body;
 
     const supabase = createAdminClient();
@@ -48,17 +58,39 @@ export async function PUT(
 
     const updateData: any = {};
 
-    if (full_name !== undefined) updateData.full_name = full_name;
-    if (role !== undefined) {
-      if (!['Admin', 'Operator', 'Support'].includes(role)) {
+    // Normalize and validate input
+    if (full_name !== undefined && full_name !== null) {
+      updateData.full_name = String(full_name).trim();
+    }
+    
+    if (role !== undefined && role !== null) {
+      // Normalize role (trim whitespace, ensure proper case)
+      const normalizedRole = String(role).trim();
+      const validRoles = ['Admin', 'Operator', 'Support'];
+      
+      if (!validRoles.includes(normalizedRole)) {
+        console.error('Invalid role provided:', {
+          originalRole: role,
+          normalizedRole: normalizedRole,
+          roleType: typeof role,
+          roleLength: normalizedRole.length,
+          characterCodes: normalizedRole.split('').map(c => c.charCodeAt(0))
+        });
         return NextResponse.json(
-          { error: 'Invalid role. Must be Admin, Operator, or Support' },
+          { 
+            error: `Invalid role. Must be exactly one of: ${validRoles.join(', ')} (case-sensitive). Received: "${normalizedRole}"`,
+            received: normalizedRole,
+            validRoles: validRoles
+          },
           { status: 400 }
         );
       }
-      updateData.role = role;
+      updateData.role = normalizedRole;
     }
-    if (phone_number !== undefined) updateData.phone_number = phone_number || null;
+    
+    if (phone_number !== undefined) {
+      updateData.phone_number = phone_number ? String(phone_number).trim() || null : null;
+    }
 
     // If password is provided, hash it
     if (password) {
@@ -73,6 +105,13 @@ export async function PUT(
       updateData.must_change_password = true; // Require password change after admin reset
     }
 
+    // Log what we're about to update
+    console.log('Updating user:', {
+      userId: id,
+      updateData: updateData,
+      currentUserRole: currentUser?.role
+    });
+
     const { data: updatedUser, error: updateError } = await supabase
       .from('users')
       .update(updateData)
@@ -82,9 +121,42 @@ export async function PUT(
       .single();
 
     if (updateError) {
-      console.error('Error updating user:', updateError);
+      console.error('Supabase error updating user:', {
+        code: updateError.code,
+        message: updateError.message,
+        details: updateError.details,
+        hint: updateError.hint,
+        updateData: updateData
+      });
+      
+      // Handle specific database errors
+      if (updateError.code === '23514') {
+        return NextResponse.json(
+          { 
+            error: `Invalid role value. Role must be exactly one of: Admin, Operator, or Support (case-sensitive).`,
+            details: updateError.message,
+            hint: updateError.hint
+          },
+          { status: 400 }
+        );
+      }
+      
+      if (updateError.code === '23502') {
+        return NextResponse.json(
+          { 
+            error: `Missing required field: ${updateError.column || 'unknown'}`,
+            details: updateError.message
+          },
+          { status: 400 }
+        );
+      }
+      
       return NextResponse.json(
-        { error: 'Failed to update user' },
+        { 
+          error: 'Failed to update user',
+          details: updateError.message,
+          code: updateError.code
+        },
         { status: 500 }
       );
     }

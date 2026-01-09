@@ -80,16 +80,34 @@ export default function UsersPage() {
         if (!editUser) return;
 
         try {
+            // Normalize role - ensure it matches exactly
+            const normalizedRole = String(userData.role).trim();
+            const validRoles = ['Admin', 'Operator', 'Support'];
+            
+            if (!validRoles.includes(normalizedRole)) {
+                throw new Error(`Invalid role: "${normalizedRole}". Must be one of: ${validRoles.join(', ')}`);
+            }
+            
             const updateData: any = {
-                full_name: userData.full_name,
-                role: userData.role,
-                phone_number: userData.phone_number,
+                full_name: userData.full_name.trim(),
+                role: normalizedRole,
+                phone_number: userData.phone_number?.trim() || null,
             };
 
-            // Only include password if provided
-            if (userData.password) {
+            // Only include password if provided (not empty)
+            if (userData.password && userData.password.trim().length > 0) {
                 updateData.password = userData.password;
             }
+
+            console.log('Updating user:', {
+                userId: editUser.id,
+                updateData: {
+                    ...updateData,
+                    password: updateData.password ? '[REDACTED]' : undefined
+                },
+                oldRole: editUser.role,
+                newRole: normalizedRole
+            });
 
             const response = await fetch(`/api/users/${editUser.id}`, {
                 method: 'PUT',
@@ -98,14 +116,31 @@ export default function UsersPage() {
             });
 
             if (!response.ok) {
-                const result = await response.json();
-                throw new Error(result.error || 'Failed to update user');
+                let errorData: any = {};
+                try {
+                    const text = await response.text();
+                    errorData = text ? JSON.parse(text) : {};
+                } catch (parseError) {
+                    errorData = { error: response.statusText || 'Unknown error occurred' };
+                }
+                
+                console.error('Failed to update user:', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    errorData: errorData
+                });
+                
+                throw new Error(errorData.error || errorData.details || `Failed to update user (${response.status})`);
             }
 
+            const result = await response.json();
+            console.log('User updated successfully:', result);
+            
             await fetchUsers();
             setEditUser(null);
             setShowAddModal(false);
         } catch (error: any) {
+            console.error('Error in handleUpdate:', error);
             throw error;
         }
     };

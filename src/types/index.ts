@@ -23,10 +23,13 @@ export interface Vehicle {
     currentDriverId?: string;
 }
 
+export type PalmType = 'Adult Palm' | 'Young Palm';
+
 export interface HarvestLog {
     id: string;
     date: string; // ISO Date
     blockId: string; // e.g., "Block A"
+    palmType?: PalmType;
     bunches: number; // Changed from weightKg - FFB is counted in bunches, not weighed
     supervisorId: string;
     supervisorName?: string | null; // Resolved name from staff table
@@ -46,6 +49,7 @@ export interface Staff {
     role: 'Manager' | 'Supervisor' | 'Driver' | 'Worker';
     designation?: StaffDesignation;
     contact?: string;
+    userId?: string; // Link to users table
 }
 
 export interface User {
@@ -84,7 +88,7 @@ export interface VehicleWithLocation extends Vehicle {
 }
 
 // Farm Maintenance Types
-export type MaintenanceActivity = 'Pruning' | 'Fertilizer Application' | 'Herbicide Application' | 'Slashing' | 'Ring Weeding';
+export type MaintenanceActivity = 'Pruning' | 'Fertilizer Application' | 'Herbicide Application' | 'Slashing' | 'Ring Weeding' | 'Road Maintenance';
 
 export interface MaintenanceLog {
     id: string;
@@ -309,4 +313,34 @@ export interface FinancialSummary {
         costs: number;
         profit: number;
     }>;
+}
+
+// Medical Request Types
+export type MedicalRequestUrgency = 'Low' | 'Medium' | 'High' | 'Emergency';
+export type MedicalRequestStatus = 'Pending' | 'Approved by Supervisor' | 'Rejected by Supervisor' | 'Approved by Manager' | 'Rejected by Manager';
+export type MedicalPaymentStatus = 'Pending' | 'Approved for Payment' | 'Paid' | 'Rejected';
+
+export interface MedicalRequest {
+    id: string;
+    staffId: string;
+    staffName?: string;
+    requestDate: string;
+    reason: string;
+    isWorkRelated: boolean;
+    urgency: MedicalRequestUrgency;
+    status: MedicalRequestStatus;
+    supervisorId?: string;
+    supervisorName?: string;
+    supervisorActionDate?: string;
+    supervisorNotes?: string;
+    managerId?: string;
+    managerName?: string;
+    managerActionDate?: string;
+    managerNotes?: string;
+    paymentStatus?: MedicalPaymentStatus;
+    paymentAmount?: number;
+    paymentDate?: string;
+    paymentReference?: string;
+    createdAt?: string;
+    updatedAt?: string;
 }

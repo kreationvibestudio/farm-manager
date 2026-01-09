@@ -26,12 +26,25 @@ export function AddUserModal({ isOpen, onClose, onSave, editUser }: AddUserModal
 
     useEffect(() => {
         if (editUser) {
+            // Ensure role is valid when loading edit user
+            const validRoles: User['role'][] = ['Admin', 'Operator', 'Support'];
+            const currentRole = editUser.role && validRoles.includes(editUser.role) 
+                ? editUser.role 
+                : 'Support';
+            
             setFormData({
                 username: editUser.username,
                 password: '', // Don't pre-fill password
                 full_name: editUser.full_name,
-                role: editUser.role,
+                role: currentRole,
                 phone_number: editUser.phone_number || '',
+            });
+            
+            console.log('Edit user loaded:', {
+                userId: editUser.id,
+                username: editUser.username,
+                currentRole: editUser.role,
+                formRole: currentRole
             });
         } else {
             setFormData({
@@ -67,11 +80,21 @@ export function AddUserModal({ isOpen, onClose, onSave, editUser }: AddUserModal
         }
 
         try {
+            // Normalize role - ensure it's exactly one of the valid values
+            const normalizedRole = formData.role.trim() as User['role'];
+            const validRoles: User['role'][] = ['Admin', 'Operator', 'Support'];
+            
+            if (!validRoles.includes(normalizedRole)) {
+                setErrorMessage(`Invalid role: "${normalizedRole}". Must be one of: ${validRoles.join(', ')}`);
+                setIsSubmitting(false);
+                return;
+            }
+            
             const userData = {
                 username: formData.username.trim(),
                 password: formData.password,
                 full_name: formData.full_name.trim(),
-                role: formData.role.trim() as User['role'], // Ensure role is trimmed and typed correctly
+                role: normalizedRole,
                 phone_number: formData.phone_number?.trim() || undefined,
                 must_change_password: editUser ? editUser.must_change_password : true,
             };
@@ -82,7 +105,8 @@ export function AddUserModal({ isOpen, onClose, onSave, editUser }: AddUserModal
                 password: '[REDACTED]',
                 roleType: typeof userData.role,
                 roleValue: userData.role,
-                roleLength: userData.role?.length
+                roleLength: userData.role?.length,
+                isValidRole: validRoles.includes(userData.role)
             });
             
             await onSave(userData);

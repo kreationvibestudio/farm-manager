@@ -54,6 +54,7 @@ export function ActivityTimelineChart({ logs }: ActivityTimelineChartProps) {
             'Herbicide Application': dayLogs.filter(l => l.activity === 'Herbicide Application').length,
             'Slashing': dayLogs.filter(l => l.activity === 'Slashing').length,
             'Ring Weeding': dayLogs.filter(l => l.activity === 'Ring Weeding').length,
+            'Road Maintenance': dayLogs.filter(l => l.activity === 'Road Maintenance').length,
         };
     });
 
@@ -63,6 +64,7 @@ export function ActivityTimelineChart({ logs }: ActivityTimelineChartProps) {
         'Herbicide Application': '#eab308',
         'Slashing': '#f97316',
         'Ring Weeding': '#22c55e',
+        'Road Maintenance': '#8b5cf6',
     };
 
     // Custom tooltip to show all values clearly
@@ -171,6 +173,12 @@ export function ActivityTimelineChart({ logs }: ActivityTimelineChartProps) {
                                 dataKey="Ring Weeding"
                                 fill={colors['Ring Weeding']}
                                 name="Ring Weeding"
+                                radius={[4, 4, 0, 0]}
+                            />
+                            <Bar
+                                dataKey="Road Maintenance"
+                                fill={colors['Road Maintenance']}
+                                name="Road Maintenance"
                                 radius={[4, 4, 0, 0]}
                             />
                         </BarChart>

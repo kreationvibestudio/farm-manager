@@ -135,6 +135,7 @@ export function LogMaintenanceModal({ isOpen, onClose }: LogMaintenanceModalProp
                             <option value="Herbicide Application">Herbicide Application</option>
                             <option value="Slashing">Slashing</option>
                             <option value="Ring Weeding">Ring Weeding</option>
+                            <option value="Road Maintenance">Road Maintenance</option>
                         </select>
                     </div>
 

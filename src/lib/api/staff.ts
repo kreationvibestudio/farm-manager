@@ -20,6 +20,7 @@ export async function getStaff(): Promise<Staff[]> {
       role: s.role as Staff['role'],
       designation: s.designation as Staff['designation'] || undefined,
       contact: s.contact || undefined,
+      userId: s.user_id || undefined,
     }))
   } catch (error) {
     console.error('Error fetching staff:', error)
@@ -54,12 +55,20 @@ export async function addStaff(staff: Omit<Staff, 'id'>) {
       role: staff.role,
       designation: staff.designation || null,
       contact: staff.contact?.trim() || null,
+      user_id: staff.userId || null,
     })
     .select()
     .single()
 
   if (error) throw error
-  return data
+  return {
+    id: data.id,
+    name: data.name,
+    role: data.role as Staff['role'],
+    designation: data.designation as Staff['designation'] || undefined,
+    contact: data.contact || undefined,
+    userId: data.user_id || undefined,
+  }
 }
 
 export async function updateStaff(id: string, updates: Partial<Staff>) {
@@ -90,6 +99,7 @@ export async function updateStaff(id: string, updates: Partial<Staff>) {
   if (updates.role !== undefined) updateData.role = updates.role
   if (updates.designation !== undefined) updateData.designation = updates.designation || null
   if (updates.contact !== undefined) updateData.contact = updates.contact?.trim() || null
+  if (updates.userId !== undefined) updateData.user_id = updates.userId || null
 
   const { data, error } = await supabase
     .from('staff')
@@ -99,7 +109,14 @@ export async function updateStaff(id: string, updates: Partial<Staff>) {
     .single()
 
   if (error) throw error
-  return data
+  return {
+    id: data.id,
+    name: data.name,
+    role: data.role as Staff['role'],
+    designation: data.designation as Staff['designation'] || undefined,
+    contact: data.contact || undefined,
+    userId: data.user_id || undefined,
+  }
 }
 
 export async function deleteStaff(id: string, userId: string) {

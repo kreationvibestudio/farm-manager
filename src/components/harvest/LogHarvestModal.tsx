@@ -15,6 +15,7 @@ export function LogHarvestModal({ isOpen, onClose }: LogHarvestModalProps) {
     const [formData, setFormData] = useState({
         date: new Date().toISOString().split('T')[0],
         blockId: "",
+        palmType: "" as 'Adult Palm' | 'Young Palm' | '',
         bunches: 0,
         supervisorId: "",
         vehicleId: "",
@@ -40,6 +41,7 @@ export function LogHarvestModal({ isOpen, onClose }: LogHarvestModalProps) {
             setFormData({
                 date: new Date().toISOString().split('T')[0],
                 blockId: "",
+                palmType: "",
                 bunches: 0,
                 supervisorId: "",
                 vehicleId: "",
@@ -61,6 +63,7 @@ export function LogHarvestModal({ isOpen, onClose }: LogHarvestModalProps) {
             const logData: any = {
                 date: formData.date,
                 blockId: formData.blockId,
+                palmType: formData.palmType || undefined,
                 bunches: formData.bunches,
             };
             if (formData.supervisorId) {
@@ -120,6 +123,19 @@ export function LogHarvestModal({ isOpen, onClose }: LogHarvestModalProps) {
                                 No blocks found. Add a harvest log first to populate block list.
                             </p>
                         )}
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium mb-1">Palm Type</label>
+                        <select
+                            value={formData.palmType}
+                            onChange={(e) => setFormData({ ...formData, palmType: e.target.value as 'Adult Palm' | 'Young Palm' | '' })}
+                            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                        >
+                            <option value="">Select palm type...</option>
+                            <option value="Adult Palm">Adult Palm</option>
+                            <option value="Young Palm">Young Palm</option>
+                        </select>
                     </div>
 
                     <div>
