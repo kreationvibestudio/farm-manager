@@ -30,24 +30,28 @@ export default function MedicalRequestsPage() {
     useEffect(() => {
         // Find current user's staff record
         if (session?.user && staff.length > 0) {
+            const currentUser = session.user;
+            const userId = currentUser.id;
+            const userName = currentUser.name;
+            
             // First, try to match by user_id (most reliable)
             let userStaff = staff.find(s => 
-                s.userId && session.user?.id && s.userId === session.user.id
+                s.userId && userId && s.userId === userId
             );
             
             // If no match by user_id, try name matching
-            if (!userStaff && session.user.name) {
+            if (!userStaff && userName) {
                 // Try exact match first
                 userStaff = staff.find(s => 
-                    s.name.toLowerCase().trim() === session.user.name?.toLowerCase().trim()
+                    s.name.toLowerCase().trim() === userName.toLowerCase().trim()
                 );
                 
                 // If no exact match, try partial match
                 if (!userStaff) {
+                    const userNameLower = userName.toLowerCase().trim();
                     userStaff = staff.find(s => {
                         const staffName = s.name.toLowerCase().trim();
-                        const userName = session.user.name?.toLowerCase().trim() || '';
-                        return staffName.includes(userName) || userName.includes(staffName);
+                        return staffName.includes(userNameLower) || userNameLower.includes(staffName);
                     });
                 }
             }
@@ -57,14 +61,14 @@ export default function MedicalRequestsPage() {
                 setCurrentUserRole(userStaff.role);
             } else {
                 // If user is Admin or Operator, allow access
-                const userRole = (session.user as any)?.role;
+                const userRole = (currentUser as any)?.role;
                 if (userRole === 'Admin' || userRole === 'Operator') {
                     // Admins/Operators can view all requests and create on behalf of staff
                     console.log('User is Admin/Operator but not in staff table. Allowing full access.');
                 } else {
                     console.log('User not found in staff table:', {
-                        userId: session.user.id,
-                        sessionName: session.user.name,
+                        userId: userId,
+                        sessionName: userName,
                         availableStaff: staff.map(s => ({ id: s.id, name: s.name, userId: s.userId }))
                     });
                 }
