@@ -22,6 +22,14 @@ export async function PUT(
     const { action, notes, paymentData } = body
     const requestId = id
 
+    // Ensure session user exists
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized. User session not found.' }, { status: 401 })
+    }
+
+    const userId = session.user.id
+    const userName = session.user.name
+
     // Get the medical request
     const { data: medicalRequest, error: fetchError } = await supabase
       .from('medical_requests')
@@ -37,7 +45,7 @@ export async function PUT(
     const { data: userData } = await supabase
       .from('users')
       .select('role, full_name')
-      .eq('id', session.user.id)
+      .eq('id', userId)
       .single()
 
     const userRole = userData?.role
@@ -48,18 +56,18 @@ export async function PUT(
     const { data: staffByUserId } = await supabase
       .from('staff')
       .select('id, name, role')
-      .eq('user_id', session.user.id)
+      .eq('user_id', userId)
       .limit(1)
       .maybeSingle()
 
     if (staffByUserId) {
       userStaff = staffByUserId
-    } else if (session.user.name) {
+    } else if (userName) {
       // Fall back to name matching
       const { data: staffByName } = await supabase
         .from('staff')
         .select('id, name, role')
-        .or(`name.eq.${session.user.name},name.ilike.%${session.user.name}%`)
+        .or(`name.eq.${userName},name.ilike.%${userName}%`)
         .limit(1)
         .maybeSingle()
       
