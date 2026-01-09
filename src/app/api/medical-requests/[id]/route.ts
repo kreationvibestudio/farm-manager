@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/server'
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const authResult = await requireAuth()
@@ -16,10 +16,11 @@ export async function PUT(
     }
     const { session } = authResult
 
+    const { id } = await params
     const supabase = await createClient()
     const body = await request.json()
     const { action, notes, paymentData } = body
-    const requestId = params.id
+    const requestId = id
 
     // Get the medical request
     const { data: medicalRequest, error: fetchError } = await supabase
@@ -137,13 +138,13 @@ export async function PUT(
       updateData = body
     }
 
-    const updatedRequest = await medicalAPI.updateMedicalRequest(requestId, updateData)
+    const updatedRequest = await medicalAPI.updateMedicalRequest(id, updateData)
 
     // Log audit event (non-blocking)
     logAuditEvent(session, {
       action: 'UPDATE',
       resourceType: 'medical_requests',
-      resourceId: requestId,
+      resourceId: id,
       oldData: medicalRequest,
       newData: updatedRequest,
       request,
