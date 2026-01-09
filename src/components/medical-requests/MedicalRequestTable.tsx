@@ -105,8 +105,7 @@ export function MedicalRequestTable({
         return currentUserRole === 'Manager' && 
                request.status === 'Approved by Manager' && 
                request.isWorkRelated && 
-               request.paymentStatus === 'Approved for Payment' &&
-               request.paymentStatus !== 'Paid';
+               request.paymentStatus === 'Approved for Payment';
     };
 
     const handleActionClick = (id: string, type: 'approve' | 'reject') => {
