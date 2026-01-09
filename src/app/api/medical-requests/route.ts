@@ -103,9 +103,10 @@ export async function POST(request: NextRequest) {
       }
       if (error.code === '23502') {
         return NextResponse.json({ 
-          error: `Missing required field: ${error.column || 'unknown'}`,
+          error: 'Missing required field',
           code: error.code,
-          details: error.message 
+          details: error.message,
+          hint: error.hint
         }, { status: 400 })
       }
       if (error.code === '23514') {

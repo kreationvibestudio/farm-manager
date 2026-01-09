@@ -144,8 +144,9 @@ export async function PUT(
       if (updateError.code === '23502') {
         return NextResponse.json(
           { 
-            error: `Missing required field: ${updateError.column || 'unknown'}`,
-            details: updateError.message
+            error: 'Missing required field',
+            details: updateError.message,
+            hint: updateError.hint
           },
           { status: 400 }
         );
