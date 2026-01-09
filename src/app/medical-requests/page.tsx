@@ -374,7 +374,7 @@ export default function MedicalRequestsPage() {
                 isOpen={showCreateModal}
                 onClose={() => setShowCreateModal(false)}
                 onSubmit={handleCreateRequest}
-                staffName={currentStaffId ? session?.user?.name : undefined}
+                staffName={currentStaffId ? (session?.user?.name ?? undefined) : undefined}
                 staffId={currentStaffId}
                 staffList={staff.map(s => ({ id: s.id, name: s.name }))}
                 canSelectStaff={!currentStaffId && (
